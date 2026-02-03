@@ -8,9 +8,7 @@ import {
   Avatar, 
   Spin,
   Tag,
-  List,
   message,
-  Empty,
   Row,
   Col
 } from 'antd';
@@ -23,7 +21,6 @@ import {
   History,
   Lightbulb,
   Award,
-  ChevronRight,
   BarChart3,
   Medal,
   Clock,
