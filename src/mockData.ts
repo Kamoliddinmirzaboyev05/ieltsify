@@ -20,14 +20,16 @@ export interface TaskItem {
 }
 
 export const SIDEBAR_MENU: SidebarMenuItem[] = [
-  { key: 'home', label: 'Home' },
+  { key: 'home', label: 'Dashboard' },
   { key: 'reports', label: 'My Reports' },
+  { key: 'reading', label: 'Reading' },
   { key: 'writing', label: 'Writing' },
   { key: 'speaking', label: 'Speaking' },
   { key: 'rewriter', label: 'Rewriter' },
   { key: 'sample-reports', label: 'Sample Reports' },
   { key: 'lessons', label: 'Lessons' },
   { key: 'pricing', label: 'Pricing' },
+  { key: 'profile', label: 'Profile' },
   { key: 'support', label: 'Support' },
 ];
 
@@ -105,7 +107,7 @@ export const SPEAKING_QUESTIONS: SpeakingQuestion[] = [
 export interface ReportRecord {
   key: string;
   date: string;
-  type: 'Writing' | 'Speaking';
+  type: 'Writing' | 'Speaking' | 'Reading';
   topic: string;
   score: number;
 }
@@ -114,6 +116,7 @@ export const RECENT_REPORTS: ReportRecord[] = [
   { key: '1', date: '2024-02-01', type: 'Writing', topic: 'Road Safety Essay', score: 7.5 },
   { key: '2', date: '2024-01-28', type: 'Speaking', topic: 'Hometown Interview', score: 6.5 },
   { key: '3', date: '2024-01-20', type: 'Writing', topic: 'Education in Foreign Land', score: 8.0 },
+  { key: '6', date: '2024-02-03', type: 'Reading', topic: 'The Nature of Memory', score: 8.5 },
   { key: '4', date: '2024-01-15', type: 'Speaking', topic: 'Celebrity Influence', score: 7.0 },
   { key: '5', date: '2024-01-05', type: 'Writing', topic: 'Transport Modes Chart', score: 6.0 },
 ];
@@ -140,19 +143,19 @@ export interface ActivityDay {
 }
 
 export const DASHBOARD_STATS: DashboardStats = {
-  totalTests: 0,
-  bestScore: 0.0,
+  totalTests: 12,
+  bestScore: 8.0,
   weakArea: 'Listening',
-  strongSkill: 'Listening',
-  weakScore: 0.0,
-  strongScore: 0.0,
+  strongSkill: 'Reading',
+  weakScore: 6.0,
+  strongScore: 8.5,
 };
 
 export const SKILL_PROGRESS: SkillProgress[] = [
-  { name: 'Listening', score: 0.0, maxScore: 9.0, color: '#A855F7' },
-  { name: 'Reading', score: 0.0, maxScore: 9.0, color: '#22C55E' },
-  { name: 'Writing', score: 0.0, maxScore: 9.0, color: '#3B82F6' },
-  { name: 'Speaking', score: 0.0, maxScore: 9.0, color: '#EF4444' },
+  { name: 'Listening', score: 6.0, maxScore: 9.0, color: '#A855F7' },
+  { name: 'Reading', score: 8.5, maxScore: 9.0, color: '#22C55E' },
+  { name: 'Writing', score: 7.2, maxScore: 9.0, color: '#3B82F6' },
+  { name: 'Speaking', score: 6.8, maxScore: 9.0, color: '#EF4444' },
 ];
 
 export interface SpeakingCollection {
@@ -213,10 +216,10 @@ export const SPEAKING_COLLECTIONS: SpeakingCollection[] = [
 ];
 
 export const SPEAKING_STATS = {
-  totalSubmissions: 0,
-  averageScore: 0.0,
-  highestScore: 0.0,
-  practiceMinutes: 0,
+  totalSubmissions: 45,
+  averageScore: 6.8,
+  highestScore: 8.0,
+  practiceMinutes: 320,
 };
 
 export interface WritingCollection {
@@ -284,10 +287,10 @@ export const WRITING_COLLECTIONS: WritingCollection[] = [
 ];
 
 export const WRITING_STATS = {
-  totalSubmissions: 0,
-  averageScore: 0.0,
-  highestScore: 0.0,
-  practiceMinutes: 0,
+  totalSubmissions: 32,
+  averageScore: 7.2,
+  highestScore: 8.5,
+  practiceMinutes: 1200,
 };
 
 export const WRITING_PROGRESS = [
@@ -299,5 +302,67 @@ export const WRITING_PROGRESS = [
   { attempt: 'Feb 1', score: 7.5 },
 ];
 
+export interface ReadingQuestion {
+  id: string;
+  question: string;
+  options?: string[];
+  answer: string;
+  type: 'multiple-choice' | 'tfng' | 'gap-fill';
+}
 
+export interface ReadingPassage {
+  id: string;
+  title: string;
+  content: string;
+  difficulty: 'Easy' | 'Medium' | 'Hard';
+  questions: ReadingQuestion[];
+}
 
+export const READING_PASSAGES: ReadingPassage[] = [
+  {
+    id: 'r1',
+    title: 'The Nature of Memory',
+    difficulty: 'Medium',
+    content: "Memory is a fundamental aspect of human cognition, allowing us to store and retrieve information over time. Scientific research has identified three main processes: encoding, storage, and retrieval. Encoding is the initial processing of information, storage is the maintenance of information over time, and retrieval is the process of accessing the stored information when needed. Different types of memory exist, including short-term and long-term memory. Short-term memory holds limited information for a brief period, while long-term memory can store vast amounts of data indefinitely...",
+    questions: [
+      { id: 'q1', type: 'multiple-choice', question: 'What is the initial process of memory called?', options: ['Storage', 'Encoding', 'Retrieval', 'Maintenance'], answer: 'Encoding' },
+      { id: 'q2', type: 'tfng', question: 'Long-term memory has a limited capacity.', answer: 'False' },
+      { id: 'q3', type: 'gap-fill', question: 'The maintenance of information over time is known as ______.', answer: 'storage' }
+    ]
+  },
+  {
+    id: 'r2',
+    title: 'Sustainable Architecture',
+    difficulty: 'Hard',
+    content: "As urbanization accelerates, the construction industry is increasingly focusing on sustainable architecture. This approach aims to minimize the environmental impact of buildings by optimizing energy efficiency, using eco-friendly materials, and integrating renewable energy sources. Key strategies include passive solar design, green roofs, and greywater recycling systems. The goal is to create structures that are not only functional but also harmonious with their surroundings...",
+    questions: [
+      { id: 'q1', type: 'multiple-choice', question: 'What is a key strategy in sustainable architecture?', options: ['Maximizing waste', 'Passive solar design', 'Ignoring energy efficiency', 'Using non-recyclable materials'], answer: 'Passive solar design' },
+      { id: 'q2', type: 'tfng', question: 'Green roofs help in reducing energy consumption.', answer: 'True' }
+    ]
+  }
+];
+
+export interface PricingPlan {
+  id: string;
+  name: string;
+  price: string;
+  period: string;
+  features: string[];
+  recommended?: boolean;
+}
+
+export const PRICING_PLANS: PricingPlan[] = [
+  { id: 'p1', name: 'Free', price: '0', period: 'forever', features: ['2 Practice tests / day', 'Basic AI feedback', 'Standard support'] },
+  { id: 'p2', name: 'Pro', price: '29', period: 'month', features: ['Unlimited practice tests', 'Advanced AI rewriter', 'Detailed performance charts', 'Priority support'], recommended: true },
+  { id: 'p3', name: 'Premium', price: '199', period: 'year', features: ['All Pro features', 'personalized feedback from experts', '1-on-1 speaking sessions mock', 'Exclusive webinar access'] },
+];
+
+export const USER_PROFILE = {
+  name: 'John Doe',
+  email: 'john.doe@example.com',
+  avatar: '',
+  targetScore: 8.5,
+  targetDate: '2024-06-15',
+  membership: 'Free Trial',
+  joinedDate: '2024-01-10'
+};

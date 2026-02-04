@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Layout, Menu, Avatar, Badge, Breadcrumb, theme } from 'antd';
+import { Layout, Menu, Avatar, Badge, Breadcrumb, theme, Button, Drawer } from 'antd';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Home,
@@ -13,7 +13,10 @@ import {
   LifeBuoy,
   User,
   Bell,
+  Menu as MenuIcon,
+  X
 } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { SIDEBAR_MENU } from '../mockData';
 
 const { Header, Sider, Content } = Layout;
@@ -31,29 +34,75 @@ const iconMap: Record<string, React.ReactNode> = {
   'sample-reports': <BarChart2 size={18} />,
   lessons: <BookOpen size={18} />,
   pricing: <CreditCard size={18} />,
+  reading: <BookOpen size={18} />,
+  profile: <User size={18} />,
   support: <LifeBuoy size={18} />,
 };
+
 const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileVisible, setMobileVisible] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   theme.useToken();
 
   const menuItems = SIDEBAR_MENU.map((item) => ({
-    key: item.key === 'home' ? '/' : `/${item.key}`,
+    key: item.key === 'home' ? '/dashboard' : `/dashboard/${item.key}`,
     icon: iconMap[item.key] || <FileText size={18} />,
     label: item.label,
   }));
 
   const currentPath = location.pathname;
 
+  const SidebarContent = (
+    <>
+      <div style={{ height: 64, margin: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <img src="/logo.png" alt="IELTSIFY Logo" style={{ height: '32px' }} />
+      </div>
+      <Menu
+        theme="light"
+        mode="inline"
+        selectedKeys={[currentPath]}
+        items={menuItems.map(item => ({
+          ...item,
+          label: (
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', width: '100%' }}>
+              {currentPath === item.key && (
+                <motion.div
+                  layoutId="sidebar-slider"
+                  style={{
+                    position: 'absolute',
+                    left: -24,
+                    width: '4px',
+                    height: '24px',
+                    background: '#6B46C1',
+                    borderRadius: '0 4px 4px 0'
+                  }}
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                />
+              )}
+              <span style={{ fontWeight: currentPath === item.key ? 600 : 400 }}>{item.label}</span>
+            </div>
+          )
+        }))}
+        onClick={({ key }) => {
+          navigate(key);
+          setMobileVisible(false);
+        }}
+        style={{ borderRight: 0 }}
+      />
+    </>
+  );
+
   return (
     <Layout style={{ minHeight: '100vh' }}>
+      {/* Desktop Sider */}
       <Sider
         breakpoint="lg"
         collapsedWidth="0"
         onBreakpoint={(broken) => {
-          console.log(broken);
+          setIsMobile(broken);
         }}
         onCollapse={(collapsed) => {
           setCollapsed(collapsed);
@@ -66,23 +115,37 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           height: '100vh',
           left: 0,
           zIndex: 100,
+          display: isMobile ? 'none' : 'block'
         }}
       >
-        <div style={{ height: 64, margin: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <h1 style={{ color: '#6B46C1', margin: 0, fontSize: '24px', fontWeight: 'bold' }}>IELTSIFY</h1>
-        </div>
-        <Menu
-          theme="light"
-          mode="inline"
-          selectedKeys={[currentPath]}
-          items={menuItems}
-          onClick={({ key }) => navigate(key)}
-          style={{ borderRight: 0 }}
-        />
+        {SidebarContent}
       </Sider>
-      <Layout style={{ marginLeft: collapsed ? 0 : 240, transition: 'margin-left 0.2s' }}>
+
+      {/* Mobile Drawer */}
+      <Drawer
+        placement="left"
+        closable={false}
+        onClose={() => setMobileVisible(false)}
+        open={mobileVisible}
+        width={240}
+        bodyStyle={{ padding: 0 }}
+      >
+        <div style={{ position: 'absolute', right: 16, top: 20, zIndex: 10 }}>
+          <Button 
+            type="text" 
+            icon={<X size={20} />} 
+            onClick={() => setMobileVisible(false)} 
+          />
+        </div>
+        {SidebarContent}
+      </Drawer>
+
+      <Layout style={{ 
+        marginLeft: isMobile ? 0 : (collapsed ? 0 : 240), 
+        transition: 'margin-left 0.2s' 
+      }}>
         <Header style={{ 
-          padding: '0 24px', 
+          padding: isMobile ? '0 16px' : '0 24px', 
           background: '#fff', 
           display: 'flex', 
           alignItems: 'center', 
@@ -93,15 +156,25 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           zIndex: 99,
           width: '100%',
         }}>
-          <div>
-            <Breadcrumb
-               items={[
-                { title: 'Dashboard' },
-                { title: currentPath === '/' ? 'Home' : currentPath.substring(1).charAt(0).toUpperCase() + currentPath.substring(2) },
-              ]}
-            />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {isMobile && (
+              <Button
+                type="text"
+                icon={<MenuIcon size={20} />}
+                onClick={() => setMobileVisible(true)}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              />
+            )}
+            <div className={isMobile ? 'mobile-hide' : ''}>
+              <Breadcrumb
+                items={[
+                  { title: currentPath === '/' ? 'Home' : (currentPath.startsWith('/dashboard') ? 'Dashboard' : (currentPath.substring(1).charAt(0).toUpperCase() + currentPath.substring(2))) },
+                  { title: currentPath === '/dashboard' ? 'Overview' : (currentPath.split('/').pop()?.charAt(0).toUpperCase() || '') + (currentPath.split('/').pop()?.substring(1) || '') },
+                ]}
+              />
+            </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '12px' : '20px' }}>
             <Badge dot color="#6B46C1">
               <Bell size={20} style={{ cursor: 'pointer', color: '#64748b' }} />
             </Badge>
@@ -113,7 +186,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         </Header>
         <Content
           style={{
-            margin: '24px',
+            margin: isMobile ? '16px' : '24px',
             minHeight: 280,
             background: 'transparent',
           }}

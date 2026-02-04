@@ -1,11 +1,59 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { ConfigProvider } from 'antd';
+import { AnimatePresence } from 'framer-motion';
 import AppLayout from './components/AppLayout';
 import DashboardHome from './pages/DashboardHome';
 import WritingPage from './pages/WritingPage';
 import SpeakingPage from './pages/SpeakingPage';
 import ReportsPage from './pages/ReportsPage';
+import ReadingPage from './pages/ReadingPage';
+import PricingPage from './pages/PricingPage';
+import ProfilePage from './pages/ProfilePage';
+import LandingPage from './pages/LandingPage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import PageTransition from './components/PageTransition';
+
+const DashboardLayout: React.FC = () => {
+  const location = useLocation();
+  return (
+    <AppLayout>
+      <PageTransition key={location.pathname}>
+        <Outlet />
+      </PageTransition>
+    </AppLayout>
+  );
+};
+
+const AnimateRoutes: React.FC = () => {
+  const location = useLocation();
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        {/* Public Routes */}
+        <Route path="/" element={<PageTransition><LandingPage /></PageTransition>} />
+        <Route path="/login" element={<PageTransition><LoginPage /></PageTransition>} />
+        <Route path="/register" element={<PageTransition><RegisterPage /></PageTransition>} />
+
+        {/* Protected Dashboard Routes */}
+        <Route path="/dashboard" element={<DashboardLayout />}>
+          <Route index element={<DashboardHome />} />
+          <Route path="home" element={<Navigate to="/dashboard" replace />} />
+          <Route path="writing" element={<WritingPage />} />
+          <Route path="speaking" element={<SpeakingPage />} />
+          <Route path="reports" element={<ReportsPage />} />
+          <Route path="reading" element={<ReadingPage />} />
+          <Route path="pricing" element={<PricingPage />} />
+          <Route path="profile" element={<ProfilePage />} />
+        </Route>
+
+        {/* Catch-all */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </AnimatePresence>
+  );
+};
 
 const App: React.FC = () => {
   return (
@@ -13,34 +61,21 @@ const App: React.FC = () => {
       theme={{
         token: {
           colorPrimary: '#6B46C1',
-          borderRadius: 8,
-          fontFamily: 'Inter, system-ui, Avenir, Helvetica, Arial, sans-serif',
+          borderRadius: 12,
+          fontFamily: "'Plus Jakarta Sans', Inter, system-ui, sans-serif",
         },
         components: {
           Layout: {
-            bodyBg: '#f5f7fa',
+            bodyBg: '#0f172a',
           },
         },
       }}
     >
       <BrowserRouter>
-        <AppLayout>
-          <Routes>
-            <Route path="/" element={<DashboardHome />} />
-            <Route path="/home" element={<Navigate to="/" replace />} />
-            <Route path="/writing" element={<WritingPage />} />
-            <Route path="/speaking" element={<SpeakingPage />} />
-            <Route path="/reports" element={<ReportsPage />} />
-            {/* Additional routes will be added here */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </AppLayout>
+        <AnimateRoutes />
       </BrowserRouter>
     </ConfigProvider>
   );
 };
-
-
-
 
 export default App;
