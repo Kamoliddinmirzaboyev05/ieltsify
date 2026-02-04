@@ -53,7 +53,7 @@ const RegisterPage: React.FC = () => {
         <Link to="/" style={{ 
           display: 'flex', 
           alignItems: 'center', 
-          color: 'rgba(255,255,255,0.6)', 
+          color: '#64748b', 
           textDecoration: 'none',
           marginBottom: '32px',
           width: 'fit-content'
@@ -74,10 +74,10 @@ const RegisterPage: React.FC = () => {
             <Link to="/" style={{ display: 'inline-block', marginBottom: '24px' }}>
               <img src="/logo.png" alt="IELTSIFY Logo" style={{ height: '40px' }} />
             </Link>
-            <Title level={2} style={{ color: 'white', margin: 0, fontWeight: 800, fontSize: '32px', letterSpacing: '-1px' }}>
+            <Title level={2} style={{ color: '#0f172a', margin: 0, fontWeight: 800, fontSize: '32px', letterSpacing: '-1px' }}>
               Create an account
             </Title>
-            <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: '16px' }}>
+            <Text style={{ color: '#64748b', fontSize: '16px' }}>
               Join 50,000+ students mastering IELTS today
             </Text>
           </div>
@@ -91,16 +91,16 @@ const RegisterPage: React.FC = () => {
           >
             <Form.Item
               name="fullname"
-              label={<Text style={{ color: 'rgba(255,255,255,0.9)', fontWeight: 600 }}>Full Name</Text>}
+              label={<Text style={{ color: '#475569', fontWeight: 600 }}>Full Name</Text>}
               rules={[{ required: true, message: 'Please enter your full name' }]}
             >
               <Input 
-                prefix={<User size={18} style={{ color: 'rgba(255,255,255,0.3)', marginRight: '8px' }} />} 
+                prefix={<User size={18} style={{ color: '#94a3b8', marginRight: '8px' }} />} 
                 placeholder="John Doe" 
                 style={{ 
-                  backgroundColor: 'rgba(255,255,255,0.03)', 
-                  border: '1px solid rgba(255,255,255,0.1)', 
-                  color: 'white',
+                  backgroundColor: '#ffffff', 
+                  border: '1px solid #e2e8f0', 
+                  color: '#1e293b',
                   borderRadius: '12px',
                   height: '54px'
                 }} 
@@ -109,16 +109,16 @@ const RegisterPage: React.FC = () => {
 
             <Form.Item
               name="email"
-              label={<Text style={{ color: 'rgba(255,255,255,0.9)', fontWeight: 600 }}>Email Address</Text>}
+              label={<Text style={{ color: '#475569', fontWeight: 600 }}>Email Address</Text>}
               rules={[{ required: true, message: 'Please enter your email' }, { type: 'email', message: 'Please enter a valid email' }]}
             >
               <Input 
-                prefix={<Mail size={18} style={{ color: 'rgba(255,255,255,0.3)', marginRight: '8px' }} />} 
+                prefix={<Mail size={18} style={{ color: '#94a3b8', marginRight: '8px' }} />} 
                 placeholder="name@example.com" 
                 style={{ 
-                  backgroundColor: 'rgba(255,255,255,0.03)', 
-                  border: '1px solid rgba(255,255,255,0.1)', 
-                  color: 'white',
+                  backgroundColor: '#ffffff', 
+                  border: '1px solid #e2e8f0', 
+                  color: '#1e293b',
                   borderRadius: '12px',
                   height: '54px'
                 }} 
@@ -127,16 +127,16 @@ const RegisterPage: React.FC = () => {
 
             <Form.Item
               name="password"
-              label={<Text style={{ color: 'rgba(255,255,255,0.9)', fontWeight: 600 }}>Password</Text>}
+              label={<Text style={{ color: '#475569', fontWeight: 600 }}>Password</Text>}
               rules={[{ required: true, message: 'Please enter your password' }, { min: 8, message: 'Password must be at least 8 characters' }]}
             >
               <Input.Password 
-                prefix={<Lock size={18} style={{ color: 'rgba(255,255,255,0.3)', marginRight: '8px' }} />} 
+                prefix={<Lock size={18} style={{ color: '#94a3b8', marginRight: '8px' }} />} 
                 placeholder="••••••••" 
                 style={{ 
-                  backgroundColor: 'rgba(255,255,255,0.03)', 
-                  border: '1px solid rgba(255,255,255,0.1)', 
-                  color: 'white',
+                  backgroundColor: '#ffffff', 
+                  border: '1px solid #e2e8f0', 
+                  color: '#1e293b',
                   borderRadius: '12px',
                   height: '54px'
                 }} 
@@ -144,8 +144,8 @@ const RegisterPage: React.FC = () => {
             </Form.Item>
 
             <Form.Item name="agreement" valuePropName="checked" rules={[{ validator: (_: any, value: boolean) => value ? Promise.resolve() : Promise.reject(new Error('Should accept agreement')) }]} style={{ marginBottom: '32px' }}>
-              <Checkbox style={{ color: 'rgba(255,255,255,0.5)' }}>
-                I agree to the <Link to="/terms" style={{ color: '#8b5cf6', fontWeight: 600 }}>Terms of Service</Link> and <Link to="/privacy" style={{ color: '#8b5cf6', fontWeight: 600 }}>Privacy Policy</Link>
+              <Checkbox style={{ color: '#64748b' }}>
+                I agree to the <Link to="/terms" style={{ color: '#10b981', fontWeight: 600 }}>Terms of Service</Link> and <Link to="/privacy" style={{ color: '#10b981', fontWeight: 600 }}>Privacy Policy</Link>
               </Checkbox>
             </Form.Item>
 
@@ -166,7 +166,7 @@ const RegisterPage: React.FC = () => {
               </Button>
             </Form.Item>
 
-            <Divider style={{ borderColor: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.3)', fontSize: '13px', fontWeight: 600 }}>OR SIGN UP WITH</Divider>
+            <Divider style={{ borderColor: '#e2e8f0', color: '#94a3b8', fontSize: '13px', fontWeight: 600 }}>OR SIGN UP WITH</Divider>
 
             <Row gutter={16}>
               <Col span={12}>
@@ -175,9 +175,9 @@ const RegisterPage: React.FC = () => {
                   style={{ 
                     height: '54px', 
                     borderRadius: '12px', 
-                    backgroundColor: 'rgba(255,255,255,0.03)', 
-                    border: '1px solid rgba(255,255,255,0.1)', 
-                    color: 'white',
+                    backgroundColor: '#ffffff', 
+                    border: '1px solid #e2e8f0', 
+                    color: '#475569',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -193,9 +193,9 @@ const RegisterPage: React.FC = () => {
                   style={{ 
                     height: '54px', 
                     borderRadius: '12px', 
-                    backgroundColor: 'rgba(255,255,255,0.03)', 
-                    border: '1px solid rgba(255,255,255,0.1)', 
-                    color: 'white',
+                    backgroundColor: '#ffffff', 
+                    border: '1px solid #e2e8f0', 
+                    color: '#475569',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -210,8 +210,8 @@ const RegisterPage: React.FC = () => {
         </Card>
 
         <div style={{ textAlign: 'center', marginTop: '32px' }}>
-          <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: '15px' }}>
-            Already have an account? <Link to="/login" style={{ color: '#8b5cf6', fontWeight: 700 }}>Sign in</Link>
+          <Text style={{ color: '#64748b', fontSize: '15px' }}>
+            Already have an account? <Link to="/login" style={{ color: '#10b981', fontWeight: 700 }}>Sign in</Link>
           </Text>
         </div>
       </motion.div>

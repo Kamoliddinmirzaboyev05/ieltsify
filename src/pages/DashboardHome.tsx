@@ -47,7 +47,7 @@ const DashboardHome: React.FC = () => {
       {/* Stats Cards */}
       <Row gutter={[isMobile ? 12 : 24, isMobile ? 12 : 24]}>
         <Col xs={12} sm={12} lg={6}>
-          <Card style={{ borderRadius: '16px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }} bodyStyle={{ padding: isMobile ? '16px' : '24px' }}>
+          <Card style={{ borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }} bodyStyle={{ padding: isMobile ? '16px' : '24px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
               <Text strong type="secondary" style={{ fontSize: '10px', textTransform: 'uppercase' }}>Total Tests</Text>
               <div style={{ padding: '6px', backgroundColor: '#f0fdf4', borderRadius: '10px' }}>
@@ -59,7 +59,7 @@ const DashboardHome: React.FC = () => {
           </Card>
         </Col>
         <Col xs={12} sm={12} lg={6}>
-          <Card style={{ borderRadius: '16px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }} bodyStyle={{ padding: isMobile ? '16px' : '24px' }}>
+          <Card style={{ borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }} bodyStyle={{ padding: isMobile ? '16px' : '24px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
               <Text strong type="secondary" style={{ fontSize: '10px', textTransform: 'uppercase' }}>Best Score</Text>
               <div style={{ padding: '6px', backgroundColor: '#fff1f2', borderRadius: '10px' }}>
@@ -71,7 +71,7 @@ const DashboardHome: React.FC = () => {
           </Card>
         </Col>
         <Col xs={12} sm={12} lg={6}>
-          <Card style={{ borderRadius: '16px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }} bodyStyle={{ padding: isMobile ? '16px' : '24px' }}>
+          <Card style={{ borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }} bodyStyle={{ padding: isMobile ? '16px' : '24px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
               <Text strong type="secondary" style={{ fontSize: '10px', textTransform: 'uppercase' }}>Weak Area</Text>
               <div style={{ padding: '6px', backgroundColor: '#fff7ed', borderRadius: '10px' }}>
@@ -83,7 +83,7 @@ const DashboardHome: React.FC = () => {
           </Card>
         </Col>
         <Col xs={12} sm={12} lg={6}>
-          <Card style={{ borderRadius: '16px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }} bodyStyle={{ padding: isMobile ? '16px' : '24px' }}>
+          <Card style={{ borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }} bodyStyle={{ padding: isMobile ? '16px' : '24px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
               <Text strong type="secondary" style={{ fontSize: '10px', textTransform: 'uppercase' }}>Strong Skill</Text>
               <div style={{ padding: '6px', backgroundColor: '#f0fdf4', borderRadius: '10px' }}>
@@ -99,12 +99,12 @@ const DashboardHome: React.FC = () => {
       {/* Hero Section */}
       <Card
         style={{
-          background: 'linear-gradient(90deg, #3b82f6 0%, #2dd4bf 100%)',
+          background: 'linear-gradient(90deg, #10b981 0%, #3b82f6 100%)',
           borderRadius: '24px',
           border: 'none',
           color: 'white',
           position: 'relative',
-          boxShadow: '0 10px 30px rgba(59, 130, 246, 0.2)'
+          boxShadow: '0 10px 30px rgba(16, 185, 129, 0.2)'
         }}
         bodyStyle={{ padding: isMobile ? '20px' : '32px' }}
       >
@@ -243,7 +243,7 @@ const DashboardHome: React.FC = () => {
       <Row gutter={[24, 24]}>
         {/* Left: Activity */}
         <Col xs={24} lg={16}>
-          <Card style={{ borderRadius: '24px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.03)', height: '100%' }} bodyStyle={{ padding: isMobile ? '16px' : '24px' }}>
+          <Card style={{ borderRadius: '24px', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.03)', height: '100%' }} bodyStyle={{ padding: isMobile ? '16px' : '24px' }}>
             <div style={{ 
               display: 'flex', 
               flexDirection: isMobile ? 'column' : 'row',
@@ -312,7 +312,7 @@ const DashboardHome: React.FC = () => {
 
         {/* Right: Target Score */}
         <Col xs={24} lg={8}>
-          <Card style={{ borderRadius: '24px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.03)', height: '100%' }} bodyStyle={{ padding: isMobile ? '16px' : '24px' }}>
+          <Card style={{ borderRadius: '24px', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.03)', height: '100%' }} bodyStyle={{ padding: isMobile ? '16px' : '24px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
               <div>
                 <Title level={4} style={{ margin: 0, fontSize: isMobile ? '18px' : '20px' }}>Target Score</Title>

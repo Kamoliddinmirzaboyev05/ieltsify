@@ -76,7 +76,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                     left: -24,
                     width: '4px',
                     height: '24px',
-                    background: '#6B46C1',
+                    background: '#10b981',
                     borderRadius: '0 4px 4px 0'
                   }}
                   transition={{ type: "spring", stiffness: 300, damping: 30 }}
@@ -175,12 +175,12 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '12px' : '20px' }}>
-            <Badge dot color="#6B46C1">
+            <Badge dot color="#10b981">
               <Bell size={20} style={{ cursor: 'pointer', color: '#64748b' }} />
             </Badge>
             <Avatar 
               icon={<User size={20} />} 
-              style={{ backgroundColor: '#f3e8ff', color: '#6B46C1', cursor: 'pointer' }} 
+              style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)', color: '#10b981', cursor: 'pointer' }} 
             />
           </div>
         </Header>

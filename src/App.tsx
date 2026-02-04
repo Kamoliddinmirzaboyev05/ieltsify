@@ -60,14 +60,20 @@ const App: React.FC = () => {
     <ConfigProvider
       theme={{
         token: {
-          colorPrimary: '#6B46C1',
-          borderRadius: 12,
+          colorPrimary: '#10b981',
+          borderRadius: 16,
           fontFamily: "'Plus Jakarta Sans', Inter, system-ui, sans-serif",
+          colorBgBase: '#ffffff',
+          colorTextBase: '#1e293b',
         },
         components: {
           Layout: {
-            bodyBg: '#0f172a',
+            bodyBg: '#f8fafc',
+            headerBg: '#ffffff',
           },
+          Card: {
+            borderRadiusLG: 20,
+          }
         },
       }}
     >
