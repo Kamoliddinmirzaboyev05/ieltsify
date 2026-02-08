@@ -28,6 +28,7 @@ export const SIDEBAR_MENU: SidebarMenuItem[] = [
   { key: 'rewriter', label: 'Rewriter' },
   { key: 'sample-reports', label: 'Sample Reports' },
   { key: 'lessons', label: 'Lessons' },
+  { key: 'test-builder', label: 'Test Builder' },
   { key: 'pricing', label: 'Pricing' },
   { key: 'profile', label: 'Profile' },
   { key: 'support', label: 'Support' },
@@ -93,8 +94,198 @@ export const WRITING_TOPICS: WritingTopic[] = [
 export interface SpeakingQuestion {
   id: string;
   part: 1 | 2 | 3;
+  topic?: string;
   question: string;
+  preparationTime?: number; // seconds
+  speakingTime?: number; // seconds
+  cueCardPoints?: string[];
 }
+
+export interface SpeakingTest {
+  id: string;
+  title: string;
+  description: string;
+  part1Topics: {
+    topic: string;
+    questions: string[];
+  }[];
+  part2: {
+    topic: string;
+    cueCard: string;
+    points: string[];
+    preparationTime: number;
+    speakingTime: number;
+  };
+  part3: {
+    topic: string;
+    questions: string[];
+  };
+}
+
+export const SPEAKING_TESTS: SpeakingTest[] = [
+  {
+    id: 'test1',
+    title: 'IELTS Speaking Full Mock Test #1',
+    description: 'Home & Accommodation, Public Transport, Celebrities, Good News',
+    part1Topics: [
+      {
+        topic: 'Home & Accommodation',
+        questions: [
+          'Do you live in a house or an apartment?',
+          'Which is your favorite room in your home? Why?',
+          'How long have you lived there?',
+          'If you could change anything about your home, what would it be?',
+        ],
+      },
+      {
+        topic: 'Public Transport',
+        questions: [
+          'What kind of public transport do you usually take?',
+          'Is it expensive to travel by bus or train in your town?',
+          'Did you take public transport when you were a child?',
+          'How could public transport in your city be improved?',
+        ],
+      },
+      {
+        topic: 'Celebrities',
+        questions: [
+          'Who is your favorite celebrity in your country?',
+          'Would you like to be a celebrity? Why/why not?',
+          'Do you think celebrities should have a private life?',
+        ],
+      },
+    ],
+    part2: {
+      topic: 'A piece of good news',
+      cueCard: 'Describe a time when you received a piece of good news.',
+      points: [
+        'What the news was',
+        'Who told you this news',
+        'When and where it happened',
+        'And explain how you felt when you heard this news',
+      ],
+      preparationTime: 60,
+      speakingTime: 120,
+    },
+    part3: {
+      topic: 'Communication & News',
+      questions: [
+        'Is it better to deliver good news face-to-face or via a phone call?',
+        'Why do some people prefer to share their good news on social media?',
+        'Do you think the media focuses too much on negative news instead of positive stories?',
+        'How has the way people receive news changed compared to several decades ago?',
+        'Does the government have a responsibility to filter news for the public?',
+      ],
+    },
+  },
+  {
+    id: 'test2',
+    title: 'IELTS Speaking Full Mock Test #2',
+    description: 'Work/Study, Weather, Robots, Historic Building',
+    part1Topics: [
+      {
+        topic: 'Work or Study',
+        questions: [
+          'Are you a student or do you work?',
+          'Why did you choose that subject/job?',
+          'Is it a popular subject/job in your country?',
+        ],
+      },
+      {
+        topic: 'Weather',
+        questions: [
+          'What is the weather like in your town?',
+          'What is your favorite season? Why?',
+          'Does the weather ever affect your mood?',
+          'Do you prefer a cold or a hot climate?',
+        ],
+      },
+      {
+        topic: 'Robots',
+        questions: [
+          'Are you interested in robots?',
+          'Would you like to have a robot at home to help with chores?',
+          'Do you think robots will replace humans in many jobs in the future?',
+        ],
+      },
+    ],
+    part2: {
+      topic: 'An interesting historic building',
+      cueCard: 'Describe an interesting historic building you have visited.',
+      points: [
+        'Where it is located',
+        'What it looks like',
+        'What you did there',
+        'And explain why you think this building is important to your country\'s history',
+      ],
+      preparationTime: 60,
+      speakingTime: 120,
+    },
+    part3: {
+      topic: 'History & Heritage',
+      questions: [
+        'Why is it important to preserve old buildings?',
+        'Should the government finance the restoration of historical sites or spend money on new infrastructure?',
+        'How can teachers make history more interesting for students?',
+        'Do you think children should visit museums as part of their school curriculum?',
+        'Is it possible for a country to move forward without knowing its history?',
+      ],
+    },
+  },
+  {
+    id: 'test3',
+    title: 'IELTS Speaking Full Mock Test #3',
+    description: 'Hometown, Concentration, Books, Beauty & Appearance',
+    part1Topics: [
+      {
+        topic: 'Hometown',
+        questions: [
+          'Where is your hometown?',
+          'What do you like most about it?',
+          'Are there any tourist attractions in your hometown?',
+        ],
+      },
+      {
+        topic: 'Concentration',
+        questions: [
+          'Is it easy for you to concentrate on a task?',
+          'What do you do when you find it hard to focus?',
+          'Does loud music help or hinder your concentration?',
+        ],
+      },
+      {
+        topic: 'Books',
+        questions: [
+          'Do you enjoy reading books?',
+          'What was your favorite book when you were a child?',
+          'Do you prefer physical books or e-books?',
+        ],
+      },
+    ],
+    part2: {
+      topic: 'A beautiful or handsome person',
+      cueCard: 'Describe a person you know who is very beautiful or handsome.',
+      points: [
+        'Who this person is',
+        'How you know them',
+        'What they look like',
+        'And explain why you think this person is attractive',
+      ],
+      preparationTime: 60,
+      speakingTime: 120,
+    },
+    part3: {
+      topic: 'Beauty & Appearance',
+      questions: [
+        'Do you think people focus too much on physical appearance nowadays?',
+        'How has the definition of beauty changed over the last few decades?',
+        'Is it important for employees to look professional in the workplace?',
+        'Should advertisements use real people instead of highly edited models?',
+        'To what extent does society\'s obsession with beauty affect young people\'s mental health?',
+      ],
+    },
+  },
+];
 
 export const SPEAKING_QUESTIONS: SpeakingQuestion[] = [
   { id: '1', part: 1, question: 'Tell me about your hometown.' },
@@ -169,27 +360,27 @@ export interface SpeakingCollection {
 
 export const SPEAKING_COLLECTIONS: SpeakingCollection[] = [
   {
-    id: 's1',
-    title: 'Personal qualities, News',
-    description: 'Complete IELTS Speaking test with three parts. The test will take approximately 11-14 minutes.',
+    id: 'test1',
+    title: 'Home & Accommodation, Public Transport, Celebrities',
+    description: 'Complete IELTS Speaking test with three parts. Topics: Home, Public Transport, Celebrities, and Good News. The test will take approximately 11-14 minutes.',
     duration: '14 mins',
-    attempts: 2,
+    attempts: 0,
     recommended: true,
   },
   {
-    id: 's2',
-    title: 'Walking, Films',
-    description: 'Complete IELTS Speaking test with three parts. The test will take approximately 11-14 minutes.',
+    id: 'test2',
+    title: 'Work/Study, Weather, Robots, Historic Building',
+    description: 'Complete IELTS Speaking test with three parts. Topics: Work/Study, Weather, Robots, and Historic Buildings. The test will take approximately 11-14 minutes.',
     duration: '14 mins',
-    attempts: 2,
+    attempts: 0,
     recommended: true,
   },
   {
-    id: 's3',
-    title: 'Travelling by plane, A person who has won a prize, award or medal',
-    description: 'Complete IELTS Speaking test with three parts. The test will take approximately 11-14 minutes.',
+    id: 'test3',
+    title: 'Hometown, Concentration, Books, Beauty & Appearance',
+    description: 'Complete IELTS Speaking test with three parts. Topics: Hometown, Concentration, Books, and Beauty. The test will take approximately 11-14 minutes.',
     duration: '14 mins',
-    attempts: 2,
+    attempts: 0,
     recommended: true,
   },
   {

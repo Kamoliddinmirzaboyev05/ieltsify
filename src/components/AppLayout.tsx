@@ -14,7 +14,8 @@ import {
   User,
   Bell,
   Menu as MenuIcon,
-  X
+  X,
+  Settings
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { SIDEBAR_MENU } from '../mockData';
@@ -35,6 +36,7 @@ const iconMap: Record<string, React.ReactNode> = {
   lessons: <BookOpen size={18} />,
   pricing: <CreditCard size={18} />,
   reading: <BookOpen size={18} />,
+  'test-builder': <Settings size={18} />,
   profile: <User size={18} />,
   support: <LifeBuoy size={18} />,
 };
@@ -127,8 +129,8 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         closable={false}
         onClose={() => setMobileVisible(false)}
         open={mobileVisible}
-        width={240}
-        bodyStyle={{ padding: 0 }}
+        size="default"
+        styles={{ body: { padding: 0 } }}
       >
         <div style={{ position: 'absolute', right: 16, top: 20, zIndex: 10 }}>
           <Button 

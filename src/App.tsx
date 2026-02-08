@@ -13,6 +13,7 @@ import ProfilePage from './pages/ProfilePage';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import TestBuilder from './pages/TestBuilder';
 import PageTransition from './components/PageTransition';
 
 const DashboardLayout: React.FC = () => {
@@ -44,6 +45,7 @@ const AnimateRoutes: React.FC = () => {
           <Route path="speaking" element={<SpeakingPage />} />
           <Route path="reports" element={<ReportsPage />} />
           <Route path="reading" element={<ReadingPage />} />
+          <Route path="test-builder" element={<TestBuilder />} />
           <Route path="pricing" element={<PricingPage />} />
           <Route path="profile" element={<ProfilePage />} />
         </Route>
