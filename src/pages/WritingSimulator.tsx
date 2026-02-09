@@ -177,8 +177,8 @@ const WritingSimulator: React.FC<WritingSimulatorProps> = ({ taskId, onBack }) =
       });
 
       message.success('Test baholandi!');
-    } catch (error) {
-      message.error('Baholashda xatolik yuz berdi. Iltimos qaytadan urinib ko\'ring.');
+    } catch (error: any) {
+      message.error(error.message || 'Baholashda xatolik yuz berdi. Iltimos qaytadan urinib ko\'ring.');
       console.error('Evaluation error:', error);
       setCurrentStep('task2');
     } finally {

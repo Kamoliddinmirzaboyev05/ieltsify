@@ -3,7 +3,9 @@ import { Card, Typography, Button, Space, Modal, message, Empty, Grid } from 'an
 import { BookOpen, Plus, Volume2, Sparkles } from 'lucide-react';
 import { articleManager, vocabularyManager } from '../services/dataManager';
 import { ttsService } from '../services/ttsService';
+import { sendMessageToGemini } from '../services/aiService';
 import type { Article } from '../types';
+import { useTheme } from '../contexts/ThemeContext';
 
 const { Title, Text, Paragraph } = Typography;
 const { useBreakpoint } = Grid;
@@ -17,12 +19,21 @@ interface ContextMenuPosition {
 const SmartArticlePage: React.FC = () => {
   const screens = useBreakpoint();
   const isMobile = !screens.md;
+  const { isDark } = useTheme();
   
   const [articles, setArticles] = useState<Article[]>([]);
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   const [contextMenu, setContextMenu] = useState<ContextMenuPosition | null>(null);
   const [aiAnalysis, setAiAnalysis] = useState<string>('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [translationData, setTranslationData] = useState<{
+    word: string;
+    definition: string;
+    translation: string;
+    examples: string[];
+    level: string;
+  } | null>(null);
+  const [showTranslationModal, setShowTranslationModal] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -70,26 +81,25 @@ const SmartArticlePage: React.FC = () => {
   };
 
   const handleAddToVocabulary = () => {
-    if (!contextMenu) return;
+    if (!translationData) return;
 
-    const word = contextMenu.selectedText;
-    
     // Check if word already exists
-    const existing = vocabularyManager.search(word);
+    const existing = vocabularyManager.search(translationData.word);
     if (existing.length > 0) {
-      message.info('This word is already in your vocabulary!');
-      setContextMenu(null);
+      message.info('Bu so\'z allaqachon vocabulary da mavjud!');
       return;
     }
 
     vocabularyManager.add({
-      word: word,
-      definition: 'Definition to be added',
-      level: 'B1',
+      word: translationData.word,
+      definition: translationData.definition,
+      level: translationData.level as any,
       masteryLevel: 0,
+      examples: translationData.examples,
     });
 
-    message.success(`"${word}" added to vocabulary!`);
+    message.success(`"${translationData.word}" vocabulary ga qo'shildi!`);
+    setShowTranslationModal(false);
     setContextMenu(null);
   };
 
@@ -98,19 +108,35 @@ const SmartArticlePage: React.FC = () => {
 
     setIsAnalyzing(true);
     
-    // Mock API call - replace with actual translation API
-    setTimeout(() => {
-      const mockDefinition = `"${contextMenu.selectedText}" - A sophisticated word commonly used in academic contexts. This term appears frequently in IELTS reading passages.`;
+    try {
+      const prompt = `Analyze this English word/phrase and provide information in JSON format:
+
+Word/Phrase: "${contextMenu.selectedText}"
+
+Return ONLY a JSON object with this exact structure (no markdown, no extra text):
+{
+  "word": "${contextMenu.selectedText}",
+  "definition": "Clear English definition (1-2 sentences)",
+  "translation": "O'zbek tilidagi tarjima (Uzbek translation)",
+  "examples": ["Example sentence 1", "Example sentence 2"],
+  "level": "A1/A2/B1/B2/C1/C2"
+}
+
+IMPORTANT: Return ONLY the JSON object, nothing else.`;
+
+      const response = await sendMessageToGemini(prompt);
+      const cleanJson = response.replace(/```json|```/gi, '').trim();
+      const data = JSON.parse(cleanJson);
       
-      Modal.info({
-        title: 'Definition & Translation',
-        content: mockDefinition,
-        width: 500,
-      });
-      
-      setIsAnalyzing(false);
+      setTranslationData(data);
+      setShowTranslationModal(true);
       setContextMenu(null);
-    }, 1000);
+    } catch (error) {
+      console.error('Translation error:', error);
+      message.error('Tarjima olishda xatolik yuz berdi');
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   const handleSpeak = () => {
@@ -124,35 +150,40 @@ const SmartArticlePage: React.FC = () => {
 
     setIsAnalyzing(true);
     
-    // Mock AI analysis - replace with actual AI service
-    setTimeout(() => {
-      const analysis = `
-**Article Analysis**
+    try {
+      const prompt = `Analyze this article for IELTS preparation:
 
-**Difficulty Level:** ${selectedArticle.difficulty.toUpperCase()}
+Title: ${selectedArticle.title}
+Content: ${selectedArticle.htmlContent.replace(/<[^>]*>/g, '').substring(0, 1000)}
+
+Provide analysis in this format:
+
+**Difficulty Level:** [difficulty]
 
 **Key Vocabulary:**
-- Sophisticated academic terms
-- Complex sentence structures
-- Advanced linking words
+- List 5-7 important words/phrases
 
 **Main Ideas:**
-1. Introduction to the topic
-2. Supporting arguments
-3. Conclusion and implications
+1. [Main idea 1]
+2. [Main idea 2]
+3. [Main idea 3]
 
 **IELTS Relevance:**
-This article contains vocabulary and structures commonly found in IELTS Academic Reading passages. Focus on understanding the main ideas and supporting details.
+[How this relates to IELTS]
 
 **Recommended Practice:**
-- Identify topic sentences
-- Practice skimming and scanning
-- Note down unfamiliar vocabulary
-      `;
-      
+- [Tip 1]
+- [Tip 2]
+- [Tip 3]`;
+
+      const analysis = await sendMessageToGemini(prompt);
       setAiAnalysis(analysis);
+    } catch (error) {
+      console.error('Analysis error:', error);
+      message.error('Tahlil qilishda xatolik yuz berdi');
+    } finally {
       setIsAnalyzing(false);
-    }, 1500);
+    }
   };
 
   return (
@@ -331,7 +362,7 @@ This article contains vocabulary and structures commonly found in IELTS Academic
             top: contextMenu.y,
             transform: 'translate(-50%, -100%)',
             zIndex: 1000,
-            background: 'white',
+            background: isDark ? '#1e293b' : 'white',
             borderRadius: '12px',
             boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
             padding: '8px',
@@ -346,16 +377,7 @@ This article contains vocabulary and structures commonly found in IELTS Academic
             loading={isAnalyzing}
             style={{ borderRadius: '8px' }}
           >
-            Define
-          </Button>
-          <Button
-            size="small"
-            icon={<Plus size={16} />}
-            onClick={handleAddToVocabulary}
-            type="primary"
-            style={{ borderRadius: '8px' }}
-          >
-            Add to Vocab
+            Tarjima
           </Button>
           <Button
             size="small"
@@ -363,10 +385,123 @@ This article contains vocabulary and structures commonly found in IELTS Academic
             onClick={handleSpeak}
             style={{ borderRadius: '8px' }}
           >
-            Speak
+            Tinglash
           </Button>
         </div>
       )}
+
+      {/* Translation Modal */}
+      <Modal
+        open={showTranslationModal}
+        onCancel={() => setShowTranslationModal(false)}
+        footer={null}
+        width={600}
+        style={{ top: 40 }}
+      >
+        {translationData && (
+          <div style={{ padding: '20px 0' }}>
+            <Title level={3} style={{ marginBottom: '24px', color: '#3b82f6' }}>
+              {translationData.word}
+            </Title>
+
+            <Space direction="vertical" style={{ width: '100%' }} size={20}>
+              {/* Level Badge */}
+              <div>
+                <Text strong style={{ fontSize: '12px', color: '#64748b' }}>DARAJA</Text>
+                <div style={{ marginTop: '8px' }}>
+                  <span style={{
+                    padding: '4px 12px',
+                    backgroundColor: '#eff6ff',
+                    color: '#1e40af',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                  }}>
+                    {translationData.level}
+                  </span>
+                </div>
+              </div>
+
+              {/* Definition */}
+              <div>
+                <Text strong style={{ fontSize: '12px', color: '#64748b' }}>INGLIZCHA TA'RIF</Text>
+                <Paragraph style={{ 
+                  marginTop: '8px', 
+                  fontSize: '15px', 
+                  lineHeight: '1.6',
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc',
+                  padding: '12px',
+                  borderRadius: '8px',
+                }}>
+                  {translationData.definition}
+                </Paragraph>
+              </div>
+
+              {/* Translation */}
+              <div>
+                <Text strong style={{ fontSize: '12px', color: '#64748b' }}>O'ZBEKCHA TARJIMA</Text>
+                <Paragraph style={{ 
+                  marginTop: '8px', 
+                  fontSize: '15px', 
+                  lineHeight: '1.6',
+                  backgroundColor: isDark ? 'rgba(34, 197, 94, 0.1)' : '#f0fdf4',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  color: '#15803d',
+                  fontWeight: '500',
+                }}>
+                  {translationData.translation}
+                </Paragraph>
+              </div>
+
+              {/* Examples */}
+              <div>
+                <Text strong style={{ fontSize: '12px', color: '#64748b' }}>MISOLLAR</Text>
+                <div style={{ marginTop: '8px' }}>
+                  {translationData.examples.map((example, idx) => (
+                    <div
+                      key={idx}
+                      style={{
+                        padding: '10px 12px',
+                        backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : '#fafafa',
+                        borderLeft: '3px solid #3b82f6',
+                        marginBottom: '8px',
+                        borderRadius: '4px',
+                        fontSize: '14px',
+                        fontStyle: 'italic',
+                      }}
+                    >
+                      {example}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
+                <Button
+                  type="primary"
+                  size="large"
+                  icon={<Plus size={18} />}
+                  onClick={handleAddToVocabulary}
+                  block
+                  style={{ borderRadius: '8px', fontWeight: '600' }}
+                >
+                  Vocabulary ga qo'shish
+                </Button>
+                <Button
+                  size="large"
+                  icon={<Volume2 size={18} />}
+                  onClick={() => ttsService.speak(translationData.word)}
+                  style={{ borderRadius: '8px' }}
+                >
+                  Tinglash
+                </Button>
+              </div>
+            </Space>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };

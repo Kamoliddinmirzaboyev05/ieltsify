@@ -152,6 +152,12 @@ IMPORTANT:
 
   try {
     const responseText = await sendMessageToGemini(prompt);
+    
+    // Check if response is an error message
+    if (responseText.startsWith('Sorry')) {
+      throw new Error('API key invalid yoki muammo bor. Iltimos .env faylida API key ni tekshiring va serverni qayta ishga tushiring.');
+    }
+    
     const cleanJson = responseText.replace(/```json|```/gi, '').trim();
     return JSON.parse(cleanJson);
   } catch (error) {
