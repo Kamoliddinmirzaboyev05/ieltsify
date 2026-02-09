@@ -635,12 +635,12 @@ Provide a comprehensive analysis in JSON format:
             <Col xs={24} md={12}>
               <Card title="Key Strengths" style={{ borderRadius: '24px', height: '100%', backgroundColor: '#f0fdf4' }}>
                 <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-                  {finalAnalysis.strengths.map((strength: string, idx: number) => (
+                  {finalAnalysis?.strengths?.map((strength: string, idx: number) => (
                     <div key={idx} style={{ display: 'flex', gap: '12px' }}>
                       <CheckCircle size={20} color="#22c55e" style={{ flexShrink: 0, marginTop: '2px' }} />
                       <Text>{strength}</Text>
                     </div>
-                  ))}
+                  )) || <Text type="secondary">No strengths data available</Text>}
                 </Space>
               </Card>
             </Col>
@@ -648,12 +648,12 @@ Provide a comprehensive analysis in JSON format:
             <Col xs={24} md={12}>
               <Card title="Areas for Improvement" style={{ borderRadius: '24px', height: '100%', backgroundColor: '#fff7ed' }}>
                 <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-                  {finalAnalysis.weaknesses.map((weakness: string, idx: number) => (
+                  {finalAnalysis?.weaknesses?.map((weakness: string, idx: number) => (
                     <div key={idx} style={{ display: 'flex', gap: '12px' }}>
                       <AlertCircle size={20} color="#f59e0b" style={{ flexShrink: 0, marginTop: '2px' }} />
                       <Text>{weakness}</Text>
                     </div>
-                  ))}
+                  )) || <Text type="secondary">No weaknesses data available</Text>}
                 </Space>
               </Card>
             </Col>
@@ -681,14 +681,14 @@ Provide a comprehensive analysis in JSON format:
             <Col xs={24}>
               <Card title="Recommendations" style={{ borderRadius: '24px', backgroundColor: '#faf5ff' }}>
                 <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-                  {finalAnalysis.recommendations.map((rec: string, idx: number) => (
+                  {finalAnalysis?.recommendations?.map((rec: string, idx: number) => (
                     <div key={idx} style={{ display: 'flex', gap: '12px' }}>
                       <div style={{ width: '24px', height: '24px', borderRadius: '50%', backgroundColor: '#a855f7', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '12px', fontWeight: 'bold' }}>
                         {idx + 1}
                       </div>
                       <Text>{rec}</Text>
                     </div>
-                  ))}
+                  )) || <Text type="secondary">No recommendations available</Text>}
                 </Space>
               </Card>
             </Col>

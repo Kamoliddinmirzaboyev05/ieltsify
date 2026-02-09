@@ -63,7 +63,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         <img src="/logo.png" alt="IELTSIFY Logo" style={{ height: '32px' }} />
       </div>
       <Menu
-        theme="light"
+        theme="dark"
         mode="inline"
         selectedKeys={[currentPath]}
         items={menuItems.map(item => ({
@@ -84,15 +84,21 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                   transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 />
               )}
-              <span style={{ fontWeight: currentPath === item.key ? 600 : 400 }}>{item.label}</span>
+              <span style={{ fontWeight: currentPath === item.key ? 600 : 400, color: currentPath === item.key ? '#10b981' : '#94a3b8' }}>{item.label}</span>
             </div>
-          )
+          ),
+          style: {
+            color: currentPath === item.key ? '#10b981' : '#94a3b8'
+          }
         }))}
         onClick={({ key }) => {
           navigate(key);
           setMobileVisible(false);
         }}
-        style={{ borderRight: 0 }}
+        style={{ 
+          borderRight: 0,
+          background: '#0f172a'
+        }}
       />
     </>
   );
@@ -112,12 +118,13 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         theme="light"
         width={240}
         style={{
-          borderRight: '1px solid #f0f0f0',
+          borderRight: '1px solid rgba(16, 185, 129, 0.15)',
           position: 'fixed',
           height: '100vh',
           left: 0,
           zIndex: 100,
-          display: isMobile ? 'none' : 'block'
+          display: isMobile ? 'none' : 'block',
+          background: '#0f172a'
         }}
       >
         {SidebarContent}
@@ -130,13 +137,23 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         onClose={() => setMobileVisible(false)}
         open={mobileVisible}
         size="default"
-        styles={{ body: { padding: 0 } }}
+        styles={{ 
+          body: { 
+            padding: 0,
+            background: '#0f172a'
+          },
+          header: {
+            background: '#0f172a',
+            borderBottom: '1px solid rgba(16, 185, 129, 0.15)'
+          }
+        }}
       >
         <div style={{ position: 'absolute', right: 16, top: 20, zIndex: 10 }}>
           <Button 
             type="text" 
-            icon={<X size={20} />} 
-            onClick={() => setMobileVisible(false)} 
+            icon={<X size={20} color="#94a3b8" />} 
+            onClick={() => setMobileVisible(false)}
+            style={{ color: '#94a3b8' }}
           />
         </div>
         {SidebarContent}
@@ -148,11 +165,11 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       }}>
         <Header style={{ 
           padding: isMobile ? '0 16px' : '0 24px', 
-          background: '#fff', 
+          background: '#0f172a', 
           display: 'flex', 
           alignItems: 'center', 
           justifyContent: 'space-between',
-          borderBottom: '1px solid #f0f0f0',
+          borderBottom: '1px solid rgba(16, 185, 129, 0.15)',
           position: 'sticky',
           top: 0,
           zIndex: 99,
@@ -173,16 +190,19 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                   { title: currentPath === '/' ? 'Home' : (currentPath.startsWith('/dashboard') ? 'Dashboard' : (currentPath.substring(1).charAt(0).toUpperCase() + currentPath.substring(2))) },
                   { title: currentPath === '/dashboard' ? 'Overview' : (currentPath.split('/').pop()?.charAt(0).toUpperCase() || '') + (currentPath.split('/').pop()?.substring(1) || '') },
                 ]}
+                style={{
+                  color: '#94a3b8'
+                }}
               />
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '12px' : '20px' }}>
             <Badge dot color="#10b981">
-              <Bell size={20} style={{ cursor: 'pointer', color: '#64748b' }} />
+              <Bell size={20} style={{ cursor: 'pointer', color: '#94a3b8' }} />
             </Badge>
             <Avatar 
               icon={<User size={20} />} 
-              style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)', color: '#10b981', cursor: 'pointer' }} 
+              style={{ backgroundColor: 'rgba(16, 185, 129, 0.15)', color: '#10b981', cursor: 'pointer' }} 
             />
           </div>
         </Header>

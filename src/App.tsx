@@ -65,16 +65,31 @@ const App: React.FC = () => {
           colorPrimary: '#10b981',
           borderRadius: 16,
           fontFamily: "'Plus Jakarta Sans', Inter, system-ui, sans-serif",
-          colorBgBase: '#ffffff',
-          colorTextBase: '#1e293b',
+          colorBgBase: '#0f172a',
+          colorTextBase: '#ffffff',
         },
         components: {
           Layout: {
-            bodyBg: '#f8fafc',
-            headerBg: '#ffffff',
+            bodyBg: '#0f172a',
+            headerBg: '#0f172a',
+            siderBg: '#0f172a',
           },
           Card: {
             borderRadiusLG: 20,
+          },
+          Menu: {
+            darkItemBg: '#0f172a',
+            darkItemSelectedBg: 'rgba(16, 185, 129, 0.1)',
+            darkItemHoverBg: 'rgba(16, 185, 129, 0.05)',
+            darkItemColor: '#94a3b8',
+            darkItemSelectedColor: '#10b981',
+            darkItemHoverColor: '#10b981',
+          },
+          Breadcrumb: {
+            itemColor: '#94a3b8',
+            linkColor: '#94a3b8',
+            linkHoverColor: '#10b981',
+            separatorColor: '#475569',
           }
         },
       }}

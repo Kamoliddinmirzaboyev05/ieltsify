@@ -1,9 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 :root {
-  --primary: #10b981; /* Premium Emerald Green */
-  --primary-hover: #059669;
-  --secondary: #3b82f6; /* Shifted to blue to complement green */
+  --primary: #3b82f6; /* Blue */
+  --primary-hover: #2563eb;
+  --secondary: #8b5cf6; /* Purple */
   --accent: #f59e0b;
   --bg-light: #f8fafc;
   --card-bg: #ffffff;
@@ -20,15 +20,18 @@ body {
   margin: 0;
   padding: 0;
   font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
-  background-color: var(--bg-light);
-  color: #1e293b;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  color: #f1f5f9;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+  min-height: 100vh;
 }
 
 #root {
   width: 100%;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
 }
 
 .glass-card {
@@ -78,6 +81,10 @@ body {
 }
 
 /* Ant Design Overrides */
+.ant-card {
+  border: 1px solid rgba(16, 185, 129, 0.15) !important;
+}
+
 .ant-btn-primary.gradient-btn {
   background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
   border: none;
@@ -93,16 +100,53 @@ body {
 /* Input Styles */
 .ant-input::placeholder,
 .ant-input-password input::placeholder {
-  color: #94a3b8 !important;
+  color: #64748b !important;
 }
 
 .ant-input-affix-wrapper {
-  background-color: #ffffff !important;
-  border: 1px solid #e2e8f0 !important;
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
 .ant-input-affix-wrapper input {
-  color: #1e293b !important;
+  color: #ffffff !important;
+  background-color: transparent !important;
+}
+
+.ant-input-affix-wrapper:hover,
+.ant-input-affix-wrapper:focus,
+.ant-input-affix-wrapper-focused {
+  border-color: rgba(59, 130, 246, 0.5) !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1) !important;
+}
+
+.ant-input {
+  color: #ffffff !important;
+}
+
+.ant-input:hover,
+.ant-input:focus {
+  border-color: rgba(59, 130, 246, 0.5) !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1) !important;
+}
+
+.ant-checkbox-wrapper {
+  color: #94a3b8 !important;
+}
+
+.ant-checkbox-inner {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.ant-checkbox-checked .ant-checkbox-inner {
+  background-color: #3b82f6 !important;
+  border-color: #3b82f6 !important;
+}
+
+.ant-form-item-explain-error {
+  color: #ef4444 !important;
+  font-size: 12px !important;
 }
 
 
@@ -125,4 +169,80 @@ body {
     margin-left: auto !important;
     margin-right: auto !important;
   }
+}
+
+/* Tailwind-like Utilities */
+.fixed {
+  position: fixed;
+}
+
+.absolute {
+  position: absolute;
+}
+
+.relative {
+  position: relative;
+}
+
+.inset-0 {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+.overflow-hidden {
+  overflow: hidden;
+}
+
+.pointer-events-none {
+  pointer-events: none;
+}
+
+.z-10 {
+  z-index: 10;
+}
+
+.h-full {
+  height: 100%;
+}
+
+.w-full {
+  width: 100%;
+}
+
+.bg-neutral-950 {
+  background-color: #0f172a;
+}
+
+/* Mobile Responsive Improvements */
+@media (max-width: 768px) {
+  body {
+    font-size: 14px;
+  }
+
+  .ant-input,
+  .ant-input-password,
+  .ant-input-affix-wrapper {
+    font-size: 16px !important; /* Prevents zoom on iOS */
+  }
+
+  .ant-btn {
+    font-size: 15px !important;
+  }
+
+  .ant-form-item {
+    margin-bottom: 16px !important;
+  }
+
+  .ant-card {
+    border-radius: 16px !important;
+  }
+}
+
+/* Smooth transitions */
+.ant-input,
+.ant-input-affix-wrapper,
+.ant-btn {
+  transition: all 0.3s ease !important;
 }

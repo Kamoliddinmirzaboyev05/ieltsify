@@ -27,6 +27,7 @@ import {
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import type { Variants } from 'framer-motion';
+import { DotPattern } from '../components/DotPattern';
 
 
 const { Content, Footer } = Layout;
@@ -64,39 +65,51 @@ const LandingPage: React.FC = () => {
   ];
 
   return (
-    <Layout style={{ backgroundColor: '#ffffff', minHeight: '100vh', color: '#1e293b' }}>
-      
-      {/* Floating Centered Header */}
-      <div style={{ 
-        position: 'fixed', 
-        top: '24px', 
-        left: 0, 
-        right: 0, 
-        display: 'flex', 
-        justifyContent: 'center', 
-        zIndex: 1000,
-        padding: '0 20px'
-      }}>
-        <motion.header 
-          initial={{ y: -100, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          style={{ 
-            width: '100%',
-            maxWidth: '1200px',
-            height: '64px',
-            backgroundColor: scrolled ? 'rgba(255, 255, 255, 0.8)' : 'rgba(255, 255, 255, 0.5)', 
-            backdropFilter: 'blur(12px)',
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'space-between',
-            padding: '0 24px',
-            borderRadius: '20px',
-            border: '1px solid #e2e8f0',
-            boxShadow: scrolled ? '0 10px 15px -3px rgba(0, 0, 0, 0.1)' : '0 4px 6px -1px rgba(0, 0, 0, 0.05)'
-          }}
-        >
-          <Link to="/" style={{ display: 'flex', alignItems: 'center' }}>
-            <img src="/logohead.png" alt="IELTSIFY Logo" style={{ height: '32px' }} />
+    <>
+      {/* Fixed DotPattern Background for entire page */}
+      <DotPattern
+        dotSize={2}
+        gap={20}
+        baseColor="#10b981"
+        glowColor="#22d3ee"
+        proximity={150}
+        glowIntensity={1.2}
+        waveSpeed={0.3}
+      />
+
+      <Layout style={{ backgroundColor: 'transparent', minHeight: '100vh', color: '#ffffff', position: 'relative', zIndex: 1 }}>
+        
+        {/* Floating Centered Header */}
+        <div style={{ 
+          position: 'fixed', 
+          top: '24px', 
+          left: 0, 
+          right: 0, 
+          display: 'flex', 
+          justifyContent: 'center', 
+          zIndex: 1000,
+          padding: '0 20px'
+        }}>
+          <motion.header 
+            initial={{ y: -100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            style={{ 
+              width: '100%',
+              maxWidth: '1200px',
+              height: '64px',
+              backgroundColor: scrolled ? 'rgba(10, 10, 10, 0.8)' : 'rgba(10, 10, 10, 0.5)', 
+              backdropFilter: 'blur(12px)',
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'space-between',
+              padding: '0 24px',
+              borderRadius: '20px',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              boxShadow: scrolled ? '0 10px 15px -3px rgba(0, 0, 0, 0.3)' : '0 4px 6px -1px rgba(0, 0, 0, 0.2)'
+            }}
+          >
+            <Link to="/" style={{ display: 'flex', alignItems: 'center' }}>
+              <img src="/logohead.png" alt="IELTSIFY Logo" style={{ height: '32px' }} />
           </Link>
 
           {/* Desktop Navigation */}
@@ -106,7 +119,7 @@ const LandingPage: React.FC = () => {
                 key={item.title} 
                 href={item.href} 
                 style={{ 
-                  color: '#475569', 
+                  color: '#e2e8f0', 
                   fontWeight: 600, 
                   fontSize: '15px',
                   transition: 'color 0.2s'
@@ -118,7 +131,7 @@ const LandingPage: React.FC = () => {
             ))}
             <Space size={12} style={{ marginLeft: '12px' }}>
               <Link to="/login">
-                <Button type="text" style={{ color: '#64748b', fontWeight: 600 }}>Login</Button>
+                <Button type="text" style={{ color: '#e2e8f0', fontWeight: 600 }}>Login</Button>
               </Link>
               <Link to="/register">
                 <Button 
@@ -183,70 +196,80 @@ const LandingPage: React.FC = () => {
 
       <Content>
         {/* Section 1: Hero */}
-        <div style={{
-          padding: '160px 5vw 100px',
-          display: 'flex',
-          flexDirection: 'column',
+        <div style={{ 
+          minHeight: '100vh', 
+          display: 'flex', 
           alignItems: 'center',
-          textAlign: 'center',
-          position: 'relative',
-          overflow: 'hidden'
+          padding: '160px 5vw 100px',
         }}>
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            style={{ maxWidth: '800px', zIndex: 1 }}
-          >
-            <motion.div variants={itemVariants}>
-              <Tag color="success" style={{
-                padding: '4px 16px',
-                borderRadius: '100px',
-                marginBottom: '24px',
-                fontWeight: 700,
-                backgroundColor: 'rgba(16, 185, 129, 0.05)',
-                color: '#10b981',
-                border: '1px solid rgba(16, 185, 129, 0.2)'
-              }}>
-                <Sparkles size={14} style={{ marginRight: '6px' }} /> AI-POWERED PREPARATION
-              </Tag>
-            </motion.div>
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            textAlign: 'center',
+            width: '100%',
+          }}>
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              style={{ maxWidth: '800px', zIndex: 1 }}
+            >
+              <motion.div variants={itemVariants}>
+                <Tag color="success" style={{
+                  padding: '4px 16px',
+                  borderRadius: '100px',
+                  marginBottom: '24px',
+                  fontWeight: 700,
+                  backgroundColor: 'rgba(16, 185, 129, 0.15)',
+                  color: '#10b981',
+                  border: '1px solid rgba(16, 185, 129, 0.3)'
+                }}>
+                  <Sparkles size={14} style={{ marginRight: '6px' }} /> AI-POWERED PREPARATION
+                </Tag>
+              </motion.div>
 
-            <motion.div variants={itemVariants}>
-              <Title style={{
-                color: '#0f172a',
-                fontSize: 'clamp(40px, 8vw, 76px)',
-                lineHeight: 1.1,
-                fontWeight: 900,
-                marginBottom: '24px',
-                letterSpacing: '-2px'
-              }}>
-                Achieve your dream <br /> <span className="gradient-text">IELTS score</span> with AI
-              </Title>
-            </motion.div>
+              <motion.div variants={itemVariants}>
+                <Title style={{
+                  color: '#ffffff',
+                  fontSize: 'clamp(40px, 8vw, 76px)',
+                  lineHeight: 1.1,
+                  fontWeight: 900,
+                  marginBottom: '24px',
+                  letterSpacing: '-2px',
+                  textShadow: '0 2px 20px rgba(0,0,0,0.3)'
+                }}>
+                  Achieve your dream <br /> <span style={{ 
+                    background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text'
+                  }}>IELTS score</span> with AI
+                </Title>
+              </motion.div>
 
-            <motion.div variants={itemVariants}>
-              <Paragraph style={{
-                color: '#64748b',
-                fontSize: 'clamp(16px, 2vw, 20px)',
-                maxWidth: '600px',
-                margin: '0 auto 40px',
-                lineHeight: 1.6
-              }}>
-                IELTSIFY combines advanced artificial intelligence with official Cambridge material to help you master all four IELTS modules faster than ever before.
-              </Paragraph>
-            </motion.div>
+              <motion.div variants={itemVariants}>
+                <Paragraph style={{
+                  color: '#e2e8f0',
+                  fontSize: 'clamp(16px, 2vw, 20px)',
+                  maxWidth: '600px',
+                  margin: '0 auto 40px',
+                  lineHeight: 1.6,
+                  textShadow: '0 1px 10px rgba(0,0,0,0.3)'
+                }}>
+                  IELTSIFY combines advanced artificial intelligence with official Cambridge material to help you master all four IELTS modules faster than ever before.
+                </Paragraph>
+              </motion.div>
 
-            <motion.div variants={itemVariants}>
-              <Space size={20} wrap style={{ justifyContent: 'center' }}>
-                <Link to="/register">
-                  <Button 
-                    size="large" 
-                    type="primary" 
-                    className="gradient-btn"
-                    style={{ 
-                      borderRadius: '16px', 
-                      height: '60px', 
+              <motion.div variants={itemVariants}>
+                <Space size={20} wrap style={{ justifyContent: 'center' }}>
+                  <Link to="/register">
+                    <Button 
+                      size="large" 
+                      type="primary" 
+                      style={{ 
+                        borderRadius: '16px', 
+                        height: '60px', 
                       padding: '0 40px', 
                       fontSize: '18px', 
                       fontWeight: 700 
@@ -264,8 +287,10 @@ const LandingPage: React.FC = () => {
                     padding: '0 32px', 
                     fontSize: '18px', 
                     fontWeight: 600,
-                    border: '1px solid #e2e8f0',
-                    color: '#64748b'
+                    border: '2px solid rgba(255,255,255,0.2)',
+                    color: '#ffffff',
+                    backgroundColor: 'rgba(255,255,255,0.1)',
+                    backdropFilter: 'blur(10px)'
                   }}
                 >
                   Watch Demo
@@ -276,12 +301,12 @@ const LandingPage: React.FC = () => {
             {/* Trusted By / Stats */}
             <motion.div 
               variants={itemVariants}
-              style={{ marginTop: '80px', paddingTop: '40px', borderTop: '1px solid rgba(255,255,255,0.05)' }}
+              style={{ marginTop: '80px', paddingTop: '40px', borderTop: '1px solid rgba(255,255,255,0.1)' }}
             >
-              <Text style={{ color: 'rgba(255, 255, 255, 0.4)', fontSize: '14px', textTransform: 'uppercase', letterSpacing: '2px', fontWeight: 600 }}>
+              <Text style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '14px', textTransform: 'uppercase', letterSpacing: '2px', fontWeight: 600 }}>
                 Trusted by 50,000+ students worldwide
               </Text>
-              <div style={{ display: 'flex', justifyContent: 'center', gap: '40px', marginTop: '32px', opacity: 0.5, flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '40px', marginTop: '32px', color: 'rgba(255,255,255,0.7)', flexWrap: 'wrap' }}>
                 <Space size={12}><Globe size={20} />Global Reach</Space>
                 <Space size={12}><ShieldCheck size={20} />Certified Content</Space>
                 <Space size={12}><Zap size={20} />Instant Results</Space>
@@ -289,12 +314,21 @@ const LandingPage: React.FC = () => {
             </motion.div>
           </motion.div>
         </div>
+      </div>
 
         {/* Section 2: Features */}
-        <div style={{ padding: '100px 5vw', backgroundColor: '#f8fafc' }} id="features">
+        <div style={{ padding: '100px 5vw', backgroundColor: 'rgba(10, 10, 10, 0.5)', backdropFilter: 'blur(10px)' }} id="features">
           <div style={{ textAlign: 'center', marginBottom: '80px' }}>
-            <Title level={2} style={{ color: '#0f172a', fontSize: 'clamp(32px, 5vw, 48px)', fontWeight: 800 }}>Everything you need to <br /><span className="gradient-text">succeed</span></Title>
-            <Paragraph style={{ color: '#64748b', fontSize: '18px', maxWidth: '600px', margin: '0 auto' }}>
+            <Title level={2} style={{ color: '#ffffff', fontSize: 'clamp(32px, 5vw, 48px)', fontWeight: 800 }}>
+              Everything you need to <br />
+              <span style={{ 
+                background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+              }}>succeed</span>
+            </Title>
+            <Paragraph style={{ color: '#94a3b8', fontSize: '18px', maxWidth: '600px', margin: '0 auto' }}>
               Powerful tools designed to help you prepare smarter and faster for your IELTS examination.
             </Paragraph>
           </div>
@@ -314,16 +348,18 @@ const LandingPage: React.FC = () => {
                   transition={{ type: "spring", stiffness: 300 }}
                 >
                   <Card 
-                    className="glass-card"
                     bordered={false}
                     style={{ 
                       height: '100%', 
                       padding: '16px',
-                      backgroundColor: '#ffffff'
+                      backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                      backdropFilter: 'blur(10px)',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      borderRadius: '20px'
                     }}
                   >
                     <div style={{ 
-                      backgroundColor: 'rgba(16, 185, 129, 0.05)', 
+                      backgroundColor: 'rgba(16, 185, 129, 0.15)', 
                       width: '64px', 
                       height: '64px', 
                       borderRadius: '16px', 
@@ -335,8 +371,8 @@ const LandingPage: React.FC = () => {
                     }}>
                       {feature.icon}
                     </div>
-                    <Title level={4} style={{ color: '#0f172a', marginBottom: '16px', fontWeight: 700 }}>{feature.title}</Title>
-                    <Text style={{ color: '#64748b', fontSize: '15px', lineHeight: 1.6 }}>{feature.desc}</Text>
+                    <Title level={4} style={{ color: '#ffffff', marginBottom: '16px', fontWeight: 700 }}>{feature.title}</Title>
+                    <Text style={{ color: '#94a3b8', fontSize: '15px', lineHeight: 1.6 }}>{feature.desc}</Text>
                   </Card>
                 </motion.div>
               </Col>
@@ -345,10 +381,10 @@ const LandingPage: React.FC = () => {
         </div>
 
         {/* Section 3: Pricing Redesign */}
-        <div style={{ padding: '100px 5vw', backgroundColor: '#ffffff' }} id="pricing">
+        <div style={{ padding: '100px 5vw', backgroundColor: 'rgba(10, 10, 10, 0.5)', backdropFilter: 'blur(10px)' }} id="pricing">
           <div style={{ textAlign: 'center', marginBottom: '80px' }}>
-            <Title level={2} style={{ color: '#0f172a', fontSize: 'clamp(32px, 5vw, 48px)', fontWeight: 800 }}>Simple, transparent pricing</Title>
-            <Paragraph style={{ color: '#64748b', fontSize: '18px', maxWidth: '600px', margin: '0 auto' }}>
+            <Title level={2} style={{ color: '#ffffff', fontSize: 'clamp(32px, 5vw, 48px)', fontWeight: 800 }}>Simple, transparent pricing</Title>
+            <Paragraph style={{ color: '#94a3b8', fontSize: '18px', maxWidth: '600px', margin: '0 auto' }}>
               Start for free, upgrade when you're ready to master the test.
             </Paragraph>
           </div>
@@ -367,27 +403,28 @@ const LandingPage: React.FC = () => {
                   <div style={{ 
                     padding: '48px 40px', 
                     borderRadius: '24px', 
-                    background: '#ffffff',
-                    border: p.popular ? '2px solid #10b981' : '1px solid #e2e8f0',
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    backdropFilter: 'blur(10px)',
+                    border: p.popular ? '2px solid #10b981' : '1px solid rgba(255, 255, 255, 0.1)',
                     position: 'relative',
                     height: '100%',
-                    boxShadow: p.popular ? '0 20px 40px rgba(16, 185, 129, 0.1)' : '0 10px 30px rgba(0,0,0,0.03)'
+                    boxShadow: p.popular ? '0 20px 40px rgba(16, 185, 129, 0.2)' : '0 10px 30px rgba(0,0,0,0.1)'
                   }}>
                     {p.popular && (
                       <Tag color="#10b981" style={{ position: 'absolute', top: '-14px', left: '50%', transform: 'translateX(-50%)', borderRadius: '100px', padding: '4px 16px', fontWeight: 700, border: 'none' }}>
                         MOST POPULAR
                       </Tag>
                     )}
-                    <Title level={4} style={{ color: '#0f172a', marginBottom: '8px', fontSize: '24px' }}>{p.name}</Title>
+                    <Title level={4} style={{ color: '#ffffff', marginBottom: '8px', fontSize: '24px' }}>{p.name}</Title>
                     <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: '8px', margin: '32px 0' }}>
-                      <span style={{ fontSize: '48px', fontWeight: 800, color: '#0f172a' }}>{p.price}</span>
-                      <span style={{ color: '#64748b', fontSize: '16px', fontWeight: 600 }}>UZS</span>
+                      <span style={{ fontSize: '48px', fontWeight: 800, color: '#ffffff' }}>{p.price}</span>
+                      <span style={{ color: '#94a3b8', fontSize: '16px', fontWeight: 600 }}>UZS</span>
                     </div>
                     <Space direction="vertical" style={{ width: '100%', marginBottom: '40px', textAlign: 'left' }} size={20}>
                       {[p.stats, 'All IELTS modules', 'AI feedback & scoring', 'Daily progress tracking'].map((text, idx) => (
                         <Space key={idx} size={12}>
                           <CheckCircle2 size={20} color={p.popular ? '#10b981' : '#22c55e'} />
-                          <Text style={{ color: '#475569', fontSize: '15px' }}>{text}</Text>
+                          <Text style={{ color: '#e2e8f0', fontSize: '15px' }}>{text}</Text>
                         </Space>
                       ))}
                     </Space>
@@ -401,8 +438,9 @@ const LandingPage: React.FC = () => {
                         height: '60px', 
                         fontWeight: 700,
                         fontSize: '17px',
-                        border: p.popular ? 'none' : '1px solid #e2e8f0',
-                        color: p.popular ? 'white' : '#0f172a'
+                        border: p.popular ? 'none' : '1px solid rgba(255, 255, 255, 0.2)',
+                        color: p.popular ? 'white' : '#ffffff',
+                        backgroundColor: p.popular ? undefined : 'rgba(255, 255, 255, 0.1)'
                       }}
                     >
                       Get Started
@@ -417,37 +455,38 @@ const LandingPage: React.FC = () => {
 
       {/* Footer overhaul */}
       <Footer style={{ 
-        backgroundColor: '#ffffff', 
+        backgroundColor: 'rgba(10, 10, 10, 0.8)', 
+        backdropFilter: 'blur(10px)',
         padding: '100px 5vw 40px', 
-        borderTop: '1px solid #e2e8f0',
+        borderTop: '1px solid rgba(255, 255, 255, 0.1)',
       }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <Row gutter={[64, 64]}>
             <Col xs={24} lg={10} style={{ textAlign: 'inherit' }} className="mobile-center">
               <img src="/logohead.png" alt="IELTSIFY Logo" style={{ height: '40px', marginBottom: '32px' }} />
-              <Paragraph style={{ color: '#64748b', fontSize: '18px', maxWidth: '400px', lineHeight: 1.6 }}>
+              <Paragraph style={{ color: '#94a3b8', fontSize: '18px', maxWidth: '400px', lineHeight: 1.6 }}>
                 The next generation of IELTS preparation. Achieving your target score has never been this scientific.
               </Paragraph>
             </Col>
             <Col xs={12} sm={6} lg={4}>
-              <Title level={5} style={{ color: '#0f172a', marginBottom: '24px', fontWeight: 700 }}>Platform</Title>
+              <Title level={5} style={{ color: '#ffffff', marginBottom: '24px', fontWeight: 700 }}>Platform</Title>
               <Space direction="vertical" size={16}>
                 {['Listening', 'Reading', 'Writing', 'Speaking'].map(item => (
-                  <Text key={item} style={{ color: '#64748b', cursor: 'pointer' }} className="hover:text-primary transition-colors">{item}</Text>
+                  <Text key={item} style={{ color: '#94a3b8', cursor: 'pointer' }} className="hover:text-primary transition-colors">{item}</Text>
                 ))}
               </Space>
             </Col>
             <Col xs={12} sm={6} lg={4}>
-              <Title level={5} style={{ color: '#0f172a', marginBottom: '24px', fontWeight: 700 }}>Company</Title>
+              <Title level={5} style={{ color: '#ffffff', marginBottom: '24px', fontWeight: 700 }}>Company</Title>
               <Space direction="vertical" size={16}>
                 {['About Us', 'Pricing', 'Blog', 'Contact'].map(item => (
-                  <Text key={item} style={{ color: '#64748b', cursor: 'pointer' }} className="hover:text-primary transition-colors">{item}</Text>
+                  <Text key={item} style={{ color: '#94a3b8', cursor: 'pointer' }} className="hover:text-primary transition-colors">{item}</Text>
                 ))}
               </Space>
             </Col>
             <Col xs={24} sm={12} lg={6}>
-              <Title level={5} style={{ color: '#0f172a', marginBottom: '24px', fontWeight: 700 }}>Contact</Title>
-              <Text style={{ color: '#64748b', display: 'block', marginBottom: '16px' }}>support@ieltsify.ai</Text>
+              <Title level={5} style={{ color: '#ffffff', marginBottom: '24px', fontWeight: 700 }}>Contact</Title>
+              <Text style={{ color: '#94a3b8', display: 'block', marginBottom: '16px' }}>support@ieltsify.ai</Text>
               <Space size={16}>
                 {/* Social icons could go here */}
               </Space>
@@ -456,21 +495,22 @@ const LandingPage: React.FC = () => {
           <div style={{ 
             marginTop: '80px', 
             paddingTop: '40px', 
-            borderTop: '1px solid #e2e8f0',
+            borderTop: '1px solid rgba(255, 255, 255, 0.1)',
             display: 'flex',
             justifyContent: 'space-between',
             flexWrap: 'wrap',
             gap: '20px'
           }}>
-            <Text style={{ color: '#94a3b8' }}>© {new Date().getFullYear()} IELTSIFY AI. All rights reserved.</Text>
+            <Text style={{ color: '#64748b' }}>© {new Date().getFullYear()} IELTSIFY AI. All rights reserved.</Text>
             <Space size={32}>
-              <Text style={{ color: '#94a3b8', cursor: 'pointer' }} className="hover:text-primary transition-colors">Privacy Policy</Text>
-              <Text style={{ color: '#94a3b8', cursor: 'pointer' }} className="hover:text-primary transition-colors">Terms of Use</Text>
+              <Text style={{ color: '#64748b', cursor: 'pointer' }} className="hover:text-primary transition-colors">Privacy Policy</Text>
+              <Text style={{ color: '#64748b', cursor: 'pointer' }} className="hover:text-primary transition-colors">Terms of Use</Text>
             </Space>
           </div>
         </div>
       </Footer>
     </Layout>
+    </>
   );
 };
 
