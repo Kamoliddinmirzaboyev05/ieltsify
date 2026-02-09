@@ -103,3 +103,59 @@ export const evaluateSpeaking = async (question: string, transcript: string): Pr
     throw error;
   }
 };
+
+
+export interface WritingFullTestEvaluation {
+  task1Score: number;
+  task1Feedback: string;
+  task2Score: number;
+  task2Feedback: string;
+  overallScore: number;
+  overallFeedback: string;
+}
+
+export const evaluateFullWritingTest = async (
+  task1Question: string,
+  task1Essay: string,
+  task2Question: string,
+  task2Essay: string
+): Promise<WritingFullTestEvaluation> => {
+  const prompt = `Act as a professional IELTS Writing Examiner. Evaluate both Task 1 and Task 2 essays.
+
+**TASK 1:**
+Question: "${task1Question}"
+Essay: "${task1Essay}"
+
+**TASK 2:**
+Question: "${task2Question}"
+Essay: "${task2Essay}"
+
+Evaluate each task based on IELTS criteria:
+- Task 1: Task Achievement, Coherence & Cohesion, Lexical Resource, Grammatical Range & Accuracy
+- Task 2: Task Response, Coherence & Cohesion, Lexical Resource, Grammatical Range & Accuracy
+
+Return a JSON object STRICTLY with this structure:
+{
+  "task1Score": 7.0,
+  "task1Feedback": "Detailed professional feedback for Task 1 (minimum 150 words). Include specific strengths, weaknesses, and suggestions for improvement.",
+  "task2Score": 7.5,
+  "task2Feedback": "Detailed professional feedback for Task 2 (minimum 200 words). Include specific strengths, weaknesses, and suggestions for improvement.",
+  "overallScore": 7.0,
+  "overallFeedback": "Overall assessment combining both tasks (minimum 100 words). Highlight key areas for improvement."
+}
+
+IMPORTANT:
+- Scores must be realistic IELTS band scores (0.5 increments: 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0)
+- Overall score is the average of Task 1 and Task 2
+- Feedback must be professional, constructive, and specific
+- Do not include any text before or after the JSON`;
+
+  try {
+    const responseText = await sendMessageToGemini(prompt);
+    const cleanJson = responseText.replace(/```json|```/gi, '').trim();
+    return JSON.parse(cleanJson);
+  } catch (error) {
+    console.error("Full Writing Test Evaluation Error:", error);
+    throw error;
+  }
+};

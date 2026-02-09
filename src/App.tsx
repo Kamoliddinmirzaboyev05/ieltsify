@@ -1,19 +1,26 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
-import { ConfigProvider } from 'antd';
+import { ConfigProvider, theme as antdTheme } from 'antd';
 import { AnimatePresence } from 'framer-motion';
+import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import AppLayout from './components/AppLayout';
 import DashboardHome from './pages/DashboardHome';
 import WritingPage from './pages/WritingPage';
 import SpeakingPage from './pages/SpeakingPage';
 import ReportsPage from './pages/ReportsPage';
 import ReadingPage from './pages/ReadingPage';
+import ListeningPage from './pages/ListeningPage';
 import PricingPage from './pages/PricingPage';
 import ProfilePage from './pages/ProfilePage';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
-import TestBuilder from './pages/TestBuilder';
+import VocabularyPage from './pages/VocabularyPage';
+import SmartArticlePage from './pages/SmartArticlePage';
+import ResourceManagerPage from './pages/ResourceManagerPage';
+import ListeningHubPage from './pages/ListeningHubPage';
+import ReadingPassageManager from './pages/ReadingPassageManager';
+import ListeningTestManager from './pages/ListeningTestManager';
 import PageTransition from './components/PageTransition';
 
 const DashboardLayout: React.FC = () => {
@@ -45,7 +52,13 @@ const AnimateRoutes: React.FC = () => {
           <Route path="speaking" element={<SpeakingPage />} />
           <Route path="reports" element={<ReportsPage />} />
           <Route path="reading" element={<ReadingPage />} />
-          <Route path="test-builder" element={<TestBuilder />} />
+          <Route path="listening" element={<ListeningPage />} />
+          <Route path="vocabulary" element={<VocabularyPage />} />
+          <Route path="smart-article" element={<SmartArticlePage />} />
+          <Route path="listening-hub" element={<ListeningHubPage />} />
+          <Route path="resource-manager" element={<ResourceManagerPage />} />
+          <Route path="passage-manager" element={<ReadingPassageManager />} />
+          <Route path="listening-manager" element={<ListeningTestManager />} />
           <Route path="pricing" element={<PricingPage />} />
           <Route path="profile" element={<ProfilePage />} />
         </Route>
@@ -57,25 +70,32 @@ const AnimateRoutes: React.FC = () => {
   );
 };
 
-const App: React.FC = () => {
+const AppContent: React.FC = () => {
+  const { isDark } = useTheme();
+
   return (
     <ConfigProvider
       theme={{
+        algorithm: isDark ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
         token: {
           colorPrimary: '#10b981',
           borderRadius: 16,
           fontFamily: "'Plus Jakarta Sans', Inter, system-ui, sans-serif",
-          colorBgBase: '#0f172a',
-          colorTextBase: '#ffffff',
+          colorBgBase: isDark ? '#0f172a' : '#ffffff',
+          colorTextBase: isDark ? '#ffffff' : '#1f2937',
+          colorBgContainer: isDark ? '#1e293b' : '#ffffff',
+          colorBorder: isDark ? 'rgba(16, 185, 129, 0.15)' : '#e5e7eb',
         },
         components: {
           Layout: {
-            bodyBg: '#0f172a',
-            headerBg: '#0f172a',
-            siderBg: '#0f172a',
+            bodyBg: isDark ? '#0f172a' : '#f8fafc',
+            headerBg: isDark ? '#0f172a' : '#ffffff',
+            siderBg: isDark ? '#0f172a' : '#ffffff',
           },
           Card: {
             borderRadiusLG: 20,
+            colorBgContainer: isDark ? '#1e293b' : '#ffffff',
+            colorBorderSecondary: isDark ? 'rgba(16, 185, 129, 0.15)' : '#e5e7eb',
           },
           Menu: {
             darkItemBg: '#0f172a',
@@ -84,13 +104,32 @@ const App: React.FC = () => {
             darkItemColor: '#94a3b8',
             darkItemSelectedColor: '#10b981',
             darkItemHoverColor: '#10b981',
+            itemBg: isDark ? '#0f172a' : '#ffffff',
+            itemSelectedBg: 'rgba(16, 185, 129, 0.1)',
+            itemHoverBg: 'rgba(16, 185, 129, 0.05)',
+            itemColor: isDark ? '#94a3b8' : '#64748b',
+            itemSelectedColor: '#10b981',
+            itemHoverColor: '#10b981',
           },
           Breadcrumb: {
-            itemColor: '#94a3b8',
-            linkColor: '#94a3b8',
+            itemColor: isDark ? '#94a3b8' : '#64748b',
+            linkColor: isDark ? '#94a3b8' : '#64748b',
             linkHoverColor: '#10b981',
-            separatorColor: '#475569',
-          }
+            separatorColor: isDark ? '#475569' : '#cbd5e1',
+          },
+          Input: {
+            colorBgContainer: isDark ? 'rgba(255,255,255,0.05)' : '#ffffff',
+            colorBorder: isDark ? 'rgba(16, 185, 129, 0.2)' : '#d1d5db',
+            colorText: isDark ? '#e2e8f0' : '#1f2937',
+          },
+          Select: {
+            colorBgContainer: isDark ? '#1e293b' : '#ffffff',
+            colorBorder: isDark ? 'rgba(16, 185, 129, 0.2)' : '#d1d5db',
+          },
+          Modal: {
+            contentBg: isDark ? '#1e293b' : '#ffffff',
+            headerBg: isDark ? '#1e293b' : '#ffffff',
+          },
         },
       }}
     >
@@ -98,6 +137,14 @@ const App: React.FC = () => {
         <AnimateRoutes />
       </BrowserRouter>
     </ConfigProvider>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
   );
 };
 

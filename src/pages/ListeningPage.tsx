@@ -1,39 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Typography, Button, Row, Col, Space, Grid } from 'antd';
 import { 
-  BookOpen, 
+  Headphones, 
   ArrowRight,
   ArrowLeft,
   FileCode
 } from 'lucide-react';
-import { readingPassageManager } from '../services/dataManager';
-import type { ReadingPassage } from '../types';
-import './ReadingPage.css';
+import { listeningTestManager } from '../services/dataManager';
+import type { ListeningTest } from '../types';
 
 const { Title, Text } = Typography;
 const { useBreakpoint } = Grid;
 
-const ReadingPage: React.FC = () => {
+const ListeningPage: React.FC = () => {
   const screens = useBreakpoint();
   const isMobile = !screens.md;
 
-  const [passages, setPassages] = useState<ReadingPassage[]>([]);
-  const [selectedPassage, setSelectedPassage] = useState<ReadingPassage | null>(null);
+  const [tests, setTests] = useState<ListeningTest[]>([]);
+  const [selectedTest, setSelectedTest] = useState<ListeningTest | null>(null);
   const [testStarted, setTestStarted] = useState(false);
 
-  // Load passages from localStorage
+  // Load tests from localStorage
   useEffect(() => {
-    setPassages(readingPassageManager.getAll());
+    setTests(listeningTestManager.getAll());
   }, []);
 
-  const handleStartTest = (passage: ReadingPassage) => {
-    setSelectedPassage(passage);
+  const handleStartTest = (test: ListeningTest) => {
+    setSelectedTest(test);
     setTestStarted(true);
   };
 
   const handleBackToList = () => {
     setTestStarted(false);
-    setSelectedPassage(null);
+    setSelectedTest(null);
   };
 
   // Test List View
@@ -43,15 +42,15 @@ const ReadingPage: React.FC = () => {
         {/* Header */}
         <div>
           <Title level={1} style={{ margin: 0, fontSize: isMobile ? '28px' : '36px', fontWeight: '700', color: '#ffffff' }}>
-            Reading Practice
+            Listening Practice
           </Title>
           <Text style={{ fontSize: isMobile ? '14px' : '15px', color: '#64748b' }}>
-            Choose a test to start your IELTS reading practice
+            Choose a test to start your IELTS listening practice
           </Text>
         </div>
 
         {/* Tests Grid */}
-        {passages.length === 0 ? (
+        {tests.length === 0 ? (
           <Card
             style={{
               borderRadius: '20px',
@@ -63,24 +62,24 @@ const ReadingPage: React.FC = () => {
           >
             <div style={{ 
               padding: '24px', 
-              backgroundColor: 'rgba(59, 130, 246, 0.1)', 
+              backgroundColor: 'rgba(168, 85, 247, 0.1)', 
               borderRadius: '20px',
               display: 'inline-block',
               marginBottom: '20px'
             }}>
-              <BookOpen size={48} color="#3b82f6" />
+              <Headphones size={48} color="#a855f7" />
             </div>
             <Title level={3} style={{ color: '#ffffff', marginBottom: '12px' }}>
-              No Reading Passages Available
+              No Listening Tests Available
             </Title>
             <Text style={{ color: '#64748b', fontSize: '15px' }}>
-              Upload reading passages in the Reading Passage Manager to get started
+              Upload listening tests in the Listening Test Manager to get started
             </Text>
           </Card>
         ) : (
           <Row gutter={[isMobile ? 16 : 24, isMobile ? 16 : 24]}>
-            {passages.map((passage) => (
-              <Col xs={24} sm={12} lg={8} key={passage.id}>
+            {tests.map((test) => (
+              <Col xs={24} sm={12} lg={8} key={test.id}>
                 <Card
                   hoverable
                   style={{
@@ -92,14 +91,14 @@ const ReadingPage: React.FC = () => {
                     transition: 'all 0.3s ease'
                   }}
                   styles={{ body: { padding: '24px', height: '100%', display: 'flex', flexDirection: 'column' } }}
-                  onClick={() => handleStartTest(passage)}
+                  onClick={() => handleStartTest(test)}
                 >
                   <div style={{ flex: 1 }}>
-                    {passage.imageUrl && (
+                    {test.imageUrl && (
                       <div style={{ marginBottom: '16px' }}>
                         <img
-                          src={passage.imageUrl}
-                          alt={passage.title}
+                          src={test.imageUrl}
+                          alt={test.title}
                           style={{
                             width: '100%',
                             height: '120px',
@@ -110,27 +109,27 @@ const ReadingPage: React.FC = () => {
                       </div>
                     )}
 
-                    {!passage.imageUrl && (
+                    {!test.imageUrl && (
                       <div style={{ 
                         padding: '12px', 
-                        backgroundColor: 'rgba(59, 130, 246, 0.1)', 
+                        backgroundColor: 'rgba(168, 85, 247, 0.1)', 
                         borderRadius: '12px',
                         display: 'inline-block',
                         marginBottom: '16px'
                       }}>
-                        <FileCode size={24} color="#3b82f6" />
+                        <FileCode size={24} color="#a855f7" />
                       </div>
                     )}
 
                     <Title level={4} style={{ color: '#ffffff', marginBottom: '12px', fontSize: '18px' }}>
-                      {passage.title}
+                      {test.title}
                     </Title>
 
                     <Space orientation="vertical" size={12} style={{ width: '100%', marginBottom: '20px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <FileCode size={14} color="#64748b" />
                         <Text style={{ fontSize: '13px', color: '#64748b' }}>
-                          IELTS Reading Passage
+                          IELTS Listening Test
                         </Text>
                       </div>
                     </Space>
@@ -153,7 +152,7 @@ const ReadingPage: React.FC = () => {
                       gap: '8px'
                     }}
                   >
-                    Start Reading
+                    Start Listening
                   </Button>
                 </Card>
               </Col>
@@ -202,14 +201,14 @@ const ReadingPage: React.FC = () => {
         </Button>
 
         <Text style={{ fontSize: '16px', color: '#ffffff', fontWeight: '600' }}>
-          {selectedPassage?.title}
+          {selectedTest?.title}
         </Text>
       </div>
 
       {/* Full Screen Iframe */}
       <div style={{ flex: 1, overflow: 'hidden' }}>
         <iframe
-          srcDoc={selectedPassage?.htmlContent}
+          srcDoc={selectedTest?.htmlContent}
           style={{
             width: '100%',
             height: '100%',
@@ -217,11 +216,11 @@ const ReadingPage: React.FC = () => {
             display: 'block'
           }}
           sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-popups"
-          title={selectedPassage?.title}
+          title={selectedTest?.title}
         />
       </div>
     </div>
   );
 };
 
-export default ReadingPage;
+export default ListeningPage;
