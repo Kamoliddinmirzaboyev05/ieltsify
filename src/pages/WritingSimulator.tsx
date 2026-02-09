@@ -53,6 +53,23 @@ const WritingSimulator: React.FC<WritingSimulatorProps> = ({ taskId, onBack }) =
     }
   }, [taskId]);
 
+  // Block keyboard shortcuts for copy/paste/cut
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Block Ctrl+C, Ctrl+V, Ctrl+X, Cmd+C, Cmd+V, Cmd+X
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'v' || e.key === 'x')) {
+        e.preventDefault();
+        message.warning('Nusxa olish/qo\'yish taqiqlanган!');
+        return false;
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
   const handleTask1Complete = () => {
     const wordCount = getWordCount(task1Content);
     if (wordCount < 150) {
@@ -431,7 +448,15 @@ const WritingSimulator: React.FC<WritingSimulatorProps> = ({ taskId, onBack }) =
           padding: '32px',
           overflowY: 'auto',
           borderRight: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid #e5e7eb',
-        }}>
+          userSelect: 'none',
+          WebkitUserSelect: 'none',
+          MozUserSelect: 'none',
+          msUserSelect: 'none',
+        }}
+        onCopy={(e) => e.preventDefault()}
+        onCut={(e) => e.preventDefault()}
+        onContextMenu={(e) => e.preventDefault()}
+        >
           <div style={{
             backgroundColor: isTask1 ? '#eff6ff' : '#f0fdf4',
             padding: '12px 16px',
@@ -515,6 +540,25 @@ const WritingSimulator: React.FC<WritingSimulatorProps> = ({ taskId, onBack }) =
             onChange={(e) => setCurrentContent(e.target.value)}
             placeholder="Yozishni boshlang..."
             spellCheck={false}
+            onCopy={(e) => {
+              e.preventDefault();
+              message.warning('Nusxa olish taqiqlanган!');
+              return false;
+            }}
+            onCut={(e) => {
+              e.preventDefault();
+              message.warning('Kesish taqiqlanган!');
+              return false;
+            }}
+            onPaste={(e) => {
+              e.preventDefault();
+              message.warning('Qo\'yish taqiqlanган!');
+              return false;
+            }}
+            onContextMenu={(e) => {
+              e.preventDefault();
+              return false;
+            }}
             style={{
               flex: 1,
               border: 'none',

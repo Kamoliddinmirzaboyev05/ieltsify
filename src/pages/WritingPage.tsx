@@ -198,7 +198,7 @@ const WritingPage: React.FC = () => {
                     minHeight: '40px',
                   }}
                 >
-                  Task 1: {task.task1Question.substring(0, 80)}...
+                  Task 1: {task.task1Question?.substring(0, 80) || 'No description'}...
                 </Paragraph>
 
                 <div style={{
