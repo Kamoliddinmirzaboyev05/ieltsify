@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, Menu, Avatar, Badge, Breadcrumb, theme, Button, Drawer, Input } from 'antd';
+import { Layout, Menu, Avatar, Breadcrumb, theme, Button, Drawer, Input } from 'antd';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Home,
@@ -253,12 +253,11 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                 color: token.colorText
               }}
             />
-            <Badge dot color="#10b981">
-              <Bell size={20} style={{ cursor: 'pointer', color: token.colorText }} />
-            </Badge>
+            <Bell size={20} style={{ cursor: 'pointer', color: token.colorText }} />
             <Avatar 
               icon={<User size={20} />} 
               style={{ backgroundColor: 'rgba(16, 185, 129, 0.15)', color: '#10b981', cursor: 'pointer' }} 
+              onClick={() => navigate('/dashboard/profile')}
             />
           </div>
         </Header>

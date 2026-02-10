@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Typography, 
   Button, 
   Input, 
   Form, 
   Checkbox, 
-  Grid
+  Grid,
+  message,
+  Divider
 } from 'antd';
 import { 
   Lock, 
@@ -15,6 +17,9 @@ import {
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { DotPattern } from '../components/DotPattern';
+import { GoogleLogin } from '@react-oauth/google';
+import type { CredentialResponse } from '@react-oauth/google';
+import { googleAuth, loginUser, saveAuthTokens, saveUserProfile } from '../services/authService';
 
 const { Title, Text } = Typography;
 const { useBreakpoint } = Grid;
@@ -23,9 +28,106 @@ const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const screens = useBreakpoint();
   const isMobile = !screens.md;
+  const [loading, setLoading] = useState(false);
+  const [form] = Form.useForm();
 
-  const onFinish = (_values: any) => {
-    navigate('/dashboard');
+  const onFinish = async (values: any) => {
+    setLoading(true);
+    try {
+      console.log('🔐 Login attempt:', { username: values.email });
+      
+      // Username can be email or username
+      const response = await loginUser({
+        username: values.email, // Backend accepts both email and username
+        password: values.password,
+      });
+      
+      console.log('✅ Login response:', response);
+      
+      // Save tokens (response has access/refresh, not access_token/refresh_token)
+      const accessToken = response.access || response.access_token;
+      const refreshToken = response.refresh || response.refresh_token;
+      
+      if (!accessToken || !refreshToken) {
+        throw new Error('Invalid response: missing tokens');
+      }
+      
+      saveAuthTokens(accessToken, refreshToken);
+      
+      // If user info is provided, save it
+      if (response.user) {
+        saveUserProfile(response.user);
+      }
+      
+      console.log('✅ Tokens saved, redirecting to dashboard...');
+      
+      message.success('Xush kelibsiz!');
+      navigate('/dashboard');
+    } catch (error: any) {
+      console.error('❌ Login error:', error);
+      message.error(error.message || 'Kirishda xatolik');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
+    if (!credentialResponse.credential) {
+      message.error('Google login failed');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      console.log('🔐 Google login attempt');
+      const response = await googleAuth(credentialResponse.credential);
+      
+      console.log('✅ Google login response:', response);
+      
+      // Google OAuth returns: {message: "...", user: {...}, tokens: {access: "...", refresh: "..."}}
+      let accessToken: string | undefined;
+      let refreshToken: string | undefined;
+      
+      // Check if tokens are nested in tokens object
+      if (response.tokens) {
+        accessToken = response.tokens.access;
+        refreshToken = response.tokens.refresh;
+      } else {
+        // Fallback to direct properties
+        accessToken = response.access_token || response.access;
+        refreshToken = response.refresh_token || response.refresh;
+      }
+      
+      console.log('Token extraction:', { 
+        has_tokens_object: !!response.tokens,
+        accessToken: accessToken ? 'present' : 'missing',
+        refreshToken: refreshToken ? 'present' : 'missing'
+      });
+      
+      if (!accessToken || !refreshToken) {
+        console.error('❌ Missing tokens in response:', response);
+        throw new Error('Invalid response: missing tokens');
+      }
+      
+      saveAuthTokens(accessToken, refreshToken);
+      
+      // Save user profile if provided
+      if (response.user) {
+        saveUserProfile(response.user);
+      }
+      
+      message.success('Xush kelibsiz!');
+      navigate('/dashboard');
+    } catch (error: any) {
+      console.error('❌ Google login error:', error);
+      message.error(error.message || 'Google login failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleError = () => {
+    message.error('Google login failed');
   };
 
   return (
@@ -95,6 +197,7 @@ const LoginPage: React.FC = () => {
             </div>
 
             <Form
+              form={form}
               name="login"
               layout="vertical"
               onFinish={onFinish}
@@ -102,12 +205,12 @@ const LoginPage: React.FC = () => {
             >
               <Form.Item
                 name="email"
-                rules={[{ required: true, message: 'Email required' }]}
+                rules={[{ required: true, message: 'Email yoki username kiriting' }]}
                 style={{ marginBottom: '16px' }}
               >
                 <Input 
                   prefix={<Mail size={18} style={{ color: '#64748b' }} />} 
-                  placeholder="Email" 
+                  placeholder="Email yoki username" 
                   style={{ 
                     backgroundColor: 'rgba(255, 255, 255, 0.1)', 
                     border: '1px solid rgba(255, 255, 255, 0.1)', 
@@ -120,12 +223,12 @@ const LoginPage: React.FC = () => {
 
               <Form.Item
                 name="password"
-                rules={[{ required: true, message: 'Password required' }]}
+                rules={[{ required: true, message: 'Parol kiriting' }]}
                 style={{ marginBottom: '16px' }}
               >
                 <Input.Password 
                   prefix={<Lock size={18} style={{ color: '#64748b' }} />} 
-                  placeholder="Password" 
+                  placeholder="Parol" 
                   style={{ 
                     backgroundColor: 'rgba(255, 255, 255, 0.1)', 
                     border: '1px solid rgba(255, 255, 255, 0.1)', 
@@ -146,7 +249,7 @@ const LoginPage: React.FC = () => {
               }}>
                 <Form.Item name="remember" valuePropName="checked" noStyle>
                   <Checkbox style={{ color: '#94a3b8' }}>
-                    <span style={{ color: '#94a3b8', fontSize: '14px' }}>Remember</span>
+                    <span style={{ color: '#94a3b8', fontSize: '14px' }}>Eslab qolish</span>
                   </Checkbox>
                 </Form.Item>
                 <Link to="/forgot-password" style={{ 
@@ -154,7 +257,7 @@ const LoginPage: React.FC = () => {
                   fontWeight: 600, 
                   fontSize: '14px' 
                 }}>
-                  Forgot?
+                  Unutdingizmi?
                 </Link>
               </div>
 
@@ -163,6 +266,7 @@ const LoginPage: React.FC = () => {
                   type="primary" 
                   htmlType="submit" 
                   block 
+                  loading={loading}
                   className="gradient-btn"
                   style={{ 
                     height: '48px', 
@@ -171,17 +275,54 @@ const LoginPage: React.FC = () => {
                     fontSize: '15px'
                   }}
                 >
-                  Sign In
+                  Kirish
                 </Button>
               </Form.Item>
             </Form>
 
+            <Divider style={{ 
+              borderColor: 'rgba(255, 255, 255, 0.1)', 
+              margin: '24px 0',
+              color: '#94a3b8',
+              fontSize: '14px'
+            }}>
+              Yoki Google bilan
+            </Divider>
+
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'center',
+              marginBottom: '24px'
+            }}>
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={handleGoogleError}
+                useOneTap
+                theme="filled_black"
+                size="large"
+                text="signin_with"
+                shape="rectangular"
+                logo_alignment="left"
+              />
+            </div>
+
+            {loading && (
+              <div style={{ 
+                textAlign: 'center', 
+                color: '#10b981',
+                fontSize: '14px',
+                marginBottom: '16px'
+              }}>
+                Kirmoqda...
+              </div>
+            )}
+
             <div style={{ textAlign: 'center', marginTop: '24px' }}>
               <Text style={{ color: '#94a3b8', fontSize: '14px' }}>
-                No account? <Link to="/register" style={{ 
+                Akkauntingiz yo'qmi? <Link to="/register" style={{ 
                   color: '#10b981', 
                   fontWeight: 700 
-                }}>Sign up</Link>
+                }}>Ro'yxatdan o'tish</Link>
               </Text>
             </div>
           </div>

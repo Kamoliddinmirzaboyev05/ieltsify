@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Typography, 
   Card, 
@@ -13,7 +13,11 @@ import {
   Switch, 
   Space,
   Input,
-  theme
+  theme,
+  message,
+  Spin,
+  Modal,
+  Form
 } from 'antd';
 import { 
   User, 
@@ -28,12 +32,162 @@ import {
   Camera,
   BarChart3
 } from 'lucide-react';
-import { USER_PROFILE, SKILL_PROGRESS } from '../mockData';
+import { useNavigate } from 'react-router-dom';
+import { fetchUserProfile, updateUserProfile, clearAuthTokens, changePassword, type ProfileData } from '../services/authService';
 
 const { Title, Text } = Typography;
 
 const ProfilePage: React.FC = () => {
   theme.useToken();
+  const navigate = useNavigate();
+  
+  const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [passwordModalVisible, setPasswordModalVisible] = useState(false);
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [passwordForm] = Form.useForm();
+  
+  // Form states
+  const [name, setName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [targetScore, setTargetScore] = useState<number | undefined>();
+  const [targetDate, setTargetDate] = useState('');
+  const [emailNotifications, setEmailNotifications] = useState(false);
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
+
+  useEffect(() => {
+    loadProfile();
+  }, []);
+
+  const loadProfile = async () => {
+    try {
+      setLoading(true);
+      const data = await fetchUserProfile();
+      setProfile(data);
+      
+      // Set form values
+      const fullName = `${data.first_name} ${data.last_name}`.trim();
+      setName(fullName);
+      setFirstName(data.first_name);
+      setLastName(data.last_name);
+      setEmail(data.email);
+      setTargetScore(data.target_score);
+      setTargetDate(data.target_date || '');
+      setEmailNotifications(data.email_notifications || false);
+      setTwoFactorEnabled(data.two_factor_enabled || false);
+    } catch (error: any) {
+      console.error('Failed to load profile:', error);
+      message.error('Ma\'lumotlarni yuklashda xatolik');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveChanges = async () => {
+    try {
+      setSaving(true);
+      
+      // Split name into first_name and last_name
+      const nameParts = name.trim().split(' ');
+      const newFirstName = nameParts[0] || firstName;
+      const newLastName = nameParts.slice(1).join(' ') || lastName;
+      
+      const updatedProfile = await updateUserProfile({
+        first_name: newFirstName,
+        last_name: newLastName,
+        target_score: targetScore,
+        target_date: targetDate || undefined,
+        email_notifications: emailNotifications,
+        two_factor_enabled: twoFactorEnabled,
+      });
+      
+      setProfile(updatedProfile);
+      setFirstName(updatedProfile.first_name);
+      setLastName(updatedProfile.last_name);
+      message.success('O\'zgarishlar saqlandi!');
+    } catch (error: any) {
+      console.error('Failed to save changes:', error);
+      message.error('Saqlashda xatolik');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleLogout = () => {
+    clearAuthTokens();
+    message.success('Tizimdan chiqdingiz');
+    navigate('/login');
+  };
+
+  const handleChangePassword = async (values: any) => {
+    try {
+      setChangingPassword(true);
+      await changePassword(
+        values.current_password,
+        values.new_password,
+        values.new_password_confirm
+      );
+      message.success('Parol muvaffaqiyatli o\'zgartirildi!');
+      setPasswordModalVisible(false);
+      passwordForm.resetFields();
+    } catch (error: any) {
+      console.error('Failed to change password:', error);
+      message.error(error.message || 'Parolni o\'zgartirishda xatolik');
+    } finally {
+      setChangingPassword(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        minHeight: '400px' 
+      }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+        <Text type="secondary">Ma\'lumotlarni yuklashda xatolik</Text>
+        <br />
+        <Button type="primary" onClick={loadProfile} style={{ marginTop: '16px' }}>
+          Qayta urinish
+        </Button>
+      </div>
+    );
+  }
+
+  const skillProgress = [
+    { name: 'Listening', score: profile.skills?.listening || 0, maxScore: 9, color: '#3b82f6' },
+    { name: 'Reading', score: profile.skills?.reading || 0, maxScore: 9, color: '#10b981' },
+    { name: 'Writing', score: profile.skills?.writing || 0, maxScore: 9, color: '#f59e0b' },
+    { name: 'Speaking', score: profile.skills?.speaking || 0, maxScore: 9, color: '#ef4444' },
+  ];
+
+  const overallScore = profile.skills 
+    ? ((profile.skills.listening + profile.skills.reading + profile.skills.writing + profile.skills.speaking) / 4).toFixed(1)
+    : '0.0';
+  
+  const progressPercent = profile.target_score 
+    ? (parseFloat(overallScore) / profile.target_score) * 100
+    : 0;
+
+  const fullName = `${profile.first_name} ${profile.last_name}`.trim();
+  const membership = profile.is_vip ? 'VIP' : 'Free';
+  const joinedDate = new Date(profile.date_joined).toLocaleDateString('en-US', { 
+    month: 'short', 
+    day: 'numeric', 
+    year: 'numeric' 
+  });
 
   return (
     <div style={{ paddingBottom: '60px' }}>
@@ -45,7 +199,12 @@ const ProfilePage: React.FC = () => {
             bodyStyle={{ padding: '40px 24px' }}
           >
             <div style={{ position: 'relative', display: 'inline-block', marginBottom: '24px' }}>
-              <Avatar size={120} icon={<User size={60} />} style={{ backgroundColor: '#f3e8ff', color: '#6B46C1', border: '4px solid #fff', boxShadow: '0 10px 25px rgba(107, 70, 193, 0.1)' }} />
+              <Avatar 
+                size={120} 
+                src={profile.picture}
+                icon={!profile.picture && <User size={60} />}
+                style={{ backgroundColor: '#f3e8ff', color: '#6B46C1', border: '4px solid #fff', boxShadow: '0 10px 25px rgba(107, 70, 193, 0.1)' }} 
+              />
               <Button 
                 type="primary" 
                 shape="circle" 
@@ -54,15 +213,19 @@ const ProfilePage: React.FC = () => {
                 style={{ position: 'absolute', bottom: 5, right: 5, backgroundColor: '#6B46C1', border: '2px solid #fff' }}
               />
             </div>
-            <Title level={3} style={{ margin: '0 0 8px 0' }}>{USER_PROFILE.name}</Title>
-            <Text type="secondary" style={{ display: 'block', marginBottom: '16px' }}>{USER_PROFILE.email}</Text>
-            <Tag color="purple" style={{ borderRadius: '20px', padding: '2px 16px', fontWeight: 'bold' }}>{USER_PROFILE.membership}</Tag>
+            <Title level={3} style={{ margin: '0 0 8px 0' }}>{fullName}</Title>
+            <Text type="secondary" style={{ display: 'block', marginBottom: '16px' }}>{profile.email}</Text>
+            <Tag color="purple" style={{ borderRadius: '20px', padding: '2px 16px', fontWeight: 'bold' }}>{membership}</Tag>
             
             <Divider style={{ margin: '32px 0' }} />
             
             <Row gutter={[16, 16]}>
               <Col span={12}>
-                <Statistic title="Joined" value={USER_PROFILE.joinedDate} valueStyle={{ fontSize: '14px', fontWeight: 'bold' }} />
+                <Statistic 
+                  title="Joined" 
+                  value={joinedDate} 
+                  valueStyle={{ fontSize: '14px', fontWeight: 'bold' }} 
+                />
               </Col>
               <Col span={12}>
                 <Statistic title="Status" value="Active" valueStyle={{ fontSize: '14px', fontWeight: 'bold', color: '#10b981' }} />
@@ -72,7 +235,8 @@ const ProfilePage: React.FC = () => {
             <Button 
               block 
               danger 
-              icon={<LogOut size={16} />} 
+              icon={<LogOut size={16} />}
+              onClick={handleLogout}
               style={{ marginTop: '32px', borderRadius: '12px', height: '48px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
             >
               Log Out
@@ -86,17 +250,21 @@ const ProfilePage: React.FC = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
               <div>
                 <Text type="secondary" style={{ fontSize: '12px' }}>TARGET SCORE</Text>
-                <Title level={2} style={{ margin: 0 }}>{USER_PROFILE.targetScore}</Title>
+                <Title level={2} style={{ margin: 0 }}>{profile.target_score || 'N/A'}</Title>
               </div>
               <div style={{ textAlign: 'right' }}>
-                <Text type="secondary" style={{ fontSize: '12px' }}>EXAM DATE</Text>
-                <Title level={4} style={{ margin: 0 }}>June 15, 2024</Title>
+                <Text type="secondary" style={{ fontSize: '12px' }}>CURRENT SCORE</Text>
+                <Title level={4} style={{ margin: 0 }}>{overallScore}</Title>
               </div>
             </div>
             <Text type="secondary" style={{ display: 'block', marginBottom: '8px', fontSize: '13px' }}>Overall Progress</Text>
-            <Progress percent={75} strokeColor="#6B46C1" />
+            <Progress percent={Math.min(progressPercent, 100)} strokeColor="#6B46C1" />
             <Text type="secondary" style={{ display: 'block', marginTop: '16px', fontSize: '12px', textAlign: 'center' }}>
-              Keep practicing! You are 1.5 bands away from your goal.
+              {profile.target_score && parseFloat(overallScore) < profile.target_score
+                ? `Keep practicing! You are ${(profile.target_score - parseFloat(overallScore)).toFixed(1)} bands away from your goal.`
+                : profile.target_score
+                ? 'Congratulations! You reached your target!'
+                : 'Set a target score to track your progress.'}
             </Text>
           </Card>
         </Col>
@@ -112,22 +280,53 @@ const ProfilePage: React.FC = () => {
               <Row gutter={[24, 24]}>
                 <Col xs={24} md={12}>
                   <Text strong style={{ display: 'block', marginBottom: '8px' }}>Full Name</Text>
-                  <Input defaultValue={USER_PROFILE.name} prefix={<User size={14} color="#94a3b8" />} style={{ borderRadius: '8px', height: '40px' }} />
+                  <Input 
+                    value={name} 
+                    onChange={(e) => setName(e.target.value)}
+                    prefix={<User size={14} color="#94a3b8" />} 
+                    style={{ borderRadius: '8px', height: '40px' }} 
+                  />
                 </Col>
                 <Col xs={24} md={12}>
                   <Text strong style={{ display: 'block', marginBottom: '8px' }}>Email Address</Text>
-                  <Input defaultValue={USER_PROFILE.email} prefix={<Mail size={14} color="#94a3b8" />} style={{ borderRadius: '8px', height: '40px' }} />
+                  <Input 
+                    value={email} 
+                    disabled
+                    prefix={<Mail size={14} color="#94a3b8" />} 
+                    style={{ borderRadius: '8px', height: '40px' }} 
+                  />
                 </Col>
                 <Col xs={24} md={12}>
                   <Text strong style={{ display: 'block', marginBottom: '8px' }}>Target Band Score</Text>
-                  <Input defaultValue={USER_PROFILE.targetScore} prefix={<Target size={14} color="#94a3b8" />} style={{ borderRadius: '8px', height: '40px' }} />
+                  <Input 
+                    type="number"
+                    min={0}
+                    max={9}
+                    step={0.5}
+                    value={targetScore} 
+                    onChange={(e) => setTargetScore(parseFloat(e.target.value) || undefined)}
+                    prefix={<Target size={14} color="#94a3b8" />} 
+                    style={{ borderRadius: '8px', height: '40px' }} 
+                    placeholder="7.5"
+                  />
                 </Col>
                 <Col xs={24} md={12}>
                   <Text strong style={{ display: 'block', marginBottom: '8px' }}>Target Date</Text>
-                  <Input type="date" defaultValue={USER_PROFILE.targetDate} prefix={<Calendar size={14} color="#94a3b8" />} style={{ borderRadius: '8px', height: '40px' }} />
+                  <Input 
+                    type="date" 
+                    value={targetDate} 
+                    onChange={(e) => setTargetDate(e.target.value)}
+                    prefix={<Calendar size={14} color="#94a3b8" />} 
+                    style={{ borderRadius: '8px', height: '40px' }} 
+                  />
                 </Col>
               </Row>
-              <Button type="primary" style={{ marginTop: '24px', borderRadius: '8px', padding: '0 32px', backgroundColor: '#6B46C1', height: '40px' }}>
+              <Button 
+                type="primary" 
+                loading={saving}
+                onClick={handleSaveChanges}
+                style={{ marginTop: '24px', borderRadius: '8px', padding: '0 32px', backgroundColor: '#6B46C1', height: '40px' }}
+              >
                 Save Changes
               </Button>
             </div>
@@ -145,7 +344,10 @@ const ProfilePage: React.FC = () => {
                       <Text type="secondary" style={{ fontSize: '12px' }}>Receive daily practice reminders and tips.</Text>
                     </div>
                   </Space>
-                  <Switch defaultChecked />
+                  <Switch 
+                    checked={emailNotifications} 
+                    onChange={setEmailNotifications}
+                  />
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Space size={12}>
@@ -155,7 +357,26 @@ const ProfilePage: React.FC = () => {
                       <Text type="secondary" style={{ fontSize: '12px' }}>Add an extra layer of security to your account.</Text>
                     </div>
                   </Space>
-                  <Switch />
+                  <Switch 
+                    checked={twoFactorEnabled} 
+                    onChange={setTwoFactorEnabled}
+                  />
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Space size={12}>
+                    <div style={{ backgroundColor: '#f1f5f9', padding: '8px', borderRadius: '8px' }}><Lock size={16} /></div>
+                    <div>
+                      <Text strong style={{ display: 'block' }}>Change Password</Text>
+                      <Text type="secondary" style={{ fontSize: '12px' }}>Update your account password.</Text>
+                    </div>
+                  </Space>
+                  <Button 
+                    type="primary" 
+                    onClick={() => setPasswordModalVisible(true)}
+                    style={{ borderRadius: '8px' }}
+                  >
+                    O'zgartirish
+                  </Button>
                 </div>
               </Space>
             </div>
@@ -169,8 +390,12 @@ const ProfilePage: React.FC = () => {
                   <Space size={16}>
                     <div style={{ backgroundColor: '#6B46C1', padding: '10px', borderRadius: '12px' }}><CreditCard size={20} color="white" /></div>
                     <div>
-                      <Text strong style={{ display: 'block' }}>{USER_PROFILE.membership} Plan</Text>
-                      <Text type="secondary" style={{ fontSize: '12px' }}>Next billing date: None (Free tier)</Text>
+                      <Text strong style={{ display: 'block' }}>{membership} Plan</Text>
+                      <Text type="secondary" style={{ fontSize: '12px' }}>
+                        {profile.is_vip && profile.vip_expires_at
+                          ? `Expires: ${new Date(profile.vip_expires_at).toLocaleDateString()}`
+                          : 'Next billing date: None (Free tier)'}
+                      </Text>
                     </div>
                   </Space>
                   <Button type="link" style={{ color: '#6B46C1', fontWeight: 'bold' }}>Upgrade Plan</Button>
@@ -184,7 +409,7 @@ const ProfilePage: React.FC = () => {
             style={{ borderRadius: '24px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.02)', marginTop: '24px' }}
           >
             <Row gutter={[24, 24]}>
-              {SKILL_PROGRESS.map((skill, i) => (
+              {skillProgress.map((skill, i) => (
                 <Col xs={24} md={12} key={i}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                     <Text strong>{skill.name}</Text>
@@ -197,6 +422,99 @@ const ProfilePage: React.FC = () => {
           </Card>
         </Col>
       </Row>
+
+      {/* Change Password Modal */}
+      <Modal
+        title="Parolni o'zgartirish"
+        open={passwordModalVisible}
+        onCancel={() => {
+          setPasswordModalVisible(false);
+          passwordForm.resetFields();
+        }}
+        footer={null}
+        centered
+      >
+        <Form
+          form={passwordForm}
+          layout="vertical"
+          onFinish={handleChangePassword}
+          style={{ marginTop: '24px' }}
+        >
+          <Form.Item
+            name="current_password"
+            label="Joriy parol"
+            rules={[
+              { required: true, message: 'Joriy parolni kiriting' },
+              { min: 1, message: 'Parol kamida 1 ta belgidan iborat bo\'lishi kerak' }
+            ]}
+          >
+            <Input.Password 
+              prefix={<Lock size={16} />}
+              placeholder="Joriy parol"
+              style={{ borderRadius: '8px', height: '40px' }}
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="new_password"
+            label="Yangi parol"
+            rules={[
+              { required: true, message: 'Yangi parolni kiriting' },
+              { min: 1, message: 'Parol kamida 1 ta belgidan iborat bo\'lishi kerak' }
+            ]}
+          >
+            <Input.Password 
+              prefix={<Lock size={16} />}
+              placeholder="Yangi parol"
+              style={{ borderRadius: '8px', height: '40px' }}
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="new_password_confirm"
+            label="Yangi parolni tasdiqlash"
+            dependencies={['new_password']}
+            rules={[
+              { required: true, message: 'Parolni tasdiqlang' },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value || getFieldValue('new_password') === value) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(new Error('Parollar mos kelmadi'));
+                },
+              }),
+            ]}
+          >
+            <Input.Password 
+              prefix={<Lock size={16} />}
+              placeholder="Yangi parolni tasdiqlash"
+              style={{ borderRadius: '8px', height: '40px' }}
+            />
+          </Form.Item>
+
+          <Form.Item style={{ marginBottom: 0, marginTop: '24px' }}>
+            <Space style={{ width: '100%', justifyContent: 'flex-end' }}>
+              <Button 
+                onClick={() => {
+                  setPasswordModalVisible(false);
+                  passwordForm.resetFields();
+                }}
+              >
+                Bekor qilish
+              </Button>
+              <Button 
+                type="primary" 
+                htmlType="submit"
+                loading={changingPassword}
+                style={{ backgroundColor: '#6B46C1' }}
+              >
+                Saqlash
+              </Button>
+            </Space>
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 };

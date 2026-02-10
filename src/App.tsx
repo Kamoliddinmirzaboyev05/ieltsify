@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { ConfigProvider, theme as antdTheme } from 'antd';
 import { AnimatePresence } from 'framer-motion';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import AppLayout from './components/AppLayout';
 import DashboardHome from './pages/DashboardHome';
@@ -22,6 +23,8 @@ import ListeningHubPage from './pages/ListeningHubPage';
 import ReadingPassageManager from './pages/ReadingPassageManager';
 import ListeningTestManager from './pages/ListeningTestManager';
 import PageTransition from './components/PageTransition';
+
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
 const DashboardLayout: React.FC = () => {
   const location = useLocation();
@@ -142,9 +145,11 @@ const AppContent: React.FC = () => {
 
 const App: React.FC = () => {
   return (
-    <ThemeProvider>
-      <AppContent />
-    </ThemeProvider>
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+      <ThemeProvider>
+        <AppContent />
+      </ThemeProvider>
+    </GoogleOAuthProvider>
   );
 };
 
