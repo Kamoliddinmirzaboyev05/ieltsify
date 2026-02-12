@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Typography, 
   Button, 
@@ -17,9 +17,7 @@ import {
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { DotPattern } from '../components/DotPattern';
-import { GoogleLogin } from '@react-oauth/google';
-import type { CredentialResponse } from '@react-oauth/google';
-import { googleAuth, loginUser, saveAuthTokens, saveUserProfile } from '../services/authService';
+import { loginUser, googleAuth, saveAuthTokens, saveUserProfile } from '../services/authService';
 
 const { Title, Text } = Typography;
 const { useBreakpoint } = Grid;
@@ -29,9 +27,136 @@ const LoginPage: React.FC = () => {
   const screens = useBreakpoint();
   const isMobile = !screens.md;
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [form] = Form.useForm();
 
-  const onFinish = async (values: any) => {
+  // Load Google Sign-In script
+  useEffect(() => {
+    const handleGoogleResponse = (response: { credential: string }) => {
+      handleGoogleAuth(response);
+    };
+
+    const loadGoogleScript = () => {
+      const script = document.createElement('script');
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.async = true;
+      script.defer = true;
+      document.body.appendChild(script);
+
+      script.onload = () => {
+        initializeGoogleSignIn();
+      };
+    };
+
+    const initializeGoogleSignIn = () => {
+      const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+      const enableGoogleAuth = import.meta.env.VITE_ENABLE_GOOGLE_AUTH === 'true';
+
+      if (!clientId || !enableGoogleAuth) {
+        console.log('Google OAuth is disabled or client ID not configured');
+        return;
+      }
+
+      if (window.google) {
+        window.google.accounts.id.initialize({
+          client_id: clientId,
+          callback: handleGoogleResponse,
+          auto_select: false,
+          cancel_on_tap_outside: true,
+        });
+
+        // Render the button
+        const buttonDiv = document.getElementById('google-signin-button-login');
+        if (buttonDiv) {
+          window.google.accounts.id.renderButton(
+            buttonDiv,
+            {
+              theme: 'filled_black',
+              size: 'large',
+              width: buttonDiv.offsetWidth,
+              text: 'signin_with',
+              shape: 'rectangular',
+              logo_alignment: 'left',
+            }
+          );
+        }
+      }
+    };
+
+    loadGoogleScript();
+  }, []);
+
+  const handleGoogleAuth = async (response: { credential: string }) => {
+    setGoogleLoading(true);
+    try {
+      console.log('🔐 Google Sign-In response received');
+      
+      const idToken = response.credential;
+      
+      if (!idToken) {
+        throw new Error('Google ID token topilmadi');
+      }
+
+      console.log('📤 Sending Google ID token to backend...');
+      
+      // Send to backend
+      const authResponse = await googleAuth(idToken);
+      
+      console.log('✅ Backend response:', authResponse);
+      
+      // Extract tokens (backend might return different formats)
+      const accessToken = authResponse.tokens?.access || authResponse.access || authResponse.access_token;
+      const refreshToken = authResponse.tokens?.refresh || authResponse.refresh || authResponse.refresh_token;
+      
+      if (!accessToken || !refreshToken) {
+        console.error('❌ Missing tokens in response:', authResponse);
+        throw new Error('Server javobida tokenlar yo\'q');
+      }
+      
+      // Save tokens
+      saveAuthTokens(accessToken, refreshToken);
+      
+      // Save user profile if provided
+      if (authResponse.user) {
+        saveUserProfile(authResponse.user);
+      }
+      
+      console.log('✅ Google authentication successful');
+      
+      message.success('Google orqali muvaffaqiyatli kirdingiz!');
+      
+      // Redirect to dashboard
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 500);
+    } catch (error: unknown) {
+      console.error('❌ Google Sign-In error:', error);
+      
+      let errorMessage = 'Google orqali kirishda xatolik';
+      
+      if (error instanceof Error && error.message) {
+        if (error.message.includes('Invalid Google token')) {
+          errorMessage = 'Google token noto\'g\'ri. Bu muammo backend sozlamalari bilan bog\'liq. Backend administratoriga murojaat qiling.';
+        } else if (error.message.includes('not found')) {
+          errorMessage = 'Bu Google akkaunt ro\'yxatdan o\'tmagan. Iltimos, avval ro\'yxatdan o\'ting.';
+        } else if (error.message.includes('Invalid')) {
+          errorMessage = 'Google autentifikatsiya xatosi. Qaytadan urinib ko\'ring.';
+        } else if (error.message.includes('Server javob bermadi')) {
+          errorMessage = error.message;
+        } else if (error.message.includes('Serverga ulanib')) {
+          errorMessage = error.message;
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
+      message.error(errorMessage, 7);
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
+  const onFinish = async (values: { email: string; password: string; remember?: boolean }) => {
     setLoading(true);
     try {
       console.log('🔐 Login attempt:', { username: values.email });
@@ -44,14 +169,16 @@ const LoginPage: React.FC = () => {
       
       console.log('✅ Login response:', response);
       
-      // Save tokens (response has access/refresh, not access_token/refresh_token)
+      // Backend returns: {access: "...", refresh: "...", role: "..."}
       const accessToken = response.access || response.access_token;
       const refreshToken = response.refresh || response.refresh_token;
       
       if (!accessToken || !refreshToken) {
-        throw new Error('Invalid response: missing tokens');
+        console.error('❌ Missing tokens in response:', response);
+        throw new Error('Server javobida tokenlar yo\'q');
       }
       
+      // Save tokens to localStorage
       saveAuthTokens(accessToken, refreshToken);
       
       // If user info is provided, save it
@@ -62,72 +189,33 @@ const LoginPage: React.FC = () => {
       console.log('✅ Tokens saved, redirecting to dashboard...');
       
       message.success('Xush kelibsiz!');
-      navigate('/dashboard');
-    } catch (error: any) {
+      
+      // Redirect to dashboard
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 500);
+    } catch (error: unknown) {
       console.error('❌ Login error:', error);
-      message.error(error.message || 'Kirishda xatolik');
+      
+      // Parse error message
+      let errorMessage = 'Kirishda xatolik yuz berdi';
+      
+      if (error instanceof Error && error.message) {
+        if (error.message.includes('credentials')) {
+          errorMessage = 'Email yoki parol noto\'g\'ri';
+        } else if (error.message.includes('not found')) {
+          errorMessage = 'Foydalanuvchi topilmadi';
+        } else if (error.message.includes('disabled')) {
+          errorMessage = 'Akkaunt bloklangan';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
+      message.error(errorMessage, 5);
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
-    if (!credentialResponse.credential) {
-      message.error('Google login failed');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      console.log('🔐 Google login attempt');
-      const response = await googleAuth(credentialResponse.credential);
-      
-      console.log('✅ Google login response:', response);
-      
-      // Google OAuth returns: {message: "...", user: {...}, tokens: {access: "...", refresh: "..."}}
-      let accessToken: string | undefined;
-      let refreshToken: string | undefined;
-      
-      // Check if tokens are nested in tokens object
-      if (response.tokens) {
-        accessToken = response.tokens.access;
-        refreshToken = response.tokens.refresh;
-      } else {
-        // Fallback to direct properties
-        accessToken = response.access_token || response.access;
-        refreshToken = response.refresh_token || response.refresh;
-      }
-      
-      console.log('Token extraction:', { 
-        has_tokens_object: !!response.tokens,
-        accessToken: accessToken ? 'present' : 'missing',
-        refreshToken: refreshToken ? 'present' : 'missing'
-      });
-      
-      if (!accessToken || !refreshToken) {
-        console.error('❌ Missing tokens in response:', response);
-        throw new Error('Invalid response: missing tokens');
-      }
-      
-      saveAuthTokens(accessToken, refreshToken);
-      
-      // Save user profile if provided
-      if (response.user) {
-        saveUserProfile(response.user);
-      }
-      
-      message.success('Xush kelibsiz!');
-      navigate('/dashboard');
-    } catch (error: any) {
-      console.error('❌ Google login error:', error);
-      message.error(error.message || 'Google login failed');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGoogleError = () => {
-    message.error('Google login failed');
   };
 
   return (
@@ -167,7 +255,7 @@ const LoginPage: React.FC = () => {
             width: 'fit-content'
           }}>
             <ArrowLeft size={18} style={{ marginRight: '8px' }} />
-            <Text style={{ color: 'inherit', fontWeight: 600 }}>Back</Text>
+            <Text style={{ color: 'inherit', fontWeight: 600 }}>Orqaga</Text>
           </Link>
 
           <div style={{ 
@@ -189,10 +277,10 @@ const LoginPage: React.FC = () => {
                 fontSize: isMobile ? '24px' : '28px', 
                 letterSpacing: '-0.5px' 
               }}>
-                Welcome back
+                Xush kelibsiz
               </Title>
               <Text style={{ color: '#94a3b8', fontSize: '14px' }}>
-                Sign in to continue
+                Akkauntingizga kiring
               </Text>
             </div>
 
@@ -205,7 +293,9 @@ const LoginPage: React.FC = () => {
             >
               <Form.Item
                 name="email"
-                rules={[{ required: true, message: 'Email yoki username kiriting' }]}
+                rules={[
+                  { required: true, message: 'Email yoki username kiriting' }
+                ]}
                 style={{ marginBottom: '16px' }}
               >
                 <Input 
@@ -223,7 +313,9 @@ const LoginPage: React.FC = () => {
 
               <Form.Item
                 name="password"
-                rules={[{ required: true, message: 'Parol kiriting' }]}
+                rules={[
+                  { required: true, message: 'Parol kiriting' }
+                ]}
                 style={{ marginBottom: '16px' }}
               >
                 <Input.Password 
@@ -257,16 +349,17 @@ const LoginPage: React.FC = () => {
                   fontWeight: 600, 
                   fontSize: '14px' 
                 }}>
-                  Unutdingizmi?
+                  Parolni unutdingizmi?
                 </Link>
               </div>
 
-              <Form.Item style={{ marginBottom: '16px' }}>
+              <Form.Item style={{ marginBottom: '0' }}>
                 <Button 
                   type="primary" 
                   htmlType="submit" 
                   block 
                   loading={loading}
+                  disabled={googleLoading}
                   className="gradient-btn"
                   style={{ 
                     height: '48px', 
@@ -275,46 +368,45 @@ const LoginPage: React.FC = () => {
                     fontSize: '15px'
                   }}
                 >
-                  Kirish
+                  {loading ? 'Kirmoqda...' : 'Kirish'}
                 </Button>
               </Form.Item>
             </Form>
 
-            <Divider style={{ 
-              borderColor: 'rgba(255, 255, 255, 0.1)', 
-              margin: '24px 0',
-              color: '#94a3b8',
-              fontSize: '14px'
-            }}>
-              Yoki Google bilan
-            </Divider>
+            {import.meta.env.VITE_ENABLE_GOOGLE_AUTH === 'true' && import.meta.env.VITE_GOOGLE_CLIENT_ID && (
+              <>
+                <Divider style={{ 
+                  borderColor: 'rgba(255, 255, 255, 0.1)', 
+                  margin: '24px 0',
+                  color: '#94a3b8',
+                  fontSize: '13px'
+                }}>
+                  yoki
+                </Divider>
 
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'center',
-              marginBottom: '24px'
-            }}>
-              <GoogleLogin
-                onSuccess={handleGoogleSuccess}
-                onError={handleGoogleError}
-                useOneTap
-                theme="filled_black"
-                size="large"
-                text="signin_with"
-                shape="rectangular"
-                logo_alignment="left"
-              />
-            </div>
-
-            {loading && (
-              <div style={{ 
-                textAlign: 'center', 
-                color: '#10b981',
-                fontSize: '14px',
-                marginBottom: '16px'
-              }}>
-                Kirmoqda...
-              </div>
+                <div style={{ marginBottom: '16px' }}>
+                  <div 
+                    id="google-signin-button-login" 
+                    style={{ 
+                      display: 'flex', 
+                      justifyContent: 'center',
+                      opacity: googleLoading ? 0.5 : 1,
+                      pointerEvents: googleLoading ? 'none' : 'auto',
+                      transition: 'opacity 0.3s ease'
+                    }}
+                  />
+                  {googleLoading && (
+                    <div style={{ 
+                      textAlign: 'center', 
+                      marginTop: '12px',
+                      color: '#94a3b8',
+                      fontSize: '13px'
+                    }}>
+                      Google orqali kirmoqda...
+                    </div>
+                  )}
+                </div>
+              </>
             )}
 
             <div style={{ textAlign: 'center', marginTop: '24px' }}>

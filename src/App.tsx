@@ -2,7 +2,6 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { ConfigProvider, theme as antdTheme } from 'antd';
 import { AnimatePresence } from 'framer-motion';
-import { GoogleOAuthProvider } from '@react-oauth/google';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import AppLayout from './components/AppLayout';
 import DashboardHome from './pages/DashboardHome';
@@ -10,7 +9,9 @@ import WritingPage from './pages/WritingPage';
 import SpeakingPage from './pages/SpeakingPage';
 import ReportsPage from './pages/ReportsPage';
 import ReadingPage from './pages/ReadingPage';
+import ReadingHubPage from './pages/ReadingHubPage';
 import ListeningPage from './pages/ListeningPage';
+import ListeningHubPage from './pages/ListeningHubPage';
 import PricingPage from './pages/PricingPage';
 import ProfilePage from './pages/ProfilePage';
 import LandingPage from './pages/LandingPage';
@@ -18,13 +19,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import VocabularyPage from './pages/VocabularyPage';
 import SmartArticlePage from './pages/SmartArticlePage';
-import ResourceManagerPage from './pages/ResourceManagerPage';
-import ListeningHubPage from './pages/ListeningHubPage';
-import ReadingPassageManager from './pages/ReadingPassageManager';
-import ListeningTestManager from './pages/ListeningTestManager';
 import PageTransition from './components/PageTransition';
-
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
 const DashboardLayout: React.FC = () => {
   const location = useLocation();
@@ -54,14 +49,12 @@ const AnimateRoutes: React.FC = () => {
           <Route path="writing" element={<WritingPage />} />
           <Route path="speaking" element={<SpeakingPage />} />
           <Route path="reports" element={<ReportsPage />} />
-          <Route path="reading" element={<ReadingPage />} />
-          <Route path="listening" element={<ListeningPage />} />
+          <Route path="reading-hub" element={<ReadingHubPage />} />
+          <Route path="reading/:slug" element={<ReadingPage />} />
+          <Route path="listening-hub" element={<ListeningHubPage />} />
+          <Route path="listening/:slug" element={<ListeningPage />} />
           <Route path="vocabulary" element={<VocabularyPage />} />
           <Route path="smart-article" element={<SmartArticlePage />} />
-          <Route path="listening-hub" element={<ListeningHubPage />} />
-          <Route path="resource-manager" element={<ResourceManagerPage />} />
-          <Route path="passage-manager" element={<ReadingPassageManager />} />
-          <Route path="listening-manager" element={<ListeningTestManager />} />
           <Route path="pricing" element={<PricingPage />} />
           <Route path="profile" element={<ProfilePage />} />
         </Route>
@@ -145,11 +138,9 @@ const AppContent: React.FC = () => {
 
 const App: React.FC = () => {
   return (
-    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-      <ThemeProvider>
-        <AppContent />
-      </ThemeProvider>
-    </GoogleOAuthProvider>
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
   );
 };
 

@@ -1,224 +1,577 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Typography, Button, Row, Col, Space, Grid } from 'antd';
+import { Card, Typography, Button, Spin, message, Grid } from 'antd';
 import { 
-  BookOpen, 
-  ArrowRight,
   ArrowLeft,
-  FileCode
+  BookOpen,
+  Clock,
+  FileText,
+  AlertCircle,
+  TrendingUp
 } from 'lucide-react';
-import { readingPassageManager } from '../services/dataManager';
-import type { ReadingPassage } from '../types';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import './ReadingPage.css';
 
-const { Title, Text } = Typography;
+const { Title, Text, Paragraph } = Typography;
 const { useBreakpoint } = Grid;
 
+interface ReadingPassage {
+  id: number;
+  title: string;
+  slug: string;
+  html_content_url: string;
+  cover_image_url: string;
+  difficulty: 'easy' | 'medium' | 'hard';
+  word_count: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 const ReadingPage: React.FC = () => {
+  const { slug } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
+  const location = useLocation();
   const screens = useBreakpoint();
   const isMobile = !screens.md;
 
-  const [passages, setPassages] = useState<ReadingPassage[]>([]);
-  const [selectedPassage, setSelectedPassage] = useState<ReadingPassage | null>(null);
+  const [passage, setPassage] = useState<ReadingPassage | null>(location.state?.passage || null);
+  const [htmlContent, setHtmlContent] = useState<string>('');
+  const [loading, setLoading] = useState(true);
   const [testStarted, setTestStarted] = useState(false);
 
-  // Load passages from localStorage
   useEffect(() => {
-    setPassages(readingPassageManager.getAll());
-  }, []);
+    const initPassage = async () => {
+      if (!passage && slug) {
+        await loadPassage();
+      } else if (passage) {
+        await loadHtmlContent();
+      }
+    };
+    
+    initPassage();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slug]);
 
-  const handleStartTest = (passage: ReadingPassage) => {
-    setSelectedPassage(passage);
+  const loadPassage = async () => {
+    setLoading(true);
+    try {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://ieltsify.pythonanywhere.com';
+      const accessToken = localStorage.getItem('access_token');
+      
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+      
+      if (accessToken) {
+        headers['Authorization'] = `Bearer ${accessToken}`;
+      }
+      
+      const response = await fetch(`${API_BASE_URL}/reading-passages/`, {
+        headers,
+      });
+      
+      if (!response.ok) {
+        if (response.status === 401) {
+          message.error('Iltimos, tizimga kiring');
+          navigate('/login');
+          return;
+        }
+        throw new Error('Failed to load passage');
+      }
+
+      const data = await response.json();
+      const foundPassage = data.results.find((p: ReadingPassage) => p.slug === slug);
+      
+      if (!foundPassage) {
+        throw new Error('Passage not found');
+      }
+
+      setPassage(foundPassage);
+      await loadHtmlContent(foundPassage);
+    } catch (error) {
+      console.error('Error loading passage:', error);
+      message.error('Passageni yuklashda xatolik yuz berdi');
+      navigate('/dashboard/reading-hub');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadHtmlContent = async (passageData?: ReadingPassage) => {
+    const currentPassage = passageData || passage;
+    if (!currentPassage) return;
+
+    setLoading(true);
+    try {
+      console.log('📥 Loading HTML from:', currentPassage.html_content_url);
+      
+      // Try without authentication first for media files
+      const response = await fetch(currentPassage.html_content_url, {
+        mode: 'cors',
+        credentials: 'omit', // Don't send credentials for media files
+      });
+      
+      console.log('📊 Response status:', response.status);
+      console.log('📊 Response headers:', Object.fromEntries(response.headers.entries()));
+      
+      if (!response.ok) {
+        if (response.status === 404) {
+          console.error('❌ HTML fayl topilmadi:', currentPassage.html_content_url);
+          message.error({
+            content: 'HTML fayl serverda topilmadi. Backend administratorga xabar bering.',
+            duration: 5,
+          });
+          return;
+        }
+        if (response.status === 403) {
+          console.error('❌ Faylga kirish taqiqlangan:', currentPassage.html_content_url);
+          message.error({
+            content: 'Faylga kirish taqiqlangan. CORS yoki permissions muammosi.',
+            duration: 5,
+          });
+          return;
+        }
+        throw new Error(`Failed to load HTML content: ${response.status} ${response.statusText}`);
+      }
+
+      const contentType = response.headers.get('content-type');
+      console.log('📊 Content-Type:', contentType);
+
+      const html = await response.text();
+      console.log('✅ HTML content loaded, length:', html.length);
+      console.log('📄 First 200 chars:', html.substring(0, 200));
+      
+      if (html.length === 0) {
+        message.error('HTML fayl bo\'sh. Backend\'da fayl to\'g\'ri yuklanganini tekshiring.');
+        return;
+      }
+      
+      setHtmlContent(html);
+    } catch (error) {
+      console.error('❌ Error loading HTML content:', error);
+      if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+        message.error({
+          content: 'HTML faylni yuklashda tarmoq xatoligi. CORS sozlamalarini tekshiring.',
+          duration: 5,
+        });
+      } else {
+        message.error({
+          content: 'Passage kontentini yuklashda xatolik yuz berdi',
+          duration: 5,
+        });
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleStartTest = () => {
     setTestStarted(true);
   };
 
   const handleBackToList = () => {
-    setTestStarted(false);
-    setSelectedPassage(null);
+    navigate('/dashboard/reading-hub');
   };
 
-  // Test List View
-  if (!testStarted) {
+  const getDifficultyColor = (diff: string) => {
+    const colors: Record<string, string> = {
+      easy: '#52c41a',
+      medium: '#faad14',
+      hard: '#f5222d',
+    };
+    return colors[diff] || '#1890ff';
+  };
+
+  const getDifficultyIcon = (diff: string): React.ReactNode => {
+    const icons: Record<string, React.ReactNode> = {
+      easy: <TrendingUp size={16} style={{ transform: 'rotate(-45deg)' }} />,
+      medium: <TrendingUp size={16} />,
+      hard: <TrendingUp size={16} style={{ transform: 'rotate(45deg)' }} />,
+    };
+    return icons[diff] || <TrendingUp size={16} />;
+  };
+
+  const getReadingTime = (wordCount: number) => {
+    // Average reading speed: 200-250 words per minute
+    const minutes = Math.ceil(wordCount / 225);
+    return `${minutes} min`;
+  };
+
+  // Loading State
+  if (loading) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', paddingBottom: '40px' }}>
-        {/* Header */}
-        <div>
-          <Title level={1} style={{ margin: 0, fontSize: isMobile ? '28px' : '36px', fontWeight: '700', color: '#ffffff' }}>
-            Reading Practice
-          </Title>
-          <Text style={{ fontSize: isMobile ? '14px' : '15px', color: '#64748b' }}>
-            Choose a test to start your IELTS reading practice
-          </Text>
-        </div>
-
-        {/* Tests Grid */}
-        {passages.length === 0 ? (
-          <Card
-            style={{
-              borderRadius: '20px',
-              background: 'rgba(255,255,255,0.03)',
-              backdropFilter: 'blur(10px)',
-              textAlign: 'center',
-              padding: '60px 20px'
-            }}
-          >
-            <div style={{ 
-              padding: '24px', 
-              backgroundColor: 'rgba(59, 130, 246, 0.1)', 
-              borderRadius: '20px',
-              display: 'inline-block',
-              marginBottom: '20px'
-            }}>
-              <BookOpen size={48} color="#3b82f6" />
-            </div>
-            <Title level={3} style={{ color: '#ffffff', marginBottom: '12px' }}>
-              No Reading Passages Available
-            </Title>
-            <Text style={{ color: '#64748b', fontSize: '15px' }}>
-              Upload reading passages in the Reading Passage Manager to get started
-            </Text>
-          </Card>
-        ) : (
-          <Row gutter={[isMobile ? 16 : 24, isMobile ? 16 : 24]}>
-            {passages.map((passage) => (
-              <Col xs={24} sm={12} lg={8} key={passage.id}>
-                <Card
-                  hoverable
-                  style={{
-                    borderRadius: '20px',
-                    background: 'rgba(255,255,255,0.03)',
-                    backdropFilter: 'blur(10px)',
-                    height: '100%',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease'
-                  }}
-                  styles={{ body: { padding: '24px', height: '100%', display: 'flex', flexDirection: 'column' } }}
-                  onClick={() => handleStartTest(passage)}
-                >
-                  <div style={{ flex: 1 }}>
-                    {passage.imageUrl && (
-                      <div style={{ marginBottom: '16px' }}>
-                        <img
-                          src={passage.imageUrl}
-                          alt={passage.title}
-                          style={{
-                            width: '100%',
-                            height: '120px',
-                            objectFit: 'cover',
-                            borderRadius: '12px'
-                          }}
-                        />
-                      </div>
-                    )}
-
-                    {!passage.imageUrl && (
-                      <div style={{ 
-                        padding: '12px', 
-                        backgroundColor: 'rgba(59, 130, 246, 0.1)', 
-                        borderRadius: '12px',
-                        display: 'inline-block',
-                        marginBottom: '16px'
-                      }}>
-                        <FileCode size={24} color="#3b82f6" />
-                      </div>
-                    )}
-
-                    <Title level={4} style={{ color: '#ffffff', marginBottom: '12px', fontSize: '18px' }}>
-                      {passage.title}
-                    </Title>
-
-                    <Space orientation="vertical" size={12} style={{ width: '100%', marginBottom: '20px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <FileCode size={14} color="#64748b" />
-                        <Text style={{ fontSize: '13px', color: '#64748b' }}>
-                          IELTS Reading Passage
-                        </Text>
-                      </div>
-                    </Space>
-                  </div>
-
-                  <Button
-                    type="primary"
-                    size="large"
-                    block
-                    icon={<ArrowRight size={18} />}
-                    style={{
-                      backgroundColor: '#10b981',
-                      borderColor: '#10b981',
-                      height: '48px',
-                      borderRadius: '12px',
-                      fontWeight: '600',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '8px'
-                    }}
-                  >
-                    Start Reading
-                  </Button>
-                </Card>
-              </Col>
-            ))}
-          </Row>
-        )}
+      <div style={{ 
+        display: 'flex', 
+        flexDirection: 'column',
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        minHeight: '60vh',
+        gap: '16px'
+      }}>
+        <Spin size="large" />
+        <Text style={{ color: '#64748b', fontSize: '15px' }}>
+          Passage yuklanmoqda...
+        </Text>
       </div>
     );
   }
 
-  // Test View - Full Screen Iframe
-  return (
-    <div style={{ 
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      zIndex: 9999,
-      background: '#ffffff',
-      display: 'flex',
-      flexDirection: 'column'
-    }}>
-      {/* Minimal Header */}
-      <div style={{
-        padding: '16px 24px',
-        background: '#0f172a',
-        borderBottom: '1px solid rgba(16, 185, 129, 0.15)',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center'
+  // Error State
+  if (!passage) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        flexDirection: 'column',
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        minHeight: '60vh',
+        gap: '16px'
       }}>
-        <Button
-          icon={<ArrowLeft size={18} />}
-          onClick={handleBackToList}
-          style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '8px',
-            background: 'rgba(255,255,255,0.05)',
-            border: '1px solid rgba(255,255,255,0.1)',
-            color: '#ffffff'
-          }}
-        >
-          Exit Test
+        <AlertCircle size={48} color="#f5222d" />
+        <Title level={3} style={{ margin: 0 }}>Passage topilmadi</Title>
+        <Button type="primary" onClick={handleBackToList}>
+          Reading Hub'ga qaytish
         </Button>
-
-        <Text style={{ fontSize: '16px', color: '#ffffff', fontWeight: '600' }}>
-          {selectedPassage?.title}
-        </Text>
       </div>
+    );
+  }
 
-      {/* Full Screen Iframe */}
-      <div style={{ flex: 1, overflow: 'hidden' }}>
-        <iframe
-          srcDoc={selectedPassage?.htmlContent}
-          style={{
-            width: '100%',
-            height: '100%',
-            border: 'none',
-            display: 'block'
+  // Test Started - Full Screen HTML Content
+  if (testStarted && htmlContent) {
+    return (
+      <div style={{ 
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 9999,
+        background: '#ffffff',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden'
+      }}>
+        {/* Minimal Header */}
+        <div style={{
+          padding: '12px 24px',
+          background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+          borderBottom: '1px solid rgba(255,255,255,0.1)',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+          flexShrink: 0
+        }}>
+          <Button
+            icon={<ArrowLeft size={18} />}
+            onClick={handleBackToList}
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '8px',
+              background: 'rgba(255,255,255,0.2)',
+              border: 'none',
+              color: '#ffffff',
+              fontWeight: '600'
+            }}
+          >
+            Testni tugatish
+          </Button>
+
+          <Text style={{ fontSize: isMobile ? '14px' : '16px', color: '#ffffff', fontWeight: '600' }}>
+            {passage.title}
+          </Text>
+
+          <div style={{ width: isMobile ? '80px' : '120px' }} />
+        </div>
+
+        {/* Full Screen HTML Content */}
+        <div 
+          style={{ 
+            flex: 1, 
+            overflow: 'auto',
+            padding: '20px',
+            background: '#ffffff'
           }}
-          sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-popups"
-          title={selectedPassage?.title}
+          dangerouslySetInnerHTML={{ __html: htmlContent }}
         />
+      </div>
+    );
+  }
+
+  // Test Preview - Before Starting
+  return (
+    <div style={{ paddingBottom: '40px', maxWidth: '1200px', margin: '0 auto' }}>
+      {/* Back Button */}
+      <Button
+        icon={<ArrowLeft size={18} />}
+        onClick={handleBackToList}
+        style={{ 
+          marginBottom: '24px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px'
+        }}
+      >
+        Orqaga
+      </Button>
+
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: isMobile ? '1fr' : '2fr 1fr',
+        gap: '24px'
+      }}>
+        {/* Left Column - Passage Info */}
+        <div>
+          <Card
+            style={{
+              borderRadius: '20px',
+              overflow: 'hidden',
+              border: 'none',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+            }}
+          >
+            {/* Cover Image */}
+            <div style={{ position: 'relative', marginBottom: '24px' }}>
+              <img
+                src={passage.cover_image_url}
+                alt={passage.title}
+                style={{
+                  width: '100%',
+                  height: isMobile ? '200px' : '300px',
+                  objectFit: 'cover',
+                  borderRadius: '16px'
+                }}
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                  target.parentElement!.style.background = 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)';
+                  target.parentElement!.style.display = 'flex';
+                  target.parentElement!.style.alignItems = 'center';
+                  target.parentElement!.style.justifyContent = 'center';
+                  target.parentElement!.innerHTML = `<div style="color: white;"><svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></div>`;
+                }}
+              />
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '16px',
+                  right: '16px',
+                  background: getDifficultyColor(passage.difficulty),
+                  color: 'white',
+                  padding: '8px 16px',
+                  borderRadius: '20px',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                }}
+              >
+                {getDifficultyIcon(passage.difficulty)}
+                {passage.difficulty.charAt(0).toUpperCase() + passage.difficulty.slice(1)}
+              </div>
+            </div>
+
+            {/* Passage Details */}
+            <div style={{ padding: '0 8px' }}>
+              <Title level={2} style={{ marginBottom: '16px', fontSize: isMobile ? '24px' : '32px' }}>
+                {passage.title}
+              </Title>
+
+              <Paragraph style={{ fontSize: '16px', color: '#64748b', marginBottom: '24px' }}>
+                IELTS Reading passage with {passage.word_count.toLocaleString()} words
+              </Paragraph>
+
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
+                gap: '16px',
+                marginBottom: '24px'
+              }}>
+                <div style={{
+                  padding: '16px',
+                  background: 'rgba(59, 130, 246, 0.1)',
+                  borderRadius: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px'
+                }}>
+                  <Clock size={24} color="#3b82f6" />
+                  <div>
+                    <Text style={{ display: 'block', fontSize: '12px', color: '#64748b' }}>
+                      O'qish vaqti
+                    </Text>
+                    <Text style={{ display: 'block', fontSize: '16px', fontWeight: '600' }}>
+                      {getReadingTime(passage.word_count)}
+                    </Text>
+                  </div>
+                </div>
+
+                <div style={{
+                  padding: '16px',
+                  background: 'rgba(16, 185, 129, 0.1)',
+                  borderRadius: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px'
+                }}>
+                  <FileText size={24} color="#10b981" />
+                  <div>
+                    <Text style={{ display: 'block', fontSize: '12px', color: '#64748b' }}>
+                      So'zlar soni
+                    </Text>
+                    <Text style={{ display: 'block', fontSize: '16px', fontWeight: '600' }}>
+                      {passage.word_count.toLocaleString()}
+                    </Text>
+                  </div>
+                </div>
+
+                <div style={{
+                  padding: '16px',
+                  background: 'rgba(168, 85, 247, 0.1)',
+                  borderRadius: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px'
+                }}>
+                  <BookOpen size={24} color="#a855f7" />
+                  <div>
+                    <Text style={{ display: 'block', fontSize: '12px', color: '#64748b' }}>
+                      Format
+                    </Text>
+                    <Text style={{ display: 'block', fontSize: '16px', fontWeight: '600' }}>
+                      IELTS
+                    </Text>
+                  </div>
+                </div>
+              </div>
+
+              <Button
+                type="primary"
+                size="large"
+                block
+                onClick={handleStartTest}
+                disabled={!htmlContent}
+                style={{
+                  height: '56px',
+                  borderRadius: '12px',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                  border: 'none',
+                }}
+              >
+                {htmlContent ? 'Testni boshlash' : 'Yuklanmoqda...'}
+              </Button>
+            </div>
+          </Card>
+        </div>
+
+        {/* Right Column - Instructions */}
+        <div>
+          <Card
+            style={{
+              borderRadius: '20px',
+              border: 'none',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+            }}
+          >
+            <Title level={4} style={{ marginBottom: '16px' }}>
+              Test Ko'rsatmalari
+            </Title>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <div style={{
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                  color: 'white',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: '600',
+                  flexShrink: 0
+                }}>
+                  1
+                </div>
+                <div>
+                  <Text style={{ display: 'block', fontWeight: '600', marginBottom: '4px' }}>
+                    Passageni o'qing
+                  </Text>
+                  <Text style={{ fontSize: '14px', color: '#64748b' }}>
+                    Matnni diqqat bilan o'qing va asosiy fikrlarni tushunishga harakat qiling
+                  </Text>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <div style={{
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                  color: 'white',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: '600',
+                  flexShrink: 0
+                }}>
+                  2
+                </div>
+                <div>
+                  <Text style={{ display: 'block', fontWeight: '600', marginBottom: '4px' }}>
+                    Savollarni javoblang
+                  </Text>
+                  <Text style={{ fontSize: '14px', color: '#64748b' }}>
+                    Barcha savollarga javob bering va javoblaringizni tekshiring
+                  </Text>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <div style={{
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                  color: 'white',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: '600',
+                  flexShrink: 0
+                }}>
+                  3
+                </div>
+                <div>
+                  <Text style={{ display: 'block', fontWeight: '600', marginBottom: '4px' }}>
+                    Natijalarni ko'ring
+                  </Text>
+                  <Text style={{ fontSize: '14px', color: '#64748b' }}>
+                    Test tugagach natijalaringizni ko'ring va tahlil qiling
+                  </Text>
+                </div>
+              </div>
+            </div>
+
+            <div style={{
+              marginTop: '24px',
+              padding: '16px',
+              background: 'rgba(59, 130, 246, 0.1)',
+              borderRadius: '12px',
+              border: '1px solid rgba(59, 130, 246, 0.2)'
+            }}>
+              <Text style={{ fontSize: '14px', color: '#64748b' }}>
+                💡 <strong>Maslahat:</strong> IELTS Reading testida 60 daqiqa vaqt beriladi. Vaqtni to'g'ri boshqaring!
+              </Text>
+            </div>
+          </Card>
+        </div>
       </div>
     </div>
   );

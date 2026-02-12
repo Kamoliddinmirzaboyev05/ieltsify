@@ -1,47 +1,47 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Typography, Select, Empty, Spin, Button, Space, Tag, Grid, message } from 'antd';
-import { Headphones, Play, Clock, BookOpen, TrendingUp } from 'lucide-react';
+import { BookOpen, Play, Clock, FileText, TrendingUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
 const { Title, Text, Paragraph } = Typography;
 const { useBreakpoint } = Grid;
 
-interface ListeningTest {
+interface ReadingPassage {
   id: number;
   title: string;
   slug: string;
-  description: string;
-  html_file_url: string;
+  html_content_url: string;
   cover_image_url: string;
   difficulty: 'easy' | 'medium' | 'hard';
+  word_count: number;
   is_active: boolean;
   created_at: string;
   updated_at: string;
 }
 
-interface ListeningTestsResponse {
+interface ReadingPassagesResponse {
   count: number;
   next: string | null;
   previous: string | null;
-  results: ListeningTest[];
+  results: ReadingPassage[];
 }
 
-const ListeningHubPage: React.FC = () => {
+const ReadingHubPage: React.FC = () => {
   const navigate = useNavigate();
   const screens = useBreakpoint();
   const isMobile = !screens.md;
   
-  const [tests, setTests] = useState<ListeningTest[]>([]);
+  const [passages, setPassages] = useState<ReadingPassage[]>([]);
   const [loading, setLoading] = useState(true);
   const [difficulty, setDifficulty] = useState<string>('all');
 
   useEffect(() => {
-    loadTests();
+    loadPassages();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const loadTests = async () => {
+  const loadPassages = async () => {
     setLoading(true);
     try {
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://ieltsify.pythonanywhere.com';
@@ -55,7 +55,7 @@ const ListeningHubPage: React.FC = () => {
         headers['Authorization'] = `Bearer ${accessToken}`;
       }
       
-      const response = await fetch(`${API_BASE_URL}/listening-tests/`, {
+      const response = await fetch(`${API_BASE_URL}/reading-passages/`, {
         headers,
       });
       
@@ -65,28 +65,28 @@ const ListeningHubPage: React.FC = () => {
           navigate('/login');
           return;
         }
-        throw new Error('Failed to load listening tests');
+        throw new Error('Failed to load reading passages');
       }
 
-      const data: ListeningTestsResponse = await response.json();
-      // Show all tests (including inactive ones for development)
-      setTests(data.results);
-      console.log('📊 Loaded tests:', data.results.length, 'tests');
+      const data: ReadingPassagesResponse = await response.json();
+      // Show all passages (including inactive ones for development)
+      setPassages(data.results);
+      console.log('📊 Loaded passages:', data.results.length, 'passages');
     } catch (error) {
-      console.error('Error loading listening tests:', error);
-      message.error('Listening testlarni yuklashda xatolik yuz berdi');
+      console.error('Error loading reading passages:', error);
+      message.error('Reading passagelarni yuklashda xatolik yuz berdi');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleStartTest = (test: ListeningTest) => {
-    navigate(`/dashboard/listening/${test.slug}`, { state: { test } });
+  const handleStartTest = (passage: ReadingPassage) => {
+    navigate(`/dashboard/reading/${passage.slug}`, { state: { passage } });
   };
 
-  const filteredTests = difficulty === 'all'
-    ? tests
-    : tests.filter(t => t.difficulty === difficulty);
+  const filteredPassages = difficulty === 'all'
+    ? passages
+    : passages.filter(p => p.difficulty === difficulty);
 
   const getDifficultyColor = (diff: string) => {
     const colors: Record<string, string> = {
@@ -104,6 +104,11 @@ const ListeningHubPage: React.FC = () => {
       hard: <TrendingUp size={16} style={{ transform: 'rotate(45deg)' }} />,
     };
     return icons[diff] || <TrendingUp size={16} />;
+  };
+
+  const getReadingTime = (wordCount: number) => {
+    const minutes = Math.ceil(wordCount / 225);
+    return `${minutes} min`;
   };
 
   return (
@@ -124,11 +129,11 @@ const ListeningHubPage: React.FC = () => {
       >
         <div>
           <Title level={1} style={{ margin: 0, fontSize: isMobile ? '28px' : '36px', fontWeight: '800' }}>
-            <Headphones size={isMobile ? 32 : 40} style={{ marginRight: '12px', verticalAlign: 'middle', color: '#10b981' }} />
-            Listening Tests
+            <BookOpen size={isMobile ? 32 : 40} style={{ marginRight: '12px', verticalAlign: 'middle', color: '#3b82f6' }} />
+            Reading Passages
           </Title>
           <Text type="secondary" style={{ fontSize: isMobile ? '14px' : '16px' }}>
-            IELTS Listening practice testlari bilan mashq qiling
+            IELTS Reading practice passagelari bilan mashq qiling
           </Text>
         </div>
         <Select
@@ -156,17 +161,17 @@ const ListeningHubPage: React.FC = () => {
           marginBottom: '32px'
         }}
       >
-        <Card style={{ borderRadius: '16px', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', border: 'none' }}>
+        <Card style={{ borderRadius: '16px', background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)', border: 'none' }}>
           <div style={{ color: 'white' }}>
-            <BookOpen size={24} style={{ marginBottom: '8px' }} />
-            <Title level={3} style={{ color: 'white', margin: '8px 0' }}>{tests.length}</Title>
-            <Text style={{ color: 'rgba(255,255,255,0.9)' }}>Jami testlar</Text>
+            <FileText size={24} style={{ marginBottom: '8px' }} />
+            <Title level={3} style={{ color: 'white', margin: '8px 0' }}>{passages.length}</Title>
+            <Text style={{ color: 'rgba(255,255,255,0.9)' }}>Jami passagelar</Text>
           </div>
         </Card>
         <Card style={{ borderRadius: '16px', background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', border: 'none' }}>
           <div style={{ color: 'white' }}>
             <Clock size={24} style={{ marginBottom: '8px' }} />
-            <Title level={3} style={{ color: 'white', margin: '8px 0' }}>30-40 min</Title>
+            <Title level={3} style={{ color: 'white', margin: '8px 0' }}>60 min</Title>
             <Text style={{ color: 'rgba(255,255,255,0.9)' }}>Test davomiyligi</Text>
           </div>
         </Card>
@@ -179,21 +184,21 @@ const ListeningHubPage: React.FC = () => {
         </Card>
       </motion.div>
 
-      {/* Tests Grid */}
+      {/* Passages Grid */}
       {loading ? (
         <div style={{ textAlign: 'center', padding: '60px 0' }}>
           <Spin size="large" />
           <div style={{ marginTop: '16px' }}>
-            <Text type="secondary">Listening testlar yuklanmoqda...</Text>
+            <Text type="secondary">Reading passagelar yuklanmoqda...</Text>
           </div>
         </div>
-      ) : filteredTests.length === 0 ? (
+      ) : filteredPassages.length === 0 ? (
         <Empty
           description={
             <span>
               {difficulty === 'all' 
-                ? 'Hozircha listening testlar mavjud emas' 
-                : `${difficulty} darajasida testlar topilmadi`}
+                ? 'Hozircha reading passagelar mavjud emas' 
+                : `${difficulty} darajasida passagelar topilmadi`}
             </span>
           }
           style={{ marginTop: '60px' }}
@@ -209,9 +214,9 @@ const ListeningHubPage: React.FC = () => {
             gap: '24px'
           }}
         >
-          {filteredTests.map((test, index) => (
+          {filteredPassages.map((passage, index) => (
             <motion.div
-              key={test.id}
+              key={passage.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
@@ -235,50 +240,30 @@ const ListeningHubPage: React.FC = () => {
                 }}
                 cover={
                   <div style={{ position: 'relative', overflow: 'hidden' }}>
-                    {test.cover_image_url ? (
-                      <img
-                        alt={test.title}
-                        src={test.cover_image_url}
-                        style={{
-                          width: '100%',
-                          height: '220px',
-                          objectFit: 'cover',
-                        }}
-                        onError={(e) => {
-                          // Fallback gradient if image fails to load
-                          const target = e.target as HTMLImageElement;
-                          target.style.display = 'none';
-                          target.parentElement!.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-                          target.parentElement!.style.display = 'flex';
-                          target.parentElement!.style.alignItems = 'center';
-                          target.parentElement!.style.justifyContent = 'center';
-                          target.parentElement!.innerHTML = `<div style="color: white;"><svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg></div>`;
-                        }}
-                      />
-                    ) : (
-                      <div style={{
+                    <img
+                      alt={passage.title}
+                      src={passage.cover_image_url}
+                      style={{
                         width: '100%',
                         height: '220px',
-                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: 'white'
-                      }}>
-                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-                          <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-                          <line x1="12" y1="19" x2="12" y2="23"></line>
-                          <line x1="8" y1="23" x2="16" y2="23"></line>
-                        </svg>
-                      </div>
-                    )}
+                        objectFit: 'cover',
+                      }}
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        target.parentElement!.style.background = 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)';
+                        target.parentElement!.style.display = 'flex';
+                        target.parentElement!.style.alignItems = 'center';
+                        target.parentElement!.style.justifyContent = 'center';
+                        target.parentElement!.innerHTML = `<div style="color: white;"><svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></div>`;
+                      }}
+                    />
                     <div
                       style={{
                         position: 'absolute',
                         top: '12px',
                         right: '12px',
-                        background: getDifficultyColor(test.difficulty),
+                        background: getDifficultyColor(passage.difficulty),
                         color: 'white',
                         padding: '6px 12px',
                         borderRadius: '20px',
@@ -290,33 +275,32 @@ const ListeningHubPage: React.FC = () => {
                         boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
                       }}
                     >
-                      {getDifficultyIcon(test.difficulty)}
-                      {test.difficulty.charAt(0).toUpperCase() + test.difficulty.slice(1)}
+                      {getDifficultyIcon(passage.difficulty)}
+                      {passage.difficulty.charAt(0).toUpperCase() + passage.difficulty.slice(1)}
                     </div>
                   </div>
                 }
               >
                 <div style={{ padding: '8px 0' }}>
                   <Title level={4} style={{ marginBottom: '12px', fontSize: '18px', fontWeight: '700' }} ellipsis={{ rows: 2 }}>
-                    {test.title}
+                    {passage.title}
                   </Title>
                   
                   <Paragraph
                     type="secondary"
                     style={{ marginBottom: '16px', fontSize: '14px', minHeight: '40px' }}
-                    ellipsis={{ rows: 2 }}
                   >
-                    {test.description || 'IELTS Listening practice test'}
+                    {passage.word_count.toLocaleString()} words • {getReadingTime(passage.word_count)} reading time
                   </Paragraph>
 
                   <Space style={{ marginBottom: '16px', flexWrap: 'wrap' }}>
                     <Tag icon={<Clock size={14} />} color="blue">
-                      30-40 min
+                      {getReadingTime(passage.word_count)}
                     </Tag>
-                    <Tag icon={<Headphones size={14} />} color="purple">
-                      Audio Test
+                    <Tag icon={<FileText size={14} />} color="purple">
+                      {passage.word_count.toLocaleString()} words
                     </Tag>
-                    {!test.is_active && (
+                    {!passage.is_active && (
                       <Tag color="red">
                         Nofaol
                       </Tag>
@@ -328,17 +312,17 @@ const ListeningHubPage: React.FC = () => {
                     size="large"
                     block
                     icon={<Play size={18} />}
-                    onClick={() => handleStartTest(test)}
+                    onClick={() => handleStartTest(passage)}
                     style={{
                       borderRadius: '12px',
                       height: '48px',
                       fontWeight: '600',
                       fontSize: '15px',
-                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
                       border: 'none',
                     }}
                   >
-                    Testni boshlash
+                    Passageni o'qish
                   </Button>
                 </div>
               </Card>
@@ -350,4 +334,4 @@ const ListeningHubPage: React.FC = () => {
   );
 };
 
-export default ListeningHubPage;
+export default ReadingHubPage;

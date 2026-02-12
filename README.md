@@ -12,7 +12,7 @@ Modern IELTS tayyorgarlik platformasi - Reading, Writing, Listening, Speaking ko
 - ✨ **Smart Article** - AI-powered article reading and comprehension
 - 📊 **Progress Tracking** - Detailed performance analytics
 - 🌓 **Dark/Light Mode** - Theme switching support
-- 🔐 **Authentication** - Email/Password and Google OAuth
+- 🔐 **Authentication** - Email/Password and Google OAuth login/register
 
 ## Tech Stack
 
@@ -48,11 +48,22 @@ cp .env.example .env
 # Add your API keys to .env file
 # VITE_GEMINI_API_KEY=your_gemini_api_key
 # VITE_API_BASE_URL=https://ieltsify.pythonanywhere.com
-# VITE_GOOGLE_CLIENT_ID=your_google_client_id
+# VITE_GOOGLE_CLIENT_ID=your_google_client_id (optional, for Google OAuth)
+# VITE_ENABLE_GOOGLE_AUTH=true (set to true to enable Google OAuth)
 
 # Start development server
 npm run dev
 ```
+
+### Google OAuth Setup (Optional)
+
+To enable Google OAuth authentication:
+
+1. Follow the detailed guide in [GOOGLE_OAUTH_SETUP.md](./GOOGLE_OAUTH_SETUP.md)
+2. Set `VITE_ENABLE_GOOGLE_AUTH=true` in your `.env` file
+3. Add your Google Client ID to `VITE_GOOGLE_CLIENT_ID`
+
+Without Google OAuth, users can still register and login using email/password.
 
 ### Build for Production
 
@@ -72,9 +83,15 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed Vercel deployment instructions
 
 Required environment variables:
 
-- `VITE_API_BASE_URL` - Backend API URL
-- `VITE_GOOGLE_CLIENT_ID` - Google OAuth Client ID
-- `VITE_GEMINI_API_KEY` - Google Gemini API Key
+- `VITE_API_BASE_URL` - Backend API URL (required)
+- `VITE_GEMINI_API_KEY` - Google Gemini API Key (required for AI features)
+
+Optional environment variables:
+
+- `VITE_GOOGLE_CLIENT_ID` - Google OAuth Client ID (for Google login/register)
+- `VITE_ENABLE_GOOGLE_AUTH` - Set to `true` to enable Google OAuth (default: `false`)
+
+See [GOOGLE_OAUTH_SETUP.md](./GOOGLE_OAUTH_SETUP.md) for Google OAuth configuration.
 
 ## Project Structure
 

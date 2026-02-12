@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Typography, 
   Button, 
@@ -18,9 +18,7 @@ import {
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { DotPattern } from '../components/DotPattern';
-import { GoogleLogin } from '@react-oauth/google';
-import type { CredentialResponse } from '@react-oauth/google';
-import { googleAuth, registerUser, saveAuthTokens, saveUserProfile } from '../services/authService';
+import { registerUser, googleAuth, saveAuthTokens, saveUserProfile } from '../services/authService';
 
 const { Title, Text } = Typography;
 const { useBreakpoint } = Grid;
@@ -30,96 +28,174 @@ const RegisterPage: React.FC = () => {
   const screens = useBreakpoint();
   const isMobile = !screens.md;
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [form] = Form.useForm();
 
-  const onFinish = async (values: any) => {
+  // Load Google Sign-In script
+  useEffect(() => {
+    const handleGoogleResponse = (response: { credential: string }) => {
+      handleGoogleAuth(response);
+    };
+
+    const loadGoogleScript = () => {
+      const script = document.createElement('script');
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.async = true;
+      script.defer = true;
+      document.body.appendChild(script);
+
+      script.onload = () => {
+        initializeGoogleSignIn();
+      };
+    };
+
+    const initializeGoogleSignIn = () => {
+      const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+      const enableGoogleAuth = import.meta.env.VITE_ENABLE_GOOGLE_AUTH === 'true';
+
+      if (!clientId || !enableGoogleAuth) {
+        console.log('Google OAuth is disabled or client ID not configured');
+        return;
+      }
+
+      if (window.google) {
+        window.google.accounts.id.initialize({
+          client_id: clientId,
+          callback: handleGoogleResponse,
+          auto_select: false,
+          cancel_on_tap_outside: true,
+        });
+
+        // Render the button
+        const buttonDiv = document.getElementById('google-signin-button');
+        if (buttonDiv) {
+          window.google.accounts.id.renderButton(
+            buttonDiv,
+            {
+              theme: 'filled_black',
+              size: 'large',
+              width: buttonDiv.offsetWidth,
+              text: 'signup_with',
+              shape: 'rectangular',
+              logo_alignment: 'left',
+            }
+          );
+        }
+      }
+    };
+
+    loadGoogleScript();
+  }, []);
+
+  const handleGoogleAuth = async (response: { credential: string }) => {
+    setGoogleLoading(true);
+    try {
+      console.log('🔐 Google Sign-In response received');
+      
+      const idToken = response.credential;
+      
+      if (!idToken) {
+        throw new Error('Google ID token topilmadi');
+      }
+
+      console.log('📤 Sending Google ID token to backend...');
+      
+      // Send to backend
+      const authResponse = await googleAuth(idToken);
+      
+      console.log('✅ Backend response:', authResponse);
+      
+      // Extract tokens (backend might return different formats)
+      const accessToken = authResponse.tokens?.access || authResponse.access || authResponse.access_token;
+      const refreshToken = authResponse.tokens?.refresh || authResponse.refresh || authResponse.refresh_token;
+      
+      if (!accessToken || !refreshToken) {
+        console.error('❌ Missing tokens in response:', authResponse);
+        throw new Error('Server javobida tokenlar yo\'q');
+      }
+      
+      // Save tokens
+      saveAuthTokens(accessToken, refreshToken);
+      
+      // Save user profile if provided
+      if (authResponse.user) {
+        saveUserProfile(authResponse.user);
+      }
+      
+      console.log('✅ Google authentication successful');
+      
+      message.success('Google orqali muvaffaqiyatli ro\'yxatdan o\'tdingiz!');
+      
+      // Redirect to dashboard
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 500);
+    } catch (error: unknown) {
+      console.error('❌ Google Sign-In error:', error);
+      
+      let errorMessage = 'Google orqali ro\'yxatdan o\'tishda xatolik';
+      
+      if (error instanceof Error && error.message) {
+        if (error.message.includes('Invalid Google token')) {
+          errorMessage = 'Google token noto\'g\'ri. Bu muammo backend sozlamalari bilan bog\'liq. Backend administratoriga murojaat qiling.';
+        } else if (error.message.includes('already exists')) {
+          errorMessage = 'Bu Google akkaunt allaqachon ro\'yxatdan o\'tgan. Iltimos, kirish sahifasiga o\'ting.';
+        } else if (error.message.includes('Invalid')) {
+          errorMessage = 'Google autentifikatsiya xatosi. Qaytadan urinib ko\'ring.';
+        } else if (error.message.includes('Server javob bermadi')) {
+          errorMessage = error.message;
+        } else if (error.message.includes('Serverga ulanib')) {
+          errorMessage = error.message;
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
+      message.error(errorMessage, 7);
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
+  const onFinish = async (values: { username: string; name: string; email: string; password: string; agree: boolean }) => {
     setLoading(true);
     try {
-      console.log('📝 Register attempt:', { name: values.name, email: values.email });
+      console.log('📝 Register attempt:', { 
+        username: values.username,
+        name: values.name, 
+        email: values.email 
+      });
       
       // Split name into first_name and last_name
-      const nameParts = values.name.trim().split(' ');
-      const firstName = nameParts[0] || '';
-      const lastName = nameParts.slice(1).join(' ') || firstName;
+      const nameParts = values.name.trim().split(/\s+/); // Split by any whitespace
+      const firstName = nameParts[0] || 'User';
+      const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : 'User';
       
-      // Create username from email (before @)
-      const username = values.email.split('@')[0];
-      
-      const response = await registerUser({
-        username,
-        email: values.email,
+      const registerData = {
+        username: values.username.toLowerCase().trim(),
+        email: values.email.toLowerCase().trim(),
         first_name: firstName,
         last_name: lastName,
         password: values.password,
-      });
+      };
+      
+      console.log('📤 Sending registration data:', { ...registerData, password: '***' });
+      
+      // Call register API
+      const response = await registerUser(registerData);
       
       console.log('✅ Register response:', response);
       
-      // Save tokens
-      const accessToken = response.access_token || response.access;
-      const refreshToken = response.refresh_token || response.refresh;
-      
-      if (!accessToken || !refreshToken) {
-        throw new Error('Invalid response: missing tokens');
-      }
-      
-      saveAuthTokens(accessToken, refreshToken);
-      
-      // Save user profile if provided
-      if (response.user) {
-        saveUserProfile(response.user);
-      }
-      
-      console.log('✅ Tokens saved, redirecting to dashboard...');
-      
-      message.success('Ro\'yxatdan o\'tdingiz!');
-      navigate('/dashboard');
-    } catch (error: any) {
-      console.error('❌ Registration error:', error);
-      message.error(error.message || 'Ro\'yxatdan o\'tishda xatolik');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
-    if (!credentialResponse.credential) {
-      message.error('Google registration failed');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      console.log('🔐 Google registration attempt');
-      const response = await googleAuth(credentialResponse.credential);
-      
-      console.log('✅ Google registration response:', response);
-      
-      // Google OAuth returns: {message: "...", user: {...}, tokens: {access: "...", refresh: "..."}}
-      let accessToken: string | undefined;
-      let refreshToken: string | undefined;
-      
-      // Check if tokens are nested in tokens object
-      if (response.tokens) {
-        accessToken = response.tokens.access;
-        refreshToken = response.tokens.refresh;
-      } else {
-        // Fallback to direct properties
-        accessToken = response.access_token || response.access;
-        refreshToken = response.refresh_token || response.refresh;
-      }
-      
-      console.log('Token extraction:', { 
-        has_tokens_object: !!response.tokens,
-        accessToken: accessToken ? 'present' : 'missing',
-        refreshToken: refreshToken ? 'present' : 'missing'
-      });
+      // Backend returns: {message: "...", tokens: {access: "...", refresh: "..."}, user: {...}}
+      const accessToken = response.tokens?.access || response.access || response.access_token;
+      const refreshToken = response.tokens?.refresh || response.refresh || response.refresh_token;
       
       if (!accessToken || !refreshToken) {
         console.error('❌ Missing tokens in response:', response);
-        throw new Error('Invalid response: missing tokens');
+        throw new Error('Server javobida tokenlar yo\'q');
       }
       
+      // Save tokens to localStorage
       saveAuthTokens(accessToken, refreshToken);
       
       // Save user profile if provided
@@ -127,18 +203,84 @@ const RegisterPage: React.FC = () => {
         saveUserProfile(response.user);
       }
       
-      message.success('Ro\'yxatdan o\'tdingiz!');
-      navigate('/dashboard');
-    } catch (error: any) {
-      console.error('❌ Google registration error:', error);
-      message.error(error.message || 'Google registration failed');
+      console.log('✅ Tokens saved successfully');
+      
+      message.success('Muvaffaqiyatli ro\'yxatdan o\'tdingiz!');
+      
+      // Redirect to dashboard
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 500);
+    } catch (error: unknown) {
+      console.error('❌ Registration error:', error);
+      
+      // Parse error message
+      let errorMessage = 'Ro\'yxatdan o\'tishda xatolik yuz berdi';
+      
+      if (error instanceof Error && error.message) {
+        // Try to parse JSON error message
+        try {
+          const errorObj = JSON.parse(error.message);
+          console.log('Parsed error object:', errorObj);
+          
+          // Build user-friendly error message
+          const errorMessages: string[] = [];
+          
+          if (errorObj.username) {
+            const msg = Array.isArray(errorObj.username) ? errorObj.username[0] : errorObj.username;
+            errorMessages.push(`Username: ${msg}`);
+          }
+          if (errorObj.email) {
+            const msg = Array.isArray(errorObj.email) ? errorObj.email[0] : errorObj.email;
+            errorMessages.push(`Email: ${msg}`);
+          }
+          if (errorObj.password) {
+            const msg = Array.isArray(errorObj.password) ? errorObj.password[0] : errorObj.password;
+            errorMessages.push(`Parol: ${msg}`);
+          }
+          if (errorObj.first_name) {
+            const msg = Array.isArray(errorObj.first_name) ? errorObj.first_name[0] : errorObj.first_name;
+            errorMessages.push(`Ism: ${msg}`);
+          }
+          if (errorObj.last_name) {
+            const msg = Array.isArray(errorObj.last_name) ? errorObj.last_name[0] : errorObj.last_name;
+            errorMessages.push(`Familiya: ${msg}`);
+          }
+          if (errorObj.detail) {
+            errorMessages.push(errorObj.detail);
+          }
+          if (errorObj.non_field_errors) {
+            const msg = Array.isArray(errorObj.non_field_errors) ? errorObj.non_field_errors[0] : errorObj.non_field_errors;
+            errorMessages.push(msg);
+          }
+          
+          if (errorMessages.length > 0) {
+            errorMessage = errorMessages.join('\n');
+          }
+        } catch {
+          // Not a JSON error, use the message directly
+          if (error.message.includes('Username:')) {
+            errorMessage = error.message;
+          } else if (error.message.includes('Email:')) {
+            errorMessage = error.message;
+          } else if (error.message.includes('Password:') || error.message.includes('Parol:')) {
+            errorMessage = error.message;
+          } else if (error.message.includes('already exists')) {
+            errorMessage = 'Bu email yoki username allaqachon ro\'yxatdan o\'tgan';
+          } else if (error.message.includes('Server javob bermadi')) {
+            errorMessage = error.message;
+          } else if (error.message.includes('Serverga ulanib')) {
+            errorMessage = error.message;
+          } else {
+            errorMessage = error.message;
+          }
+        }
+      }
+      
+      message.error(errorMessage, 5);
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleGoogleError = () => {
-    message.error('Google registration failed');
   };
 
   return (
@@ -178,7 +320,7 @@ const RegisterPage: React.FC = () => {
             width: 'fit-content'
           }}>
             <ArrowLeft size={18} style={{ marginRight: '8px' }} />
-            <Text style={{ color: 'inherit', fontWeight: 600 }}>Back</Text>
+            <Text style={{ color: 'inherit', fontWeight: 600 }}>Orqaga</Text>
           </Link>
 
           <div style={{ 
@@ -200,10 +342,10 @@ const RegisterPage: React.FC = () => {
                 fontSize: isMobile ? '24px' : '28px', 
                 letterSpacing: '-0.5px' 
               }}>
-                Create account
+                Ro'yxatdan o'tish
               </Title>
               <Text style={{ color: '#94a3b8', fontSize: '14px' }}>
-                Start your IELTS journey
+                IELTS tayyorgarligingizni boshlang
               </Text>
             </div>
 
@@ -215,16 +357,21 @@ const RegisterPage: React.FC = () => {
               requiredMark={false}
             >
               <Form.Item
-                name="name"
+                name="username"
                 rules={[
-                  { required: true, message: 'Ism kiriting' },
-                  { min: 2, message: 'Kamida 2 ta harf' }
+                  { required: true, message: 'Username kiriting' },
+                  { min: 3, message: 'Username kamida 3 ta belgidan iborat bo\'lishi kerak' },
+                  { max: 30, message: 'Username 30 ta belgidan oshmasligi kerak' },
+                  { 
+                    pattern: /^[a-zA-Z0-9_]+$/, 
+                    message: 'Username faqat harflar, raqamlar va _ dan iborat bo\'lishi kerak' 
+                  }
                 ]}
                 style={{ marginBottom: '16px' }}
               >
                 <Input 
                   prefix={<User size={18} style={{ color: '#64748b' }} />} 
-                  placeholder="To'liq ism" 
+                  placeholder="Username (masalan: john_doe)" 
                   style={{ 
                     backgroundColor: 'rgba(255, 255, 255, 0.1)', 
                     border: '1px solid rgba(255, 255, 255, 0.1)', 
@@ -238,14 +385,40 @@ const RegisterPage: React.FC = () => {
               <Form.Item
                 name="email"
                 rules={[
-                  { required: true, message: 'Email kiriting' },
-                  { type: 'email', message: 'Email noto\'g\'ri' }
+                  { required: true, message: 'Email manzilingizni kiriting' },
+                  { type: 'email', message: 'Email manzil noto\'g\'ri formatda' }
                 ]}
                 style={{ marginBottom: '16px' }}
               >
                 <Input 
                   prefix={<Mail size={18} style={{ color: '#64748b' }} />} 
-                  placeholder="Email" 
+                  placeholder="Email manzil" 
+                  type="email"
+                  style={{ 
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)', 
+                    border: '1px solid rgba(255, 255, 255, 0.1)', 
+                    color: '#ffffff',
+                    borderRadius: '12px',
+                    height: '48px'
+                  }} 
+                />
+              </Form.Item>
+
+              <Form.Item
+                name="name"
+                rules={[
+                  { required: true, message: 'To\'liq ismingizni kiriting' },
+                  { min: 2, message: 'Ism kamida 2 ta harfdan iborat bo\'lishi kerak' },
+                  { 
+                    pattern: /^[a-zA-Z\s]+$/, 
+                    message: 'Ism faqat lotin harflaridan iborat bo\'lishi kerak' 
+                  }
+                ]}
+                style={{ marginBottom: '16px' }}
+              >
+                <Input 
+                  prefix={<User size={18} style={{ color: '#64748b' }} />} 
+                  placeholder="To'liq ism (masalan: John Doe)" 
                   style={{ 
                     backgroundColor: 'rgba(255, 255, 255, 0.1)', 
                     border: '1px solid rgba(255, 255, 255, 0.1)', 
@@ -260,13 +433,13 @@ const RegisterPage: React.FC = () => {
                 name="password"
                 rules={[
                   { required: true, message: 'Parol kiriting' },
-                  { min: 8, message: 'Kamida 8 ta belgi' }
+                  { min: 8, message: 'Parol kamida 8 ta belgidan iborat bo\'lishi kerak' }
                 ]}
                 style={{ marginBottom: '16px' }}
               >
                 <Input.Password 
                   prefix={<Lock size={18} style={{ color: '#64748b' }} />} 
-                  placeholder="Parol" 
+                  placeholder="Parol (kamida 8 ta belgi)" 
                   style={{ 
                     backgroundColor: 'rgba(255, 255, 255, 0.1)', 
                     border: '1px solid rgba(255, 255, 255, 0.1)', 
@@ -283,24 +456,25 @@ const RegisterPage: React.FC = () => {
                 rules={[
                   { 
                     validator: (_, value) =>
-                      value ? Promise.resolve() : Promise.reject(new Error('Shartlarni qabul qiling'))
+                      value ? Promise.resolve() : Promise.reject(new Error('Shartlarni qabul qilishingiz kerak'))
                   }
                 ]}
                 style={{ marginBottom: '24px' }}
               >
                 <Checkbox style={{ color: '#94a3b8' }}>
                   <span style={{ color: '#94a3b8', fontSize: '13px' }}>
-                    Men <Link to="/terms" style={{ color: '#10b981' }}>Shartlar</Link> va <Link to="/privacy" style={{ color: '#10b981' }}>Maxfiylik</Link> bilan roziman
+                    Men <Link to="/terms" style={{ color: '#10b981' }}>Foydalanish shartlari</Link> va <Link to="/privacy" style={{ color: '#10b981' }}>Maxfiylik siyosati</Link> bilan roziman
                   </span>
                 </Checkbox>
               </Form.Item>
 
-              <Form.Item style={{ marginBottom: '16px' }}>
+              <Form.Item style={{ marginBottom: '0' }}>
                 <Button 
                   type="primary" 
                   htmlType="submit" 
                   block 
                   loading={loading}
+                  disabled={googleLoading}
                   className="gradient-btn"
                   style={{ 
                     height: '48px', 
@@ -309,46 +483,45 @@ const RegisterPage: React.FC = () => {
                     fontSize: '15px'
                   }}
                 >
-                  Ro'yxatdan o'tish
+                  {loading ? 'Ro\'yxatdan o\'tmoqda...' : 'Ro\'yxatdan o\'tish'}
                 </Button>
               </Form.Item>
             </Form>
 
-            <Divider style={{ 
-              borderColor: 'rgba(255, 255, 255, 0.1)', 
-              margin: '24px 0',
-              color: '#94a3b8',
-              fontSize: '14px'
-            }}>
-              Yoki Google bilan
-            </Divider>
+            {import.meta.env.VITE_ENABLE_GOOGLE_AUTH === 'true' && import.meta.env.VITE_GOOGLE_CLIENT_ID && (
+              <>
+                <Divider style={{ 
+                  borderColor: 'rgba(255, 255, 255, 0.1)', 
+                  margin: '24px 0',
+                  color: '#94a3b8',
+                  fontSize: '13px'
+                }}>
+                  yoki
+                </Divider>
 
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'center',
-              marginBottom: '24px'
-            }}>
-              <GoogleLogin
-                onSuccess={handleGoogleSuccess}
-                onError={handleGoogleError}
-                useOneTap
-                theme="filled_black"
-                size="large"
-                text="signup_with"
-                shape="rectangular"
-                logo_alignment="left"
-              />
-            </div>
-
-            {loading && (
-              <div style={{ 
-                textAlign: 'center', 
-                color: '#10b981',
-                fontSize: '14px',
-                marginBottom: '16px'
-              }}>
-                Ro'yxatdan o'tmoqda...
-              </div>
+                <div style={{ marginBottom: '16px' }}>
+                  <div 
+                    id="google-signin-button" 
+                    style={{ 
+                      display: 'flex', 
+                      justifyContent: 'center',
+                      opacity: googleLoading ? 0.5 : 1,
+                      pointerEvents: googleLoading ? 'none' : 'auto',
+                      transition: 'opacity 0.3s ease'
+                    }}
+                  />
+                  {googleLoading && (
+                    <div style={{ 
+                      textAlign: 'center', 
+                      marginTop: '12px',
+                      color: '#94a3b8',
+                      fontSize: '13px'
+                    }}>
+                      Google orqali ro'yxatdan o'tmoqda...
+                    </div>
+                  )}
+                </div>
+              </>
             )}
 
             <div style={{ textAlign: 'center', marginTop: '24px' }}>
