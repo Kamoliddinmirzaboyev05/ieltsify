@@ -20,6 +20,7 @@ import RegisterPage from './pages/RegisterPage';
 import VocabularyPage from './pages/VocabularyPage';
 import SmartArticlePage from './pages/SmartArticlePage';
 import PageTransition from './components/PageTransition';
+import HtmlViewerPage from './pages/HtmlViewerPage';
 
 const DashboardLayout: React.FC = () => {
   const location = useLocation();
@@ -55,6 +56,7 @@ const AnimateRoutes: React.FC = () => {
           <Route path="listening/:slug" element={<ListeningPage />} />
           <Route path="vocabulary" element={<VocabularyPage />} />
           <Route path="smart-article" element={<SmartArticlePage />} />
+          <Route path="html-viewer" element={<HtmlViewerPage />} />
           <Route path="pricing" element={<PricingPage />} />
           <Route path="profile" element={<ProfilePage />} />
         </Route>

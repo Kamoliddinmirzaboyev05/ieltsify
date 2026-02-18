@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card, Typography, Button, Spin, message, Grid } from 'antd';
 import { 
   ArrowLeft,
@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import './ReadingPage.css';
+import { directoryOf, resolveRelativeUrl } from '../lib/utils';
 
 const { Title, Text, Paragraph } = Typography;
 const { useBreakpoint } = Grid;
@@ -38,6 +39,7 @@ const ReadingPage: React.FC = () => {
   const [htmlContent, setHtmlContent] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [testStarted, setTestStarted] = useState(false);
+  const contentRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const initPassage = async () => {
@@ -103,12 +105,34 @@ const ReadingPage: React.FC = () => {
 
     setLoading(true);
     try {
-      console.log('📥 Loading HTML from:', currentPassage.html_content_url);
+      let urlToFetch = currentPassage.html_content_url.trim();
+
+      if (urlToFetch.startsWith('`') && urlToFetch.endsWith('`')) {
+        urlToFetch = urlToFetch.slice(1, -1).trim();
+      }
+
+      let parsedHost = '';
+      let parsedPath = '';
+      try {
+        const parsed = new URL(urlToFetch, window.location.origin);
+        parsedHost = parsed.hostname;
+        parsedPath = parsed.pathname + parsed.search;
+      } catch (e) {
+        parsedHost = '';
+        parsedPath = '';
+        void e;
+      }
+      const isPythonAnywhereHost = parsedHost === 'ieltsify.pythonanywhere.com';
+      const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      if (isPythonAnywhereHost && isLocalhost && parsedPath.startsWith('/media')) {
+        urlToFetch = parsedPath;
+      }
+
+      console.log('📥 Loading HTML from:', urlToFetch);
       
-      // Try without authentication first for media files
-      const response = await fetch(currentPassage.html_content_url, {
+      const response = await fetch(urlToFetch, {
         mode: 'cors',
-        credentials: 'omit', // Don't send credentials for media files
+        credentials: 'omit',
       });
       
       console.log('📊 Response status:', response.status);
@@ -168,6 +192,55 @@ const ReadingPage: React.FC = () => {
   const handleStartTest = () => {
     setTestStarted(true);
   };
+
+  useEffect(() => {
+    if (!testStarted || !htmlContent || !contentRef.current || !passage) return;
+    const head = document.head;
+    const baseEl = document.createElement('base');
+    baseEl.id = 'reading-page-base';
+    const baseHref = directoryOf(passage.html_content_url.trim().replace(/^`|`$/g, ''));
+    const prevBase = document.getElementById('reading-page-base');
+    if (prevBase) prevBase.remove();
+    head.appendChild(baseEl);
+    baseEl.href = baseHref;
+    const styles: HTMLLinkElement[] = [];
+    const scripts: HTMLScriptElement[] = [];
+    const container = contentRef.current;
+    const linkNodes = container.querySelectorAll('link[rel="stylesheet"]');
+    linkNodes.forEach((ln) => {
+      const href = ln.getAttribute('href') || '';
+      const linkEl = document.createElement('link');
+      linkEl.rel = 'stylesheet';
+      linkEl.href = resolveRelativeUrl(baseHref, href);
+      head.appendChild(linkEl);
+      styles.push(linkEl);
+    });
+    const scriptNodes = container.querySelectorAll('script');
+    scriptNodes.forEach((sn) => {
+      const src = sn.getAttribute('src');
+      const type = sn.getAttribute('type') || '';
+      const newScript = document.createElement('script');
+      if (type) newScript.type = type;
+      if (sn.hasAttribute('async')) newScript.async = true;
+      if (sn.hasAttribute('defer')) newScript.defer = true;
+      const crossorigin = sn.getAttribute('crossorigin');
+      if (crossorigin) newScript.crossOrigin = crossorigin;
+      if (src && src.length > 0) {
+        newScript.src = resolveRelativeUrl(baseHref, src);
+      } else {
+        newScript.text = sn.textContent || '';
+      }
+      container.appendChild(newScript);
+      scripts.push(newScript);
+      sn.remove();
+    });
+    return () => {
+      styles.forEach((l) => l.remove());
+      scripts.forEach((s) => s.remove());
+      const b = document.getElementById('reading-page-base');
+      if (b) b.remove();
+    };
+  }, [testStarted, htmlContent, passage]);
 
   const handleBackToList = () => {
     navigate('/dashboard/reading-hub');
@@ -293,6 +366,7 @@ const ReadingPage: React.FC = () => {
             padding: '20px',
             background: '#ffffff'
           }}
+          ref={contentRef}
           dangerouslySetInnerHTML={{ __html: htmlContent }}
         />
       </div>
