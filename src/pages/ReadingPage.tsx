@@ -20,6 +20,7 @@ interface ReadingPassage {
   title: string;
   slug: string;
   html_content_url: string;
+  html_content?: string;
   cover_image_url: string;
   difficulty: 'easy' | 'medium' | 'hard';
   word_count: number;
@@ -88,8 +89,20 @@ const ReadingPage: React.FC = () => {
         throw new Error('Passage not found');
       }
 
-      setPassage(foundPassage);
-      await loadHtmlContent(foundPassage);
+      // Fetch detail to get html_content string if not present
+      let detailed: ReadingPassage = foundPassage;
+      try {
+        const detailRes = await fetch(`${API_BASE_URL}/reading-passages/${foundPassage.id}/`, { headers });
+        if (detailRes.ok) {
+          const detailData = await detailRes.json();
+          detailed = { ...foundPassage, ...detailData };
+        }
+      } catch {
+        void 0;
+      }
+
+      setPassage(detailed);
+      await loadHtmlContent(detailed);
     } catch (error) {
       console.error('Error loading passage:', error);
       message.error('Passageni yuklashda xatolik yuz berdi');
@@ -105,7 +118,13 @@ const ReadingPage: React.FC = () => {
 
     setLoading(true);
     try {
-      let urlToFetch = currentPassage.html_content_url.trim();
+      // If backend provides full HTML string, use it directly
+      if (currentPassage.html_content && currentPassage.html_content.trim().length > 0) {
+        setHtmlContent(currentPassage.html_content);
+        return;
+      }
+
+      let urlToFetch = (currentPassage.html_content_url || '').trim();
 
       if (urlToFetch.startsWith('`') && urlToFetch.endsWith('`')) {
         urlToFetch = urlToFetch.slice(1, -1).trim();
@@ -198,7 +217,25 @@ const ReadingPage: React.FC = () => {
     const head = document.head;
     const baseEl = document.createElement('base');
     baseEl.id = 'reading-page-base';
-    const baseHref = directoryOf(passage.html_content_url.trim().replace(/^`|`$/g, ''));
+    // Try to read <base href="..."> from HTML string
+    let baseHref = '';
+    try {
+      const doc = new DOMParser().parseFromString(htmlContent, 'text/html');
+      const baseTag = doc.querySelector('base[href]');
+      if (baseTag) {
+        baseHref = baseTag.getAttribute('href') || '';
+      }
+    } catch {
+      baseHref = '';
+    }
+    // Fallback to original URL directory if exists
+    if (!baseHref && passage.html_content_url) {
+      baseHref = directoryOf(passage.html_content_url.trim().replace(/^`|`$/g, ''));
+    }
+    // Final fallback to API base
+    if (!baseHref) {
+      baseHref = (import.meta.env.VITE_ASSETS_BASE_URL as string) || (import.meta.env.VITE_API_BASE_URL as string) || window.location.origin;
+    }
     const prevBase = document.getElementById('reading-page-base');
     if (prevBase) prevBase.remove();
     head.appendChild(baseEl);
