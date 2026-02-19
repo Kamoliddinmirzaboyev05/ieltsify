@@ -1,8 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, Spin, Typography, message, Grid } from 'antd';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { directoryOf, resolveRelativeUrl } from '../lib/utils';
+import { directoryOf, injectBase } from '../lib/utils';
 
 const { Text } = Typography;
 const { useBreakpoint } = Grid;
@@ -16,7 +16,6 @@ const HtmlViewerPage: React.FC = () => {
   const [html, setHtml] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(true);
   const [sourceUrl, setSourceUrl] = useState<string>('');
-  const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -81,55 +80,10 @@ const HtmlViewerPage: React.FC = () => {
     };
     load();
   }, [location.search]);
-  useEffect(() => {
-    if (!containerRef.current || !html || !sourceUrl) return;
-    const head = document.head;
-    const baseEl = document.createElement('base');
-    baseEl.id = 'html-viewer-base';
-    baseEl.href = directoryOf(sourceUrl);
-    const prevBase = document.getElementById('html-viewer-base');
-    if (prevBase) {
-      prevBase.remove();
-    }
-    head.appendChild(baseEl);
-    const styles: HTMLLinkElement[] = [];
-    const scripts: HTMLScriptElement[] = [];
-    const container = containerRef.current;
-    const linkNodes = container.querySelectorAll('link[rel="stylesheet"]');
-    linkNodes.forEach((ln) => {
-      const href = ln.getAttribute('href') || '';
-      const linkEl = document.createElement('link');
-      linkEl.rel = 'stylesheet';
-      linkEl.href = resolveRelativeUrl(directoryOf(sourceUrl), href);
-      head.appendChild(linkEl);
-      styles.push(linkEl);
-    });
-    const scriptNodes = container.querySelectorAll('script');
-    scriptNodes.forEach((sn) => {
-      const src = sn.getAttribute('src');
-      const type = sn.getAttribute('type') || '';
-      const newScript = document.createElement('script');
-      if (type) newScript.type = type;
-      if (sn.hasAttribute('async')) newScript.async = true;
-      if (sn.hasAttribute('defer')) newScript.defer = true;
-      const crossorigin = sn.getAttribute('crossorigin');
-      if (crossorigin) newScript.crossOrigin = crossorigin;
-      if (src && src.length > 0) {
-        newScript.src = resolveRelativeUrl(directoryOf(sourceUrl), src);
-      } else {
-        newScript.text = sn.textContent || '';
-      }
-      container.appendChild(newScript);
-      scripts.push(newScript);
-      sn.remove();
-    });
-    return () => {
-      styles.forEach((l) => l.remove());
-      scripts.forEach((s) => s.remove());
-      const b = document.getElementById('html-viewer-base');
-      if (b) b.remove();
-    };
-  }, [html, sourceUrl]);
+  const buildSrcDoc = () => {
+    const baseHref = directoryOf(sourceUrl);
+    return injectBase(html, baseHref);
+  };
 
   if (loading) {
     return (
@@ -156,7 +110,12 @@ const HtmlViewerPage: React.FC = () => {
         <div style={{ width: isMobile ? 80 : 120 }} />
       </div>
 
-      <div ref={containerRef} style={{ flex: 1, overflow: 'auto', padding: 20, background: '#ffffff' }} dangerouslySetInnerHTML={{ __html: html }} />
+      <iframe
+        title="html-viewer"
+        style={{ flex: 1, border: 'none', background: '#ffffff' }}
+        sandbox="allow-scripts allow-same-origin allow-forms"
+        srcDoc={buildSrcDoc()}
+      />
     </div>
   );
 };

@@ -23,3 +23,22 @@ export function directoryOf(url: string) {
     return url;
   }
 }
+
+export function injectBase(html: string, baseHref: string) {
+  if (!html || !baseHref) return html;
+  try {
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const baseEl = doc.querySelector('base[href]');
+    if (baseEl) return html;
+    const headEl = doc.head || doc.createElement('head');
+    const newBase = doc.createElement('base');
+    newBase.setAttribute('href', baseHref);
+    headEl.insertBefore(newBase, headEl.firstChild);
+    if (!doc.head && doc.documentElement) {
+      doc.documentElement.insertBefore(headEl, doc.body || null);
+    }
+    return '<!DOCTYPE html>\n' + (doc.documentElement ? doc.documentElement.outerHTML : html);
+  } catch {
+    return html;
+  }
+}

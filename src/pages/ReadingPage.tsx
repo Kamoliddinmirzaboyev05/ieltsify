@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, Typography, Button, Spin, message, Grid } from 'antd';
 import { 
   ArrowLeft,
@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import './ReadingPage.css';
-import { directoryOf, resolveRelativeUrl } from '../lib/utils';
+import { directoryOf, injectBase } from '../lib/utils';
 
 const { Title, Text, Paragraph } = Typography;
 const { useBreakpoint } = Grid;
@@ -40,7 +40,6 @@ const ReadingPage: React.FC = () => {
   const [htmlContent, setHtmlContent] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [testStarted, setTestStarted] = useState(false);
-  const contentRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const initPassage = async () => {
@@ -212,72 +211,24 @@ const ReadingPage: React.FC = () => {
     setTestStarted(true);
   };
 
-  useEffect(() => {
-    if (!testStarted || !htmlContent || !contentRef.current || !passage) return;
-    const head = document.head;
-    const baseEl = document.createElement('base');
-    baseEl.id = 'reading-page-base';
-    // Try to read <base href="..."> from HTML string
+  const buildSrcDoc = () => {
+    // Compute base
     let baseHref = '';
     try {
       const doc = new DOMParser().parseFromString(htmlContent, 'text/html');
       const baseTag = doc.querySelector('base[href]');
-      if (baseTag) {
-        baseHref = baseTag.getAttribute('href') || '';
-      }
+      if (baseTag) baseHref = baseTag.getAttribute('href') || '';
     } catch {
       baseHref = '';
     }
-    // Fallback to original URL directory if exists
-    if (!baseHref && passage.html_content_url) {
+    if (!baseHref && passage?.html_content_url) {
       baseHref = directoryOf(passage.html_content_url.trim().replace(/^`|`$/g, ''));
     }
-    // Final fallback to API base
     if (!baseHref) {
       baseHref = (import.meta.env.VITE_ASSETS_BASE_URL as string) || (import.meta.env.VITE_API_BASE_URL as string) || window.location.origin;
     }
-    const prevBase = document.getElementById('reading-page-base');
-    if (prevBase) prevBase.remove();
-    head.appendChild(baseEl);
-    baseEl.href = baseHref;
-    const styles: HTMLLinkElement[] = [];
-    const scripts: HTMLScriptElement[] = [];
-    const container = contentRef.current;
-    const linkNodes = container.querySelectorAll('link[rel="stylesheet"]');
-    linkNodes.forEach((ln) => {
-      const href = ln.getAttribute('href') || '';
-      const linkEl = document.createElement('link');
-      linkEl.rel = 'stylesheet';
-      linkEl.href = resolveRelativeUrl(baseHref, href);
-      head.appendChild(linkEl);
-      styles.push(linkEl);
-    });
-    const scriptNodes = container.querySelectorAll('script');
-    scriptNodes.forEach((sn) => {
-      const src = sn.getAttribute('src');
-      const type = sn.getAttribute('type') || '';
-      const newScript = document.createElement('script');
-      if (type) newScript.type = type;
-      if (sn.hasAttribute('async')) newScript.async = true;
-      if (sn.hasAttribute('defer')) newScript.defer = true;
-      const crossorigin = sn.getAttribute('crossorigin');
-      if (crossorigin) newScript.crossOrigin = crossorigin;
-      if (src && src.length > 0) {
-        newScript.src = resolveRelativeUrl(baseHref, src);
-      } else {
-        newScript.text = sn.textContent || '';
-      }
-      container.appendChild(newScript);
-      scripts.push(newScript);
-      sn.remove();
-    });
-    return () => {
-      styles.forEach((l) => l.remove());
-      scripts.forEach((s) => s.remove());
-      const b = document.getElementById('reading-page-base');
-      if (b) b.remove();
-    };
-  }, [testStarted, htmlContent, passage]);
+    return injectBase(htmlContent, baseHref);
+  };
 
   const handleBackToList = () => {
     navigate('/dashboard/reading-hub');
@@ -395,16 +346,12 @@ const ReadingPage: React.FC = () => {
           <div style={{ width: isMobile ? '80px' : '120px' }} />
         </div>
 
-        {/* Full Screen HTML Content */}
-        <div 
-          style={{ 
-            flex: 1, 
-            overflow: 'auto',
-            padding: '20px',
-            background: '#ffffff'
-          }}
-          ref={contentRef}
-          dangerouslySetInnerHTML={{ __html: htmlContent }}
+        {/* Full Screen HTML Content (isolated) */}
+        <iframe
+          title="reading-content"
+          style={{ flex: 1, border: 'none', background: '#ffffff' }}
+          sandbox="allow-scripts allow-same-origin allow-forms"
+          srcDoc={buildSrcDoc()}
         />
       </div>
     );
