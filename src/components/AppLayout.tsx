@@ -87,7 +87,21 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const SidebarContent = (
     <>
       <div style={{ height: 64, margin: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <img src="/logo.png" alt="IELTSIFY Logo" style={{ height: '32px' }} />
+        <img
+          src="/logo.png"
+          alt="IELTSIFY Logo"
+          onError={(e) => {
+            const t = e.currentTarget as HTMLImageElement;
+            t.src = '/logo.png';
+          }}
+          style={{
+            width: '100%',
+            height: 'auto',
+            maxHeight: 40,
+            objectFit: 'contain',
+            display: 'block'
+          }}
+        />
       </div>
       <Menu
         theme={isDark ? 'dark' : 'light'}

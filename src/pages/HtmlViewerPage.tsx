@@ -104,9 +104,20 @@ const HtmlViewerPage: React.FC = () => {
         >
           Orqaga
         </Button>
-        <Text style={{ fontSize: isMobile ? 14 : 16, color: '#ffffff', fontWeight: 600 }}>
-          HTML Viewer
-        </Text>
+        <img
+          src="/logohead.png"
+          alt="IELTSify"
+          onError={(e) => {
+            const t = e.currentTarget as HTMLImageElement;
+            t.src = '/logo.png';
+          }}
+          style={{
+            height: isMobile ? 24 : 28,
+            objectFit: 'contain',
+            display: 'block',
+            filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.15))'
+          }}
+        />
         <div style={{ width: isMobile ? 80 : 120 }} />
       </div>
 

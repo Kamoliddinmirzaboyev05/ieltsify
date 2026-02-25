@@ -7,6 +7,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { directoryOf, injectBase } from '../lib/utils';
 
 const { Title, Text } = Typography;
 const { useBreakpoint } = Grid;
@@ -17,6 +18,7 @@ interface ListeningTest {
   slug: string;
   description: string;
   html_file_url: string;
+  html_content?: string;
   cover_image_url: string;
   difficulty: 'easy' | 'medium' | 'hard';
   is_active: boolean;
@@ -100,20 +102,48 @@ const ListeningPage: React.FC = () => {
 
     setLoading(true);
     try {
-      console.log('📥 Loading HTML from:', currentTest.html_file_url);
-      
-      // Try without authentication first for media files
-      const response = await fetch(currentTest.html_file_url, {
+      // 1) Agar API html_content ni to'g'ridan-to'g'ri yuborsa, shuni ishlatamiz
+      if (currentTest.html_content && currentTest.html_content.trim().length > 0) {
+        setHtmlContent(currentTest.html_content);
+        return;
+      }
+
+      // 2) Aks holda html_file_url'dan yuklaymiz (ReadingPage bilan bir xil yo'l)
+      let urlToFetch = (currentTest.html_file_url || '').trim();
+
+      if (urlToFetch.startsWith('`') && urlToFetch.endsWith('`')) {
+        urlToFetch = urlToFetch.slice(1, -1).trim();
+      }
+
+      let parsedHost = '';
+      let parsedPath = '';
+      try {
+        const parsed = new URL(urlToFetch, window.location.origin);
+        parsedHost = parsed.hostname;
+        parsedPath = parsed.pathname + parsed.search;
+      } catch {
+        parsedHost = '';
+        parsedPath = '';
+      }
+      const isPythonAnywhereHost = parsedHost === 'ieltsify.pythonanywhere.com';
+      const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      if (isPythonAnywhereHost && isLocalhost && parsedPath.startsWith('/media')) {
+        urlToFetch = parsedPath;
+      }
+
+      console.log('📥 Loading HTML from:', urlToFetch);
+
+      const response = await fetch(urlToFetch, {
         mode: 'cors',
-        credentials: 'omit', // Don't send credentials for media files
+        credentials: 'omit',
       });
-      
+
       console.log('📊 Response status:', response.status);
       console.log('📊 Response headers:', Object.fromEntries(response.headers.entries()));
-      
+
       if (!response.ok) {
         if (response.status === 404) {
-          console.error('❌ HTML fayl topilmadi:', currentTest.html_file_url);
+          console.error('❌ HTML fayl topilmadi:', urlToFetch);
           message.error({
             content: 'HTML fayl serverda topilmadi. Backend administratorga xabar bering.',
             duration: 5,
@@ -121,7 +151,7 @@ const ListeningPage: React.FC = () => {
           return;
         }
         if (response.status === 403) {
-          console.error('❌ Faylga kirish taqiqlangan:', currentTest.html_file_url);
+          console.error('❌ Faylga kirish taqiqlangan:', urlToFetch);
           message.error({
             content: 'Faylga kirish taqiqlangan. CORS yoki permissions muammosi.',
             duration: 5,
@@ -137,12 +167,12 @@ const ListeningPage: React.FC = () => {
       const html = await response.text();
       console.log('✅ HTML content loaded, length:', html.length);
       console.log('📄 First 200 chars:', html.substring(0, 200));
-      
+
       if (html.length === 0) {
         message.error('HTML fayl bo\'sh. Backendda fayl to\'g\'ri yuklanganini tekshiring.');
         return;
       }
-      
+
       setHtmlContent(html);
     } catch (error) {
       console.error('❌ Error loading HTML content:', error);
@@ -164,6 +194,24 @@ const ListeningPage: React.FC = () => {
 
   const handleStartTest = () => {
     setTestStarted(true);
+  };
+
+  const buildSrcDoc = () => {
+    let baseHref = '';
+    try {
+      const doc = new DOMParser().parseFromString(htmlContent, 'text/html');
+      const baseTag = doc.querySelector('base[href]');
+      if (baseTag) baseHref = baseTag.getAttribute('href') || '';
+    } catch {
+      baseHref = '';
+    }
+    if (!baseHref && test?.html_file_url) {
+      baseHref = directoryOf(test.html_file_url.trim().replace(/^`|`$/g, ''));
+    }
+    if (!baseHref) {
+      baseHref = (import.meta.env.VITE_ASSETS_BASE_URL as string) || (import.meta.env.VITE_API_BASE_URL as string) || window.location.origin;
+    }
+    return injectBase(htmlContent, baseHref);
   };
 
   const handleBackToList = () => {
@@ -260,22 +308,30 @@ const ListeningPage: React.FC = () => {
             Testni tugatish
           </Button>
 
-          <Text style={{ fontSize: isMobile ? '14px' : '16px', color: '#ffffff', fontWeight: '600' }}>
-            {test.title}
-          </Text>
+          <img
+            src="/logohead.png"
+            alt="IELTSify"
+            onError={(e) => {
+              const t = e.currentTarget as HTMLImageElement;
+              t.src = '/logo.png';
+            }}
+            style={{
+              height: isMobile ? 24 : 28,
+              objectFit: 'contain',
+              display: 'block',
+              filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.15))'
+            }}
+          />
 
           <div style={{ width: isMobile ? '80px' : '120px' }} />
         </div>
 
-        {/* Full Screen HTML Content */}
-        <div 
-          style={{ 
-            flex: 1, 
-            overflow: 'auto',
-            padding: '20px',
-            background: '#ffffff'
-          }}
-          dangerouslySetInnerHTML={{ __html: htmlContent }}
+        {/* Full Screen HTML Content (isolated) */}
+        <iframe
+          title="listening-content"
+          style={{ flex: 1, border: 'none', background: '#ffffff' }}
+          sandbox="allow-scripts allow-same-origin allow-forms"
+          srcDoc={buildSrcDoc()}
         />
       </div>
     );
