@@ -11,17 +11,10 @@ import {
   LifeBuoy,
   User,
   Bell,
-  ChevronsLeft,
-  ChevronsRight,
-  Menu as MenuIcon,
-  X,
-  Settings,
-  Headphones,
-  Book,
-  Sparkles,
   Sun,
   Moon
 } from 'lucide-react';
+import { FiSidebar } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 import { SIDEBAR_MENU } from '../mockData';
 import { useTheme } from '../contexts/ThemeContext';
@@ -39,13 +32,9 @@ const iconMap: Record<string, React.ReactNode> = {
   speaking: <Mic size={20} />,
   pricing: <CreditCard size={20} />,
   'reading-hub': <BookOpen size={20} />,
-  'listening-hub': <Headphones size={20} />,
-  'passage-manager': <Settings size={20} />,
-  'listening-manager': <Settings size={20} />,
-  'writing-manager': <Settings size={20} />,
-  vocabulary: <Book size={20} />,
-  'smart-article': <Sparkles size={20} />,
-  'resource-manager': <Settings size={20} />,
+  'listening-hub': <Mic size={20} />,
+  vocabulary: <BookOpen size={20} />,
+  'smart-article': <FileText size={20} />,
   profile: <User size={20} />,
   support: <LifeBuoy size={20} />,
 };
@@ -182,10 +171,10 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       {/* Mobile Drawer */}
       <Drawer
         placement="left"
-        closable={false}
+        closable={true}
         onClose={() => setMobileVisible(false)}
         open={mobileVisible}
-        size="default"
+        width={260}
         styles={{ 
           body: { 
             padding: 0,
@@ -197,14 +186,6 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           }
         }}
       >
-        <div style={{ position: 'absolute', right: 16, top: 20, zIndex: 10 }}>
-          <Button 
-            type="text" 
-            icon={<X size={20} color="#94a3b8" />} 
-            onClick={() => setMobileVisible(false)}
-            style={{ color: '#94a3b8' }}
-          />
-        </div>
         {SidebarContent}
       </Drawer>
 
@@ -222,13 +203,12 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           position: 'sticky',
           top: 0,
           zIndex: 99,
-          width: '100%',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             {!isMobile && (
               <Button
                 type="text"
-                icon={collapsed ? <ChevronsRight size={20} /> : <ChevronsLeft size={20} />}
+                icon={<FiSidebar size={20} />}
                 onClick={() => {
                   setCollapsed(prev => {
                     const next = !prev;
@@ -236,23 +216,43 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                     return next;
                   });
                 }}
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  color: token.colorText
+                }}
               />
             )}
             {isMobile && (
               <Button
                 type="text"
-                icon={<MenuIcon size={20} />}
+                icon={<FiSidebar size={20} />}
                 onClick={() => setMobileVisible(true)}
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  color: token.colorText
+                }}
               />
             )}
             <div className={isMobile ? 'mobile-hide' : ''}>
               <Breadcrumb
-                items={[
-                  { title: currentPath === '/' ? 'Home' : (currentPath.startsWith('/dashboard') ? 'Dashboard' : (currentPath.substring(1).charAt(0).toUpperCase() + currentPath.substring(2))) },
-                  { title: currentPath === '/dashboard' ? 'Overview' : (currentPath.split('/').pop()?.charAt(0).toUpperCase() || '') + (currentPath.split('/').pop()?.substring(1) || '') },
-                ]}
+                items={(() => {
+                  const pathParts = currentPath.split('/').filter(Boolean);
+                  if (pathParts.length === 1 && pathParts[0] === 'dashboard') {
+                    return [{ title: 'Overview' }];
+                  }
+                  if (pathParts.length === 2 && pathParts[0] === 'dashboard') {
+                    const pageName = pathParts[1]
+                      .split('-')
+                      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                      .join(' ');
+                    return [{ title: pageName }];
+                  }
+                  return [{ title: 'Dashboard' }];
+                })()}
               />
             </div>
           </div>
@@ -278,8 +278,13 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             />
             <Bell size={20} style={{ cursor: 'pointer', color: token.colorText }} />
             <Avatar 
-              icon={<User size={20} />} 
-              style={{ backgroundColor: 'rgba(16, 185, 129, 0.15)', color: '#10b981', cursor: 'pointer' }} 
+              icon={<User size={18} />} 
+              size={36}
+              style={{ 
+                backgroundColor: 'rgba(16, 185, 129, 0.15)', 
+                color: '#10b981',
+                cursor: 'pointer'
+              }} 
               onClick={() => navigate('/dashboard/profile')}
             />
           </div>

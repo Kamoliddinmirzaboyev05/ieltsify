@@ -1,159 +1,59 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  BookOpen, 
-  Flame, 
-  Trophy, 
-  ChevronRight, 
-  Check, 
-  X, 
-  Zap,
-  MoreHorizontal,
-  ArrowLeft,
-  Volume2,
-  Brain,
-  Sparkles,
-  Target,
-  RefreshCw
-} from 'lucide-react';
+import { ArrowLeft, Volume2, Check, X, BookOpen, Target, Trophy, Search, Filter } from 'lucide-react';
+import { VOCABULARY_TOPICS } from '../data/vocabularyData';
+import type { VocabTopic, VocabWord } from '../data/vocabularyData';
 
-// --- 1. Data Models ---
+// ==================== TYPES ====================
 
-type CefrLevel = 'B1' | 'B2' | 'C1' | 'C2';
+type CEFRLevel = 'all' | 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
+type Phase = 'FLASHCARDS' | 'QUIZ' | 'SPELLING' | 'DONE';
 
-interface Word {
-  id: string;
-  term: string;
-  translation: string;
-  definition: string;
-  example: string;
-  pronunciation: string;
-  audioUrl?: string;
-  cefrLevel: CefrLevel;
-  masteryLevel: 1 | 2 | 3 | 4;
-  nextReviewDate: string;
-  categoryIds: string[];
-}
-
-interface Category {
-  id: string;
-  title: string;
-  subtitle?: string;
-  totalWords: number;
-  learnedWords: number;
-  icon: 'environment' | 'technology' | 'education' | 'health' | 'smart-article' | 'custom';
-  color: string;
-}
-
-interface DailyVocabGoal {
+interface DailyGoal {
   target: number;
   current: number;
   streak: number;
-  xpEarned: number;
 }
 
-// --- Mock Data ---
-
-const MOCK_CATEGORIES: Category[] = [
-  { id: 'cat_1', title: 'Environment', subtitle: 'Climate change & Nature', totalWords: 45, learnedWords: 12, icon: 'environment', color: 'from-emerald-500 to-teal-500' },
-  { id: 'cat_2', title: 'Technology', subtitle: 'AI & Innovation', totalWords: 30, learnedWords: 5, icon: 'technology', color: 'from-blue-500 to-indigo-500' },
-  { id: 'cat_3', title: 'Education', subtitle: 'University & Learning', totalWords: 25, learnedWords: 18, icon: 'education', color: 'from-orange-500 to-amber-500' },
-  { id: 'cat_4', title: 'My Smart Words', subtitle: 'Saved from articles', totalWords: 12, learnedWords: 2, icon: 'smart-article', color: 'from-purple-500 to-violet-500' },
-];
-
-const MOCK_WORDS: Word[] = [
-  {
-    id: 'w1',
-    term: 'Detrimental',
-    translation: 'Zararli',
-    definition: 'Tending to cause harm',
-    example: 'The pollution had a detrimental effect on the environment.',
-    pronunciation: '/ˌdet.rɪˈmen.təl/',
-    cefrLevel: 'C1',
-    masteryLevel: 1,
-    nextReviewDate: new Date().toISOString(),
-    categoryIds: ['cat_1']
-  },
-  {
-    id: 'w2',
-    term: 'Ubiquitous',
-    translation: 'Hamma joyda mavjud',
-    definition: 'Present, appearing, or found everywhere',
-    example: 'Smartphones have become ubiquitous in modern society.',
-    pronunciation: '/juːˈbɪk.wɪ.təs/',
-    cefrLevel: 'C2',
-    masteryLevel: 2,
-    nextReviewDate: new Date().toISOString(),
-    categoryIds: ['cat_2']
-  },
-  {
-    id: 'w3',
-    term: 'Mitigate',
-    translation: 'Yengillashtirmoq',
-    definition: 'Make less severe, serious, or painful',
-    example: 'We need to mitigate the risks of climate change.',
-    pronunciation: '/ˈmɪt.ɪ.ɡeɪt/',
-    cefrLevel: 'C1',
-    masteryLevel: 1,
-    nextReviewDate: new Date().toISOString(),
-    categoryIds: ['cat_1']
-  },
-  {
-    id: 'w4',
-    term: 'Prerequisite',
-    translation: 'Talab qilinadigan shart',
-    definition: 'A thing that is required as a prior condition for something else to happen or exist',
-    example: 'A degree is a prerequisite for this job.',
-    pronunciation: '/ˌpriːˈrek.wɪ.zɪt/',
-    cefrLevel: 'B2',
-    masteryLevel: 3,
-    nextReviewDate: new Date().toISOString(),
-    categoryIds: ['cat_3']
-  }
-];
-
-// --- Components ---
+// ==================== MAIN COMPONENT ====================
 
 const VocabularyPage: React.FC = () => {
   const [view, setView] = useState<'dashboard' | 'study'>('dashboard');
-  const [activeCategory, setActiveCategory] = useState<Category | null>(null);
-  const [dailyGoal, setDailyGoal] = useState<DailyVocabGoal>({
-    target: 15,
-    current: 8,
-    streak: 12,
-    xpEarned: 120
+  const [activeTopic, setActiveTopic] = useState<VocabTopic | null>(null);
+  const [dailyGoal, setDailyGoal] = useState<DailyGoal>({
+    target: 20,
+    current: 12,
+    streak: 7
   });
 
-  const handleStartStudy = (category: Category) => {
-    setActiveCategory(category);
+  const handleStartStudy = (topic: VocabTopic) => {
+    setActiveTopic(topic);
     setView('study');
   };
 
-  const handleFinishStudy = (wordsLearned: number, xpGained: number) => {
+  const handleFinishStudy = (learned: number) => {
     setDailyGoal(prev => ({
       ...prev,
-      current: Math.min(prev.target, prev.current + wordsLearned),
-      xpEarned: prev.xpEarned + xpGained
+      current: Math.min(prev.target, prev.current + learned)
     }));
     setView('dashboard');
-    setActiveCategory(null);
+    setActiveTopic(null);
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-transparent pb-20 font-sans text-slate-900 dark:text-slate-100">
+    <div className="min-h-screen">
       <AnimatePresence mode="wait">
         {view === 'dashboard' ? (
-          <VocabDashboard 
+          <Dashboard 
             key="dashboard"
-            categories={MOCK_CATEGORIES} 
+            topics={VOCABULARY_TOPICS}
             dailyGoal={dailyGoal}
             onStartStudy={handleStartStudy}
           />
         ) : (
-          <ActiveStudyMode 
+          <StudyMode 
             key="study"
-            category={activeCategory!}
-            words={MOCK_WORDS.filter(w => activeCategory ? w.categoryIds.includes(activeCategory.id) : true)} 
+            topic={activeTopic!}
             onFinish={handleFinishStudy}
           />
         )}
@@ -162,340 +62,573 @@ const VocabularyPage: React.FC = () => {
   );
 };
 
-// --- View A: Dashboard ---
+// ==================== DASHBOARD ====================
 
-interface VocabDashboardProps {
-  categories: Category[];
-  dailyGoal: DailyVocabGoal;
-  onStartStudy: (cat: Category) => void;
+interface DashboardProps {
+  topics: VocabTopic[];
+  dailyGoal: DailyGoal;
+  onStartStudy: (topic: VocabTopic) => void;
 }
 
-const VocabDashboard: React.FC<VocabDashboardProps> = ({ categories, dailyGoal, onStartStudy }) => {
+const Dashboard: React.FC<DashboardProps> = ({ topics, dailyGoal, onStartStudy }) => {
+  const progress = (dailyGoal.current / dailyGoal.target) * 100;
+  const [searchQuery, setSearchQuery] = useState('');
+  const [cefrLevel, setCefrLevel] = useState<CEFRLevel>('all');
+
+  const getCEFRLevel = (wordCount: number): CEFRLevel => {
+    if (wordCount <= 10) return 'A1';
+    if (wordCount <= 20) return 'A2';
+    if (wordCount <= 30) return 'B1';
+    if (wordCount <= 40) return 'B2';
+    if (wordCount <= 50) return 'C1';
+    return 'C2';
+  };
+
+  const filteredTopics = useMemo(() => {
+    return topics.filter(topic => {
+      const matchesSearch = topic.title.toLowerCase().includes(searchQuery.toLowerCase());
+      const topicLevel = getCEFRLevel(topic.words.length);
+      const matchesLevel = cefrLevel === 'all' || topicLevel === cefrLevel;
+      return matchesSearch && matchesLevel;
+    });
+  }, [topics, searchQuery, cefrLevel]);
+
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      className="max-w-5xl mx-auto px-4 pt-8"
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
     >
-      {/* Header */}
-      <div className="mb-10 flex items-end justify-between">
-        <div>
-          <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white mb-2 tracking-tight">Vocabulary</h1>
-          <p className="text-slate-500 dark:text-slate-400">Master new words with SRS.</p>
+      <div className="mb-8">
+        <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-2">
+          Vocabulary Builder
+        </h1>
+        <p className="text-slate-600 dark:text-slate-400">
+          Master IELTS vocabulary with spaced repetition
+        </p>
+      </div>
+
+      <div className="mb-8 bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-slate-900 dark:bg-white flex items-center justify-center">
+              <Target className="text-white dark:text-slate-900" size={20} />
+            </div>
+            <div>
+              <h3 className="font-semibold text-slate-900 dark:text-white">Daily Goal</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400">{dailyGoal.streak} day streak</p>
+            </div>
+          </div>
+          <div className="text-right">
+            <span className="text-3xl font-bold text-slate-900 dark:text-white">{dailyGoal.current}</span>
+            <span className="text-lg text-slate-400">/{dailyGoal.target}</span>
+          </div>
         </div>
-        <div className="flex items-center gap-2 bg-orange-50 dark:bg-orange-900/20 px-4 py-2 rounded-full border border-orange-100 dark:border-orange-800">
-          <Flame size={20} className="text-orange-500 fill-orange-500" />
-          <span className="font-bold text-orange-700 dark:text-orange-400">{dailyGoal.streak} Day Streak</span>
+        <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${progress}%` }}
+            transition={{ duration: 1 }}
+            className="h-full bg-slate-900 dark:bg-white rounded-full"
+          />
         </div>
       </div>
 
-      {/* Daily Goal Progress */}
-      <div className="mb-12 bg-white dark:bg-slate-800 rounded-3xl p-8 shadow-xl border border-slate-100 dark:border-slate-700/50 relative overflow-hidden group">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-emerald-500/10 to-blue-500/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
-        
-        <div className="flex flex-col md:flex-row items-center gap-8 relative z-10">
-          <div className="flex-1 w-full">
-            <div className="flex justify-between items-end mb-4">
-              <div>
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                  <Target className="text-emerald-500" size={20} />
-                  Today's Goal
-                </h3>
-              </div>
-              <div className="text-right">
-                <span className="text-3xl font-black text-slate-900 dark:text-white">{dailyGoal.current}</span>
-                <span className="text-lg text-slate-400 font-medium">/{dailyGoal.target}</span>
-              </div>
-            </div>
-            
-            <div className="h-3 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
-              <motion.div 
-                initial={{ width: 0 }}
-                animate={{ width: `${Math.min(100, (dailyGoal.current / dailyGoal.target) * 100)}%` }}
-                transition={{ duration: 1, ease: "easeOut" }}
-                className="h-full bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.5)]"
-              />
-            </div>
-            <p className="text-xs text-slate-400 mt-2 text-right">+{dailyGoal.xpEarned} XP earned today</p>
-          </div>
+      <div className="mb-6 flex flex-col sm:flex-row gap-4">
+        <div className="flex-1 relative">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+          <input
+            type="text"
+            placeholder="Search topics..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-12 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-slate-900 dark:focus:border-white transition-colors"
+          />
+        </div>
 
-          <div className="w-px h-16 bg-slate-200 dark:bg-slate-700 hidden md:block"></div>
-
-          <div className="flex gap-4">
-            <div className="text-center px-6 py-4 bg-slate-50 dark:bg-slate-700/30 rounded-2xl border border-slate-100 dark:border-slate-700 min-w-[100px]">
-              <div className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">Level</div>
-              <div className="text-2xl font-black text-slate-800 dark:text-slate-200">C1</div>
-            </div>
-            <div className="text-center px-6 py-4 bg-slate-50 dark:bg-slate-700/30 rounded-2xl border border-slate-100 dark:border-slate-700 min-w-[100px]">
-              <div className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">Rank</div>
-              <div className="text-2xl font-black text-indigo-500">#42</div>
-            </div>
-          </div>
+        <div className="flex items-center gap-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-1 overflow-x-auto">
+          <Filter className="text-slate-400 ml-2 flex-shrink-0" size={18} />
+          {(['all', 'A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as CEFRLevel[]).map((level) => (
+            <button
+              key={level}
+              onClick={() => setCefrLevel(level)}
+              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+                cefrLevel === level
+                  ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              {level === 'all' ? 'All' : level}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Categories */}
-      <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
-        <Sparkles size={20} className="text-yellow-500 fill-yellow-500" />
-        Start Learning
-      </h2>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {categories.map((cat, index) => (
-          <motion.div 
-            key={cat.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-            onClick={() => onStartStudy(cat)}
-            className="group bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-200 dark:border-slate-700/50 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer relative overflow-hidden"
-          >
-            <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${cat.color}`}></div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {filteredTopics.length === 0 ? (
+          <div className="col-span-full text-center py-12">
+            <p className="text-slate-500 dark:text-slate-400">No topics found</p>
+          </div>
+        ) : (
+          filteredTopics.map((topic, index) => {
+            const topicLevel = getCEFRLevel(topic.words.length);
+            const levelColors: Record<string, string> = {
+              'A1': 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800',
+              'A2': 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800',
+              'B1': 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800',
+              'B2': 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800',
+              'C1': 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-800',
+              'C2': 'bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-400 border-pink-200 dark:border-pink-800'
+            };
             
-            <div className="flex justify-between items-start mb-6">
-              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center bg-gradient-to-br ${cat.color} text-white shadow-lg shadow-current/20`}>
-                {getCategoryIcon(cat.icon)}
-              </div>
-              <div className="w-10 h-10 rounded-full bg-slate-50 dark:bg-slate-700/50 flex items-center justify-center text-slate-400 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/30 group-hover:text-indigo-500 transition-colors">
-                <ChevronRight size={20} />
-              </div>
-            </div>
-
-            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1">{cat.title}</h3>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 font-medium">{cat.subtitle}</p>
-
-            <div className="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
-              <div 
-                className={`h-full bg-gradient-to-r ${cat.color}`} 
-                style={{ width: `${(cat.learnedWords / cat.totalWords) * 100}%` }}
-              />
-            </div>
-          </motion.div>
-        ))}
+            return (
+              <motion.button
+                key={topic.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+                onClick={() => onStartStudy(topic)}
+                className="bg-white dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-800 hover:border-slate-900 dark:hover:border-white transition-all text-left group"
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <BookOpen className="text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white transition-colors" size={24} />
+                  <div className="flex flex-col items-end gap-1">
+                    <span className="text-sm font-medium text-slate-500 dark:text-slate-400">{topic.words.length} words</span>
+                    <span className={`text-xs font-bold px-2 py-0.5 rounded-md border ${levelColors[topicLevel] || levelColors['B1']}`}>
+                      {topicLevel}
+                    </span>
+                  </div>
+                </div>
+                <h3 className="font-semibold text-slate-900 dark:text-white mb-1">{topic.title}</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Start learning</p>
+              </motion.button>
+            );
+          })
+        )}
       </div>
     </motion.div>
   );
 };
 
-// --- View B: Active Study Mode ---
+// ==================== STUDY MODE (3-PHASE SYSTEM) ====================
 
-interface ActiveStudyModeProps {
-  category: Category;
-  words: Word[];
-  onFinish: (wordsLearned: number, xpGained: number) => void;
+interface StudyModeProps {
+  topic: VocabTopic;
+  onFinish: (learned: number) => void;
 }
 
-const ActiveStudyMode: React.FC<ActiveStudyModeProps> = ({ category, words: initialWords, onFinish }) => {
-  const [queue] = useState<Word[]>(initialWords);
-  const [currentIndex, setCurrentIndex] = useState(0);
+const StudyMode: React.FC<StudyModeProps> = ({ topic, onFinish }) => {
+  // STATE MANAGEMENT
+  const [phase, setPhase] = useState<Phase>('FLASHCARDS');
+  const [flashcardQueue, setFlashcardQueue] = useState<VocabWord[]>([...topic.words]);
+  const [quizQueue, setQuizQueue] = useState<VocabWord[]>([]);
+  const [spellingQueue, setSpellingQueue] = useState<VocabWord[]>([]);
+  const [masteredWords, setMasteredWords] = useState<VocabWord[]>([]);
+  
+  // FLASHCARD STATE
   const [isFlipped, setIsFlipped] = useState(false);
-  const [sessionStats, setSessionStats] = useState({ learned: 0, xp: 0 });
+  
+  // QUIZ STATE
+  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+  const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+  
+  // SPELLING STATE
+  const [spellingInput, setSpellingInput] = useState('');
+  const [spellingError, setSpellingError] = useState(false);
+  const [spellingSuccess, setSpellingSuccess] = useState(false);
 
-  const currentWord = queue[currentIndex];
-  const isFinished = currentIndex >= queue.length;
+  const currentWord = phase === 'FLASHCARDS' 
+    ? flashcardQueue[0] 
+    : phase === 'QUIZ' 
+    ? quizQueue[0] 
+    : spellingQueue[0];
 
-  const handleCardClick = () => {
-    setIsFlipped(!isFlipped);
-  };
+  const totalWords = topic.words.length;
+  const progress = phase === 'FLASHCARDS' 
+    ? ((totalWords - flashcardQueue.length) / totalWords) * 100
+    : phase === 'QUIZ'
+    ? ((totalWords - quizQueue.length) / totalWords) * 100
+    : ((totalWords - spellingQueue.length) / totalWords) * 100;
 
-  const handleAction = (action: 'known' | 'unknown') => {
-    if (action === 'known') {
-      setSessionStats(prev => ({ learned: prev.learned + 1, xp: prev.xp + 10 }));
+  // ==================== PHASE 1: FLASHCARDS ====================
+
+  const handleFlashcardAction = (known: boolean) => {
+    if (known) {
+      setMasteredWords(prev => [...prev, currentWord]);
+    } else {
+      setQuizQueue(prev => [...prev, currentWord]);
     }
+    
     setIsFlipped(false);
-    setCurrentIndex(prev => prev + 1);
+    setTimeout(() => {
+      const newQueue = flashcardQueue.slice(1);
+      setFlashcardQueue(newQueue);
+      
+      if (newQueue.length === 0) {
+        if (quizQueue.length > 0) {
+          setPhase('QUIZ');
+        } else {
+          setPhase('DONE');
+        }
+      }
+    }, 200);
   };
 
-  if (isFinished) {
+  const handlePronunciation = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (window.speechSynthesis.speaking) {
+      window.speechSynthesis.cancel();
+    }
+    const utterance = new SpeechSynthesisUtterance(currentWord.word);
+    utterance.lang = 'en-US';
+    utterance.rate = 0.8;
+    utterance.pitch = 1.0;
+    window.speechSynthesis.speak(utterance);
+  };
+
+  // ==================== PHASE 2: QUIZ ====================
+
+  const getQuizOptions = (correctWord: VocabWord): string[] => {
+    const allTranslations = topic.words
+      .filter(w => w.word !== correctWord.word)
+      .map(w => w.trans);
+    
+    const shuffled = allTranslations.sort(() => Math.random() - 0.5);
+    const wrongAnswers = shuffled.slice(0, 3);
+    const options = [...wrongAnswers, correctWord.trans];
+    return options.sort(() => Math.random() - 0.5);
+  };
+
+  const handleQuizAnswer = (answer: string) => {
+    setSelectedAnswer(answer);
+    const correct = answer === currentWord.trans;
+    setIsCorrect(correct);
+    
+    if (correct) {
+      setTimeout(() => {
+        setSpellingQueue(prev => [...prev, currentWord]);
+        const newQueue = quizQueue.slice(1);
+        setQuizQueue(newQueue);
+        setSelectedAnswer(null);
+        setIsCorrect(null);
+        
+        if (newQueue.length === 0) {
+          setPhase('SPELLING');
+        }
+      }, 800);
+    } else {
+      setTimeout(() => {
+        setSelectedAnswer(null);
+        setIsCorrect(null);
+      }, 1000);
+    }
+  };
+
+  // ==================== PHASE 3: SPELLING ====================
+
+  const handleSpellingCheck = () => {
+    const userInput = spellingInput.trim().toLowerCase();
+    const correctAnswer = currentWord.word.toLowerCase();
+    
+    if (userInput === correctAnswer) {
+      setSpellingSuccess(true);
+      setSpellingError(false);
+      
+      setTimeout(() => {
+        setMasteredWords(prev => [...prev, currentWord]);
+        const newQueue = spellingQueue.slice(1);
+        setSpellingQueue(newQueue);
+        setSpellingInput('');
+        setSpellingSuccess(false);
+        
+        if (newQueue.length === 0) {
+          setPhase('DONE');
+        }
+      }, 1000);
+    } else {
+      setSpellingError(true);
+      setTimeout(() => {
+        setSpellingError(false);
+        setSpellingInput('');
+      }, 600);
+    }
+  };
+
+  // ==================== RENDER PHASES ====================
+
+  if (phase === 'DONE') {
+    const xpEarned = masteredWords.length * 10;
     return (
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.9 }}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.9 }}
-        className="flex flex-col items-center justify-center min-h-[80vh] px-4 text-center"
+        className="flex flex-col items-center justify-center min-h-screen px-4"
       >
-        <div className="relative mb-8">
-          <div className="absolute inset-0 bg-yellow-500 blur-3xl opacity-20 rounded-full animate-pulse"></div>
-          <div className="w-32 h-32 bg-gradient-to-br from-yellow-300 to-yellow-600 rounded-3xl flex items-center justify-center shadow-2xl shadow-yellow-500/40 rotate-12 relative z-10">
-            <Trophy size={64} className="text-white drop-shadow-md" />
-          </div>
-        </div>
-        <h2 className="text-4xl font-black text-slate-900 dark:text-white mb-4">Session Complete!</h2>
-        <p className="text-lg text-slate-500 dark:text-slate-400 mb-10 max-w-md">
-          You mastered <span className="text-emerald-500 font-bold">{sessionStats.learned} words</span> and earned <span className="text-indigo-500 font-bold">{sessionStats.xp} XP</span>.
-        </p>
-        <button 
-          onClick={() => onFinish(sessionStats.learned, sessionStats.xp)}
-          className="px-10 py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold rounded-2xl hover:scale-105 hover:shadow-xl transition-all duration-300"
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ type: "spring", delay: 0.2 }}
+          className="w-24 h-24 rounded-3xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center mb-6 shadow-2xl"
         >
-          Back to Dashboard
-        </button>
+          <Trophy className="text-white" size={48} />
+        </motion.div>
+        <motion.h2 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="text-4xl font-bold text-slate-900 dark:text-white mb-2"
+        >
+          Daily Goal Reached! 🔥
+        </motion.h2>
+        <motion.p 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className="text-slate-600 dark:text-slate-400 mb-2"
+        >
+          You mastered {masteredWords.length} out of {totalWords} words
+        </motion.p>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.5 }}
+          className="text-5xl font-black text-emerald-500 mb-8"
+        >
+          +{xpEarned} XP
+        </motion.div>
+        <motion.button
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6 }}
+          onClick={() => onFinish(masteredWords.length)}
+          className="px-8 py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl font-bold text-lg hover:scale-105 transition-transform shadow-lg"
+        >
+          Back to Topics
+        </motion.button>
       </motion.div>
     );
   }
 
-  if (!currentWord) return <div>No words loaded</div>;
+  if (!currentWord) return null;
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="max-w-md mx-auto px-4 pt-6 h-[calc(100vh-80px)] flex flex-col"
+      className="max-w-2xl mx-auto px-4 py-4 min-h-screen flex flex-col"
     >
-      {/* Top Bar */}
-      <div className="flex items-center justify-between mb-8">
-        <button 
-          onClick={() => onFinish(sessionStats.learned, sessionStats.xp)}
-          className="w-10 h-10 rounded-full bg-white dark:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-700 shadow-sm transition-colors"
+      {/* HEADER */}
+      <div className="flex items-center justify-between mb-4 flex-shrink-0">
+        <button
+          onClick={() => onFinish(masteredWords.length)}
+          className="w-10 h-10 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center hover:border-slate-900 dark:hover:border-white transition-colors"
         >
-          <ArrowLeft size={20} />
+          <ArrowLeft size={20} className="text-slate-600 dark:text-slate-400" />
         </button>
-        <div className="flex flex-col items-center">
-          <span className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">{category.title}</span>
-          <div className="flex gap-1.5">
-            {queue.map((_, idx) => (
-              <div 
-                key={idx} 
-                className={`h-1.5 w-4 rounded-full transition-colors duration-300 ${idx === currentIndex ? 'bg-indigo-500 shadow-lg shadow-indigo-500/50' : idx < currentIndex ? 'bg-emerald-400' : 'bg-slate-200 dark:bg-slate-700'}`}
-              />
-            ))}
+        <div className="text-center">
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
+            {phase === 'FLASHCARDS' ? 'Learning' : phase === 'QUIZ' ? 'Quiz Mode' : 'Spelling Test'}
+          </p>
+          <p className="text-xs text-slate-400">
+            {phase === 'FLASHCARDS' && `${flashcardQueue.length} remaining`}
+            {phase === 'QUIZ' && `${quizQueue.length} to review`}
+            {phase === 'SPELLING' && `${spellingQueue.length} to spell`}
+          </p>
+        </div>
+        <div className="w-10" />
+      </div>
+
+      {/* PROGRESS BAR */}
+      <div className="h-1 bg-slate-200 dark:bg-slate-800 rounded-full mb-6 overflow-hidden flex-shrink-0">
+        <motion.div
+          className={`h-full rounded-full ${
+            phase === 'FLASHCARDS' ? 'bg-blue-500' : 
+            phase === 'QUIZ' ? 'bg-purple-500' : 
+            'bg-emerald-500'
+          }`}
+          initial={{ width: 0 }}
+          animate={{ width: `${progress}%` }}
+          transition={{ duration: 0.3 }}
+        />
+      </div>
+
+      {/* PHASE 1: FLASHCARDS */}
+      {phase === 'FLASHCARDS' && (
+        <div className="flex-1 flex flex-col items-center justify-center">
+          <motion.div
+            className="w-full max-w-md h-[350px] relative mb-8"
+            style={{ transformStyle: "preserve-3d" }}
+            animate={{ rotateY: isFlipped ? 180 : 0 }}
+            transition={{ duration: 0.5 }}
+            onClick={() => setIsFlipped(!isFlipped)}
+          >
+            {/* FRONT */}
+            <div
+              className="absolute inset-0 bg-white dark:bg-slate-900 rounded-2xl border-2 border-slate-900 dark:border-white p-6 flex flex-col items-center justify-center cursor-pointer shadow-2xl"
+              style={{ backfaceVisibility: "hidden" }}
+            >
+              <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-6 text-center">
+                {currentWord.word}
+              </h2>
+              <button 
+                onClick={handlePronunciation}
+                className="w-14 h-14 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center hover:scale-110 transition-transform active:scale-95"
+              >
+                <Volume2 size={24} className="text-slate-600 dark:text-slate-400" />
+              </button>
+              <p className="text-xs text-slate-400 mt-auto">Tap card to flip</p>
+            </div>
+
+            {/* BACK */}
+            <div
+              className="absolute inset-0 bg-white dark:bg-slate-900 rounded-2xl border-2 border-slate-900 dark:border-white p-6 flex flex-col justify-center cursor-pointer shadow-2xl"
+              style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
+            >
+              <h3 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mb-4 text-center">
+                {currentWord.trans}
+              </h3>
+              <div className="w-16 h-px bg-slate-200 dark:bg-slate-800 mx-auto mb-4" />
+              <p className="text-slate-600 dark:text-slate-400 text-center text-sm leading-relaxed px-2">
+                "{currentWord.example}"
+              </p>
+              <p className="text-xs text-slate-400 mt-auto text-center">Tap to flip back</p>
+            </div>
+          </motion.div>
+
+          {/* ACTION BUTTONS */}
+          <div className="flex gap-4 w-full max-w-md">
+            <button
+              onClick={() => handleFlashcardAction(false)}
+              disabled={!isFlipped}
+              className="flex-1 py-4 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-bold shadow-lg shadow-rose-500/30 transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-center gap-2 active:scale-95"
+            >
+              <X size={20} />
+              <span className="text-sm sm:text-base">Didn't Know</span>
+            </button>
+            <button
+              onClick={() => handleFlashcardAction(true)}
+              disabled={!isFlipped}
+              className="flex-1 py-4 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold shadow-lg shadow-emerald-500/30 transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-center gap-2 active:scale-95"
+            >
+              <Check size={20} />
+              <span className="text-sm sm:text-base">Got It</span>
+            </button>
           </div>
         </div>
-        <button className="w-10 h-10 rounded-full bg-white dark:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-700 shadow-sm transition-colors">
-          <MoreHorizontal size={20} />
-        </button>
-      </div>
+      )}
 
-      {/* Physical Card Container */}
-      <div className="flex-1 flex items-center justify-center mb-8 perspective-1000 relative">
-        <motion.div
-          className="relative w-full aspect-[3/4] sm:h-[500px] cursor-pointer"
-          style={{ transformStyle: "preserve-3d" }}
-          animate={{ rotateY: isFlipped ? 180 : 0 }}
-          transition={{ duration: 0.6, type: "spring", stiffness: 260, damping: 20 }}
-          onClick={handleCardClick}
-        >
-          {/* FRONT */}
-          <div 
-            className="absolute inset-0 w-full h-full bg-white dark:bg-slate-800 rounded-[2.5rem] shadow-2xl dark:shadow-black/40 border border-slate-100 dark:border-slate-700 flex flex-col items-center justify-center p-8 text-center"
-            style={{ backfaceVisibility: "hidden" }}
-          >
-             {/* Mastery Dots */}
-             <div className="absolute top-8 right-8 flex gap-1.5">
-              {[1, 2, 3, 4].map(lvl => (
-                <div 
-                  key={lvl} 
-                  className={`w-2.5 h-2.5 rounded-full transition-colors ${currentWord.masteryLevel >= lvl ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]' : 'bg-slate-200 dark:bg-slate-700'}`}
-                />
-              ))}
-            </div>
-
-            <div className="flex-1 flex flex-col items-center justify-center w-full">
-              <span className={`
-                px-4 py-1.5 rounded-full text-xs font-bold mb-8 border
-                ${currentWord.cefrLevel === 'C2' ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-800' : 
-                  currentWord.cefrLevel === 'C1' ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800' :
-                  'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800'}
-              `}>
-                {currentWord.cefrLevel} Level
-              </span>
-
-              <h2 className="text-5xl sm:text-6xl font-extrabold text-slate-900 dark:text-white mb-4 tracking-tight drop-shadow-sm">
-                {currentWord.term}
+      {/* PHASE 2: QUIZ */}
+      {phase === 'QUIZ' && (
+        <div className="flex-1 flex flex-col items-center justify-center">
+          <div className="w-full max-w-md">
+            {/* QUIZ CARD */}
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border-2 border-purple-500 dark:border-purple-400 p-8 mb-6 text-center shadow-2xl">
+              <div className="inline-block px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-full text-xs font-bold mb-4">
+                QUIZ MODE
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-4">
+                {currentWord.word}
               </h2>
-              
-              <span className="text-xl font-mono text-slate-500 dark:text-slate-400 mb-10">
-                {currentWord.pronunciation}
-              </span>
-
-              <motion.button 
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-                className="w-16 h-16 rounded-full bg-blue-50 dark:bg-slate-700 flex items-center justify-center text-blue-500 hover:text-blue-600 shadow-sm z-20"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  // Audio logic
-                }}
+              <button 
+                onClick={handlePronunciation}
+                className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center hover:scale-110 transition-transform active:scale-95 mx-auto"
               >
-                <Volume2 size={28} strokeWidth={2.5} />
-              </motion.button>
+                <Volume2 size={24} className="text-slate-600 dark:text-slate-400" />
+              </button>
             </div>
 
-            <div className="text-sm text-slate-400 font-medium opacity-60 animate-pulse mt-auto">
-              Tap card to flip
+            {/* QUIZ OPTIONS */}
+            <div className="space-y-3">
+              {getQuizOptions(currentWord).map((option, idx) => {
+                const isSelected = selectedAnswer === option;
+                const showResult = selectedAnswer !== null;
+                
+                let buttonClass = "w-full py-4 px-6 rounded-xl font-semibold text-left transition-all border-2 ";
+                
+                if (showResult && isSelected) {
+                  if (isCorrect) {
+                    buttonClass += "bg-emerald-500 border-emerald-500 text-white scale-105";
+                  } else {
+                    buttonClass += "bg-rose-500 border-rose-500 text-white animate-shake";
+                  }
+                } else {
+                  buttonClass += "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white hover:border-purple-500 dark:hover:border-purple-400 hover:scale-105";
+                }
+                
+                return (
+                  <motion.button
+                    key={idx}
+                    onClick={() => !selectedAnswer && handleQuizAnswer(option)}
+                    disabled={selectedAnswer !== null}
+                    className={buttonClass}
+                    whileHover={{ scale: selectedAnswer ? 1 : 1.02 }}
+                    whileTap={{ scale: selectedAnswer ? 1 : 0.98 }}
+                  >
+                    {option}
+                  </motion.button>
+                );
+              })}
             </div>
           </div>
+        </div>
+      )}
 
-          {/* BACK */}
-          <div 
-            className="absolute inset-0 w-full h-full bg-slate-50 dark:bg-slate-900 rounded-[2.5rem] shadow-2xl dark:shadow-black/40 border border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center p-0 overflow-hidden"
-            style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
-          >
-            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center w-full">
-              <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 mb-6 mx-auto shadow-inner">
-                <RefreshCw size={24} />
+      {/* PHASE 3: SPELLING */}
+      {phase === 'SPELLING' && (
+        <div className="flex-1 flex flex-col items-center justify-center">
+          <div className="w-full max-w-md">
+            {/* SPELLING CARD */}
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border-2 border-emerald-500 dark:border-emerald-400 p-8 mb-6 shadow-2xl">
+              <div className="inline-block px-3 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-full text-xs font-bold mb-4">
+                SPELLING TEST
               </div>
-
-              <h3 className="text-4xl font-bold text-emerald-600 dark:text-emerald-400 mb-6">
-                {currentWord.translation}
+              
+              {/* UZBEK TRANSLATION */}
+              <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 text-center">
+                {currentWord.trans}
               </h3>
               
-              <div className="w-1/2 h-px bg-slate-200 dark:bg-slate-800 mx-auto mb-6"></div>
-              
-              <p className="text-lg text-slate-600 dark:text-slate-300 italic mb-2 px-4 leading-relaxed">
-                "{currentWord.definition}"
-              </p>
-            </div>
-
-            <div className="w-full bg-white dark:bg-black/20 p-6 border-t border-slate-200 dark:border-slate-800 rounded-b-[2.5rem]">
-              <div className="flex items-center gap-2 mb-2">
-                <Zap size={14} className="text-yellow-500 fill-yellow-500" />
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Context</span>
+              {/* CONTEXT SENTENCE WITH BLANK */}
+              <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-4 mb-6">
+                <p className="text-slate-700 dark:text-slate-300 text-center italic">
+                  "{currentWord.example.replace(new RegExp(currentWord.word, 'gi'), '______')}"
+                </p>
               </div>
-              <p className="text-slate-700 dark:text-slate-200 font-medium leading-relaxed">
-                {currentWord.example}
-              </p>
-            </div>
-          </div>
-        </motion.div>
-      </div>
 
-      {/* Action Buttons */}
-      <div className="flex gap-4 mb-8 w-full max-w-md mx-auto">
-        <motion.button 
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => handleAction('unknown')}
-          className="flex-1 py-4 rounded-2xl bg-rose-100 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 font-bold text-lg border border-rose-200 dark:border-rose-800/50 flex items-center justify-center gap-2 shadow-sm"
-        >
-          <X size={24} strokeWidth={3} />
-          Didn't Know
-        </motion.button>
-        <motion.button 
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => handleAction('known')}
-          className="flex-1 py-4 rounded-2xl bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 font-bold text-lg border border-emerald-200 dark:border-emerald-800/50 flex items-center justify-center gap-2 shadow-sm"
-        >
-          <Check size={24} strokeWidth={3} />
-          Got It
-        </motion.button>
-      </div>
+              {/* SPELLING INPUT */}
+              <input
+                type="text"
+                value={spellingInput}
+                onChange={(e) => setSpellingInput(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && spellingInput && handleSpellingCheck()}
+                placeholder="Type the English word..."
+                className={`w-full p-4 text-center text-2xl font-bold tracking-widest rounded-xl outline-none transition-all border-2 ${
+                  spellingSuccess 
+                    ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-500 text-emerald-600 dark:text-emerald-400' 
+                    : spellingError 
+                    ? 'bg-rose-50 dark:bg-rose-900/20 border-rose-500 text-rose-600 dark:text-rose-400 animate-shake' 
+                    : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:border-emerald-500 dark:focus:border-emerald-400'
+                }`}
+                autoFocus
+              />
+            </div>
+
+            {/* CHECK BUTTON */}
+            <button
+              onClick={handleSpellingCheck}
+              disabled={!spellingInput.trim() || spellingSuccess}
+              className="w-full py-4 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold shadow-lg shadow-emerald-500/30 transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-center gap-2 active:scale-95"
+            >
+              <Check size={20} />
+              Check Spelling
+            </button>
+          </div>
+        </div>
+      )}
     </motion.div>
   );
 };
-
-// Helper
-function getCategoryIcon(type: string) {
-  switch (type) {
-    case 'environment': return <Zap size={28} fill="currentColor" className="text-white" />;
-    case 'technology': return <Brain size={28} className="text-white" />; 
-    case 'education': return <BookOpen size={28} className="text-white" />;
-    case 'smart-article': return <Sparkles size={28} className="text-white" />;
-    default: return <BookOpen size={28} className="text-white" />;
-  }
-}
 
 export default VocabularyPage;
