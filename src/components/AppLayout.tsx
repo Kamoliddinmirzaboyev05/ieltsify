@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, Menu, Avatar, Breadcrumb, theme, Button, Drawer, Input } from 'antd';
+import { Layout, Menu, Avatar, Breadcrumb, theme, Button, Drawer } from 'antd';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Home,
@@ -11,11 +11,12 @@ import {
   LifeBuoy,
   User,
   Bell,
+  ChevronsLeft,
+  ChevronsRight,
   Menu as MenuIcon,
   X,
   Settings,
   Headphones,
-  Search,
   Book,
   Sparkles,
   Sun,
@@ -23,7 +24,6 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { SIDEBAR_MENU } from '../mockData';
-import GlobalSearch from './GlobalSearch';
 import { useTheme } from '../contexts/ThemeContext';
 
 const { Header, Sider, Content } = Layout;
@@ -33,28 +33,30 @@ interface AppLayoutProps {
 }
 
 const iconMap: Record<string, React.ReactNode> = {
-  home: <Home size={18} />,
-  reports: <FileText size={18} />,
-  writing: <PenTool size={18} />,
-  speaking: <Mic size={18} />,
-  pricing: <CreditCard size={18} />,
-  'reading-hub': <BookOpen size={18} />,
-  'listening-hub': <Headphones size={18} />,
-  'passage-manager': <Settings size={18} />,
-  'listening-manager': <Settings size={18} />,
-  'writing-manager': <Settings size={18} />,
-  vocabulary: <Book size={18} />,
-  'smart-article': <Sparkles size={18} />,
-  'resource-manager': <Settings size={18} />,
-  profile: <User size={18} />,
-  support: <LifeBuoy size={18} />,
+  home: <Home size={20} />,
+  reports: <FileText size={20} />,
+  writing: <PenTool size={20} />,
+  speaking: <Mic size={20} />,
+  pricing: <CreditCard size={20} />,
+  'reading-hub': <BookOpen size={20} />,
+  'listening-hub': <Headphones size={20} />,
+  'passage-manager': <Settings size={20} />,
+  'listening-manager': <Settings size={20} />,
+  'writing-manager': <Settings size={20} />,
+  vocabulary: <Book size={20} />,
+  'smart-article': <Sparkles size={20} />,
+  'resource-manager': <Settings size={20} />,
+  profile: <User size={20} />,
+  support: <LifeBuoy size={20} />,
 };
 
 const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => {
+    const saved = localStorage.getItem('ieltsify_sidebar_collapsed');
+    return saved ? saved === '1' : false;
+  });
   const [mobileVisible, setMobileVisible] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [searchVisible, setSearchVisible] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { token } = theme.useToken();
@@ -63,12 +65,12 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   // Keyboard shortcut for search (Ctrl/Cmd + K)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        setSearchVisible(true);
-      }
-      if (e.key === 'Escape') {
-        setSearchVisible(false);
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'b') {
+        setCollapsed(prev => {
+          const next = !prev;
+          localStorage.setItem('ieltsify_sidebar_collapsed', next ? '1' : '0');
+          return next;
+        });
       }
     };
 
@@ -125,11 +127,12 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                   transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 />
               )}
-              <span style={{ fontWeight: currentPath === item.key ? 600 : 400, color: currentPath === item.key ? '#10b981' : (isDark ? '#94a3b8' : '#64748b') }}>{item.label}</span>
+              <span style={{ fontWeight: currentPath === item.key ? 700 : 500, fontSize: 15, letterSpacing: 0.2, color: currentPath === item.key ? '#10b981' : (isDark ? '#94a3b8' : '#64748b') }}>{item.label}</span>
             </div>
           ),
           style: {
-            color: currentPath === item.key ? '#10b981' : (isDark ? '#94a3b8' : '#64748b')
+            color: currentPath === item.key ? '#10b981' : (isDark ? '#94a3b8' : '#64748b'),
+            fontSize: 15
           }
         }))}
         onClick={({ key }) => {
@@ -138,7 +141,8 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         }}
         style={{ 
           borderRight: 0,
-          background: token.colorBgContainer
+          background: token.colorBgContainer,
+          paddingInline: 12
         }}
       />
     </>
@@ -149,15 +153,19 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       {/* Desktop Sider */}
       <Sider
         breakpoint="lg"
-        collapsedWidth="0"
+        collapsedWidth={72}
+        collapsed={collapsed}
+        collapsible
+        trigger={null}
         onBreakpoint={(broken) => {
           setIsMobile(broken);
         }}
         onCollapse={(collapsed) => {
           setCollapsed(collapsed);
+          localStorage.setItem('ieltsify_sidebar_collapsed', collapsed ? '1' : '0');
         }}
         theme="light"
-        width={240}
+        width={260}
         style={{
           borderRight: `1px solid ${token.colorBorder}`,
           position: 'fixed',
@@ -201,7 +209,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       </Drawer>
 
       <Layout style={{ 
-        marginLeft: isMobile ? 0 : (collapsed ? 0 : 240), 
+        marginLeft: isMobile ? 0 : (collapsed ? 72 : 260), 
         transition: 'margin-left 0.2s' 
       }}>
         <Header style={{ 
@@ -217,25 +225,26 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           width: '100%',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {!isMobile && (
+              <Button
+                type="text"
+                icon={collapsed ? <ChevronsRight size={20} /> : <ChevronsLeft size={20} />}
+                onClick={() => {
+                  setCollapsed(prev => {
+                    const next = !prev;
+                    localStorage.setItem('ieltsify_sidebar_collapsed', next ? '1' : '0');
+                    return next;
+                  });
+                }}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              />
+            )}
             {isMobile && (
               <Button
                 type="text"
                 icon={<MenuIcon size={20} />}
                 onClick={() => setMobileVisible(true)}
                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-              />
-            )}
-            {!isMobile && (
-              <Input
-                placeholder="Search... (Ctrl+K)"
-                prefix={<Search size={16} />}
-                onClick={() => setSearchVisible(true)}
-                readOnly
-                style={{
-                  width: '300px',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                }}
               />
             )}
             <div className={isMobile ? 'mobile-hide' : ''}>
@@ -248,13 +257,14 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '12px' : '20px' }}>
-            {isMobile && (
-              <Button
-                type="text"
-                icon={<Search size={20} />}
-                onClick={() => setSearchVisible(true)}
-              />
-            )}
+            <div 
+              className="hidden md:flex items-center bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700/50 rounded-full px-3 py-1 cursor-pointer hover:bg-yellow-100 dark:hover:bg-yellow-900/30 transition-colors"
+              onClick={() => navigate('/dashboard/pricing')}
+              style={{ marginRight: '8px' }}
+            >
+              <img src="/coin.png" alt="Coin" className="w-5 h-5 mr-1.5" onError={(e) => (e.currentTarget.style.display = 'none')} />
+              <span className="font-bold text-yellow-600 dark:text-yellow-400 text-sm">120</span>
+            </div>
             <Button
               type="text"
               icon={isDark ? <Sun size={20} /> : <Moon size={20} />}
@@ -286,9 +296,6 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           </div>
         </Content>
       </Layout>
-
-      {/* Global Search Modal */}
-      <GlobalSearch visible={searchVisible} onClose={() => setSearchVisible(false)} />
     </Layout>
   );
 };
