@@ -1,14 +1,9 @@
 # Dependencies
 node_modules
 
-# Environment variables
-.env
+# Environment variables (keep .env.example)
 .env.local
 .env.*.local
-
-# Build output
-dist
-dist-ssr
 
 # Logs
 *.log
@@ -18,13 +13,34 @@ yarn-error.log*
 pnpm-debug.log*
 
 # Editor
-.vscode
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
 .idea
 .DS_Store
+*.swp
+*.swo
 
 # Testing
 coverage
 .nyc_output
+__tests__
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+
+# Documentation (optional - remove if you want docs deployed)
+*.md
+!README.md
+
+# Git
+.git
+.gitignore
 
 # Misc
 *.local
+.cache
+temp
+tmp
+
