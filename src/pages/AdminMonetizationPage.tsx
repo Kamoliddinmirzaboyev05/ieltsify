@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Tag, Button, Space, Typography, Modal, Image, message, Card, Tabs, Statistic, Row, Col, Input } from 'antd';
-import { CheckCircle, XCircle, Eye, CreditCard, User, Search, Filter, Clock } from 'lucide-react';
+import { Table, Tag, Button, Space, Typography, Modal, Image, message, Card, Statistic, Row, Col } from 'antd';
+import { CheckCircle, XCircle, Eye, CreditCard, Clock } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { monetizationService } from '../services/monetizationService';
 

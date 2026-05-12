@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Flame, Star, Target, CheckCircle2, Circle, Headphones, BookOpen, Mic, PenLine, TrendingUp } from 'lucide-react';
+import { Flame, Star, Target, CheckCircle2, Headphones, BookOpen, Mic, PenLine, TrendingUp } from 'lucide-react';
 import { fetchUserProfile } from '../services/authService';
 import { supabase } from '../lib/supabase';
 

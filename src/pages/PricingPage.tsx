@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Check, Star, Zap, Gem, Crown, ShieldCheck, Flame, Upload, X, Copy, CheckCircle2, CreditCard } from 'lucide-react';
-import { Modal, Button, Upload as AntUpload, message, Typography, Input, Space } from 'antd';
+import { Check, Star, Zap, Gem, Crown, ShieldCheck, Upload, Copy, CreditCard } from 'lucide-react';
+import { Modal, Button, Upload as AntUpload, message, Typography } from 'antd';
 import type { UploadFile } from 'antd/es/upload/interface';
 import { monetizationService } from '../services/monetizationService';
 import { supabase } from '../lib/supabase';
 
-const { Title, Text, Paragraph } = Typography;
+const { Title, Text } = Typography;
 
 interface Plan {
   id: string;

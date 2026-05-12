@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, Typography, Button, Space, Tag, Empty, Grid, Row, Col } from 'antd';
 import { Clock, Plus, Play } from 'lucide-react';
 import { useWritingTasks } from '../hooks/useCachedData';
 import WritingSimulator from './WritingSimulator';
-import type { WritingTask } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
 import CoinGuard from '../components/CoinGuard';
 

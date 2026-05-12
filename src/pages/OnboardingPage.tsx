@@ -1,46 +1,21 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { 
   Typography, 
   Button, 
   Input, 
-  Select, 
   DatePicker, 
-  Checkbox, 
-  Space, 
-  Card, 
-  Avatar, 
   App,
-  Spin,
-  Radio,
   theme
 } from 'antd';
 import { 
-  Send, 
-  User, 
-  Bot, 
-  CheckCircle2, 
-  Target, 
-  Calendar, 
-  Clock, 
-  BrainCircuit,
-  GraduationCap,
-  Sparkles,
-  ChevronRight,
   ChevronLeft,
   ArrowRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { updateUserProfile } from '../services/authService';
-import { supabase } from '../lib/supabase';
 
-const { Title, Text, Paragraph } = Typography;
-
-interface ChatMessage {
-  id: string;
-  type: 'bot' | 'user';
-  content: string | React.ReactNode;
-}
+const { Title, Text } = Typography;
 
 interface OnboardingData {
   current_band: number | null;
@@ -58,7 +33,6 @@ const OnboardingPage: React.FC = () => {
   const { message } = App.useApp();
   const { token } = theme.useToken();
   const [step, setStep] = useState(0);
-  const [isTyping, setIsTyping] = useState(false);
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<OnboardingData>({
     current_band: null,

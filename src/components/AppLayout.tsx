@@ -63,7 +63,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       if (user) {
         const balance = await monetizationService.getBalance(user.id);
         setCoins(balance);
-        const { data: subscription, error: subError } = await supabase
+        const { data: subscription } = await supabase
           .from('user_subscriptions')
           .select('*')
           .eq('user_id', user.id)

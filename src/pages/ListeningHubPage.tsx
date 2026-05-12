@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Card, Typography, Select, Empty, Spin, Button, Space, Tag, Grid, message } from 'antd';
+import React, { useState } from 'react';
+import { Card, Typography, Select, Empty, Spin, Button, Space, Tag, Grid } from 'antd';
 import { Headphones, Play, Clock, BookOpen, TrendingUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';

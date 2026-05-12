@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Typography, Card, Button, Space, Avatar, Tag, message, Row, Col, Grid, Progress, Divider } from 'antd';
 import { Mic, MicOff, User, Clock, Award, CheckCircle, AlertCircle, ArrowLeft, Play } from 'lucide-react';
-import { monetizationService } from '../services/monetizationService';
 import { useSpeakingTests } from '../hooks/useCachedData';
 import { evaluateSpeaking } from '../services/aiService';
 import CoinGuard from '../components/CoinGuard';
@@ -36,7 +35,7 @@ const SpeakingPageNew: React.FC = () => {
   const [pageState, setPageState] = useState<PageState>('listing');
   const [selectedTest, setSelectedTest] = useState<any | null>(null);
   const { data: speakingTests = [] } = useSpeakingTests();
-  const [stats, setStats] = useState({
+  const [stats] = useState({
     totalSubmissions: 0,
     averageScore: 0,
     highestScore: 0,
