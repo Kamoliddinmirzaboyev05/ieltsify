@@ -76,21 +76,22 @@ const SmartArticlePage: React.FC = () => {
     };
   }, []);
 
-  const loadArticles = () => {
-    setArticles(articleManager.getAll());
+  const loadArticles = async () => {
+    const allArticles = await articleManager.getAll();
+    setArticles(allArticles);
   };
 
-  const handleAddToVocabulary = () => {
+  const handleAddToVocabulary = async () => {
     if (!translationData) return;
 
     // Check if word already exists
-    const existing = vocabularyManager.search(translationData.word);
+    const existing = await vocabularyManager.search(translationData.word);
     if (existing.length > 0) {
       message.info('Bu so\'z allaqachon vocabulary da mavjud!');
       return;
     }
 
-    vocabularyManager.add({
+    await vocabularyManager.add({
       word: translationData.word,
       definition: translationData.definition,
       level: translationData.level as any,

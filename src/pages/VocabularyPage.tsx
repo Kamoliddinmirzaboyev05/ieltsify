@@ -109,15 +109,15 @@ const Dashboard: React.FC<DashboardProps> = ({ topics, dailyGoal, onStartStudy }
         </p>
       </div>
 
-      <div className="mb-8 bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800">
+      <div className="mb-8 bg-white dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-slate-900 dark:bg-white flex items-center justify-center">
-              <Target className="text-white dark:text-slate-900" size={20} />
+            <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center">
+              <Target className="text-white" size={20} />
             </div>
             <div>
               <h3 className="font-semibold text-slate-900 dark:text-white">Daily Goal</h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400">{dailyGoal.streak} day streak</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">{dailyGoal.streak} kunlik streak</p>
             </div>
           </div>
           <div className="text-right">
@@ -125,12 +125,12 @@ const Dashboard: React.FC<DashboardProps> = ({ topics, dailyGoal, onStartStudy }
             <span className="text-lg text-slate-400">/{dailyGoal.target}</span>
           </div>
         </div>
-        <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+        <div className="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${progress}%` }}
             transition={{ duration: 1 }}
-            className="h-full bg-slate-900 dark:bg-white rounded-full"
+            className="h-full bg-blue-600 rounded-full"
           />
         </div>
       </div>
@@ -140,26 +140,26 @@ const Dashboard: React.FC<DashboardProps> = ({ topics, dailyGoal, onStartStudy }
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
           <input
             type="text"
-            placeholder="Search topics..."
+            placeholder="Mavzularni qidirish..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-slate-900 dark:focus:border-white transition-colors"
+            className="w-full pl-12 pr-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-blue-600 transition-colors shadow-sm"
           />
         </div>
 
-        <div className="flex items-center gap-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-1 overflow-x-auto">
+        <div className="flex items-center gap-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-1 overflow-x-auto shadow-sm">
           <Filter className="text-slate-400 ml-2 flex-shrink-0" size={18} />
           {(['all', 'A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as CEFRLevel[]).map((level) => (
             <button
               key={level}
               onClick={() => setCefrLevel(level)}
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${
                 cefrLevel === level
-                  ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900'
+                  ? 'bg-blue-600 text-white'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
-              {level === 'all' ? 'All' : level}
+              {level === 'all' ? 'Barchasi' : level}
             </button>
           ))}
         </div>
@@ -168,7 +168,7 @@ const Dashboard: React.FC<DashboardProps> = ({ topics, dailyGoal, onStartStudy }
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {filteredTopics.length === 0 ? (
           <div className="col-span-full text-center py-12">
-            <p className="text-slate-500 dark:text-slate-400">No topics found</p>
+            <p className="text-slate-500 dark:text-slate-400">Mavzular topilmadi</p>
           </div>
         ) : (
           filteredTopics.map((topic, index) => {
@@ -189,19 +189,19 @@ const Dashboard: React.FC<DashboardProps> = ({ topics, dailyGoal, onStartStudy }
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
                 onClick={() => onStartStudy(topic)}
-                className="bg-white dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-800 hover:border-slate-900 dark:hover:border-white transition-all text-left group"
+                className="bg-white dark:bg-slate-900 rounded-xl p-5 border border-slate-200 dark:border-slate-800 hover:border-blue-600 dark:hover:border-blue-500 transition-all text-left group shadow-sm"
               >
                 <div className="flex items-start justify-between mb-3">
-                  <BookOpen className="text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white transition-colors" size={24} />
+                  <BookOpen className="text-slate-400 group-hover:text-blue-600 transition-colors" size={24} />
                   <div className="flex flex-col items-end gap-1">
-                    <span className="text-sm font-medium text-slate-500 dark:text-slate-400">{topic.words.length} words</span>
-                    <span className={`text-xs font-bold px-2 py-0.5 rounded-md border ${levelColors[topicLevel] || levelColors['B1']}`}>
+                    <span className="text-xs font-medium text-slate-500 dark:text-slate-400">{topic.words.length} ta so'z</span>
+                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${levelColors[topicLevel] || levelColors['B1']}`}>
                       {topicLevel}
                     </span>
                   </div>
                 </div>
-                <h3 className="font-semibold text-slate-900 dark:text-white mb-1">{topic.title}</h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400">Start learning</p>
+                <h3 className="font-semibold text-slate-900 dark:text-white mb-1 group-hover:text-blue-600 transition-colors">{topic.title}</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">O'rganishni boshlash</p>
               </motion.button>
             );
           })
@@ -369,17 +369,17 @@ const StudyMode: React.FC<StudyModeProps> = ({ topic, onFinish }) => {
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ type: "spring", delay: 0.2 }}
-          className="w-24 h-24 rounded-3xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center mb-6 shadow-2xl"
+          className="w-20 h-20 rounded-xl bg-blue-600 flex items-center justify-center mb-6 shadow-xl"
         >
-          <Trophy className="text-white" size={48} />
+          <Trophy className="text-white" size={40} />
         </motion.div>
         <motion.h2 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="text-4xl font-bold text-slate-900 dark:text-white mb-2"
+          className="text-3xl font-bold text-slate-900 dark:text-white mb-2"
         >
-          Daily Goal Reached! 🔥
+          Kunlik maqsad bajarildi! 🔥
         </motion.h2>
         <motion.p 
           initial={{ opacity: 0 }}
@@ -387,13 +387,13 @@ const StudyMode: React.FC<StudyModeProps> = ({ topic, onFinish }) => {
           transition={{ delay: 0.4 }}
           className="text-slate-600 dark:text-slate-400 mb-2"
         >
-          You mastered {masteredWords.length} out of {totalWords} words
+          Siz {totalWords} tadan {masteredWords.length} ta so'zni o'rgandingiz
         </motion.p>
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.5 }}
-          className="text-5xl font-black text-emerald-500 mb-8"
+          className="text-4xl font-black text-blue-600 mb-8"
         >
           +{xpEarned} XP
         </motion.div>
@@ -402,9 +402,9 @@ const StudyMode: React.FC<StudyModeProps> = ({ topic, onFinish }) => {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6 }}
           onClick={() => onFinish(masteredWords.length)}
-          className="px-8 py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl font-bold text-lg hover:scale-105 transition-transform shadow-lg"
+          className="px-8 py-3 bg-blue-600 text-white rounded-lg font-bold text-lg hover:bg-blue-700 transition-colors shadow-md"
         >
-          Back to Topics
+          Mavzularga qaytish
         </motion.button>
       </motion.div>
     );
@@ -466,7 +466,7 @@ const StudyMode: React.FC<StudyModeProps> = ({ topic, onFinish }) => {
           >
             {/* FRONT */}
             <div
-              className="absolute inset-0 bg-white dark:bg-slate-900 rounded-2xl border-2 border-slate-900 dark:border-white p-6 flex flex-col items-center justify-center cursor-pointer shadow-2xl"
+              className="absolute inset-0 bg-white dark:bg-slate-900 rounded-xl border-2 border-blue-600 p-6 flex flex-col items-center justify-center cursor-pointer shadow-lg"
               style={{ backfaceVisibility: "hidden" }}
             >
               <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-6 text-center">
@@ -476,14 +476,14 @@ const StudyMode: React.FC<StudyModeProps> = ({ topic, onFinish }) => {
                 onClick={handlePronunciation}
                 className="w-14 h-14 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center hover:scale-110 transition-transform active:scale-95"
               >
-                <Volume2 size={24} className="text-slate-600 dark:text-slate-400" />
+                <Volume2 size={24} className="text-blue-600" />
               </button>
-              <p className="text-xs text-slate-400 mt-auto">Tap card to flip</p>
+              <p className="text-xs text-slate-400 mt-auto">Kartani aylantirish uchun bosing</p>
             </div>
 
             {/* BACK */}
             <div
-              className="absolute inset-0 bg-white dark:bg-slate-900 rounded-2xl border-2 border-slate-900 dark:border-white p-6 flex flex-col justify-center cursor-pointer shadow-2xl"
+              className="absolute inset-0 bg-white dark:bg-slate-900 rounded-xl border-2 border-blue-600 p-6 flex flex-col justify-center cursor-pointer shadow-lg"
               style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
             >
               <h3 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mb-4 text-center">
@@ -493,7 +493,7 @@ const StudyMode: React.FC<StudyModeProps> = ({ topic, onFinish }) => {
               <p className="text-slate-600 dark:text-slate-400 text-center text-sm leading-relaxed px-2">
                 "{currentWord.example}"
               </p>
-              <p className="text-xs text-slate-400 mt-auto text-center">Tap to flip back</p>
+              <p className="text-xs text-slate-400 mt-auto text-center">Orqaga qaytarish uchun bosing</p>
             </div>
           </motion.div>
 
@@ -502,18 +502,18 @@ const StudyMode: React.FC<StudyModeProps> = ({ topic, onFinish }) => {
             <button
               onClick={() => handleFlashcardAction(false)}
               disabled={!isFlipped}
-              className="flex-1 py-4 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-bold shadow-lg shadow-rose-500/30 transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-center gap-2 active:scale-95"
+              className="flex-1 py-3 rounded-lg bg-rose-500 hover:bg-rose-600 text-white font-bold shadow-sm transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2 active:scale-95"
             >
               <X size={20} />
-              <span className="text-sm sm:text-base">Didn't Know</span>
+              <span className="text-sm sm:text-base">Bilmasdim</span>
             </button>
             <button
               onClick={() => handleFlashcardAction(true)}
               disabled={!isFlipped}
-              className="flex-1 py-4 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold shadow-lg shadow-emerald-500/30 transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-center gap-2 active:scale-95"
+              className="flex-1 py-3 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-bold shadow-sm transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2 active:scale-95"
             >
               <Check size={20} />
-              <span className="text-sm sm:text-base">Got It</span>
+              <span className="text-sm sm:text-base">Bilaman</span>
             </button>
           </div>
         </div>
@@ -524,7 +524,7 @@ const StudyMode: React.FC<StudyModeProps> = ({ topic, onFinish }) => {
         <div className="flex-1 flex flex-col items-center justify-center">
           <div className="w-full max-w-md">
             {/* QUIZ CARD */}
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border-2 border-purple-500 dark:border-purple-400 p-8 mb-6 text-center shadow-2xl">
+            <div className="bg-white dark:bg-slate-900 rounded-xl border-2 border-purple-500 dark:border-purple-400 p-8 mb-6 text-center shadow-lg">
               <div className="inline-block px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-full text-xs font-bold mb-4">
                 QUIZ MODE
               </div>
@@ -580,7 +580,7 @@ const StudyMode: React.FC<StudyModeProps> = ({ topic, onFinish }) => {
         <div className="flex-1 flex flex-col items-center justify-center">
           <div className="w-full max-w-md">
             {/* SPELLING CARD */}
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border-2 border-emerald-500 dark:border-emerald-400 p-8 mb-6 shadow-2xl">
+            <div className="bg-white dark:bg-slate-900 rounded-xl border-2 border-emerald-500 dark:border-emerald-400 p-8 mb-6 shadow-lg">
               <div className="inline-block px-3 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-full text-xs font-bold mb-4">
                 SPELLING TEST
               </div>

@@ -7,78 +7,17 @@ import { motion } from 'framer-motion';
 const { Title, Text, Paragraph } = Typography;
 const { useBreakpoint } = Grid;
 
-interface ReadingPassage {
-  id: number;
-  title: string;
-  slug: string;
-  html_content_url: string;
-  cover_image_url: string;
-  difficulty: 'easy' | 'medium' | 'hard';
-  word_count: number;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-}
-
-interface ReadingPassagesResponse {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: ReadingPassage[];
-}
+import { useReadingPassages } from '../hooks/useCachedData';
+import CoinGuard from '../components/CoinGuard';
+import type { ReadingPassage } from '../types';
 
 const ReadingHubPage: React.FC = () => {
   const navigate = useNavigate();
   const screens = useBreakpoint();
   const isMobile = !screens.md;
   
-  const [passages, setPassages] = useState<ReadingPassage[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: passages = [], isLoading: loading } = useReadingPassages();
   const [difficulty, setDifficulty] = useState<string>('all');
-
-  useEffect(() => {
-    loadPassages();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const loadPassages = async () => {
-    setLoading(true);
-    try {
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://ieltsify.pythonanywhere.com';
-      const accessToken = localStorage.getItem('access_token');
-      
-      const headers: HeadersInit = {
-        'Content-Type': 'application/json',
-      };
-      
-      if (accessToken) {
-        headers['Authorization'] = `Bearer ${accessToken}`;
-      }
-      
-      const response = await fetch(`${API_BASE_URL}/reading-passages/`, {
-        headers,
-      });
-      
-      if (!response.ok) {
-        if (response.status === 401) {
-          message.error('Iltimos, tizimga kiring');
-          navigate('/login');
-          return;
-        }
-        throw new Error('Failed to load reading passages');
-      }
-
-      const data: ReadingPassagesResponse = await response.json();
-      // Show all passages (including inactive ones for development)
-      setPassages(data.results);
-      console.log('📊 Loaded passages:', data.results.length, 'passages');
-    } catch (error) {
-      console.error('Error loading reading passages:', error);
-      message.error('Reading passagelarni yuklashda xatolik yuz berdi');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleStartTest = (passage: ReadingPassage) => {
     navigate(`/dashboard/reading/${passage.slug}`, { state: { passage } });
@@ -86,7 +25,7 @@ const ReadingHubPage: React.FC = () => {
 
   const filteredPassages = difficulty === 'all'
     ? passages
-    : passages.filter(p => p.difficulty === difficulty);
+    : (passages as ReadingPassage[]).filter(p => p.difficulty === difficulty);
 
   const getDifficultyColor = (diff: string) => {
     const colors: Record<string, string> = {
@@ -129,7 +68,7 @@ const ReadingHubPage: React.FC = () => {
       >
         <div>
           <Title level={1} style={{ margin: 0, fontSize: isMobile ? '28px' : '36px', fontWeight: '800' }}>
-            <BookOpen size={isMobile ? 32 : 40} style={{ marginRight: '12px', verticalAlign: 'middle', color: '#3b82f6' }} />
+            <BookOpen size={isMobile ? 32 : 40} style={{ marginRight: '12px', verticalAlign: 'middle', color: '#2563eb' }} />
             Reading Passages
           </Title>
           <Text type="secondary" style={{ fontSize: isMobile ? '14px' : '16px' }}>
@@ -161,21 +100,21 @@ const ReadingHubPage: React.FC = () => {
           marginBottom: '32px'
         }}
       >
-        <Card style={{ borderRadius: '16px', background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)', border: 'none' }}>
+        <Card style={{ borderRadius: '12px', background: '#2563eb', border: 'none' }}>
           <div style={{ color: 'white' }}>
             <FileText size={24} style={{ marginBottom: '8px' }} />
             <Title level={3} style={{ color: 'white', margin: '8px 0' }}>{passages.length}</Title>
             <Text style={{ color: 'rgba(255,255,255,0.9)' }}>Jami passagelar</Text>
           </div>
         </Card>
-        <Card style={{ borderRadius: '16px', background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', border: 'none' }}>
+        <Card style={{ borderRadius: '12px', background: '#4b5563', border: 'none' }}>
           <div style={{ color: 'white' }}>
             <Clock size={24} style={{ marginBottom: '8px' }} />
             <Title level={3} style={{ color: 'white', margin: '8px 0' }}>60 min</Title>
             <Text style={{ color: 'rgba(255,255,255,0.9)' }}>Test davomiyligi</Text>
           </div>
         </Card>
-        <Card style={{ borderRadius: '16px', background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', border: 'none' }}>
+        <Card style={{ borderRadius: '12px', background: '#334155', border: 'none' }}>
           <div style={{ color: 'white' }}>
             <TrendingUp size={24} style={{ marginBottom: '8px' }} />
             <Title level={3} style={{ color: 'white', margin: '8px 0' }}>Band 9.0</Title>
@@ -224,19 +163,19 @@ const ReadingHubPage: React.FC = () => {
               <Card
                 hoverable
                 style={{
-                  borderRadius: '20px',
+                  borderRadius: '12px',
                   overflow: 'hidden',
-                  border: 'none',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                  border: '1px solid #e5e7eb',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
                   transition: 'all 0.3s ease',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-8px)';
-                  e.currentTarget.style.boxShadow = '0 12px 24px rgba(0,0,0,0.15)';
+                  e.currentTarget.style.transform = 'translateY(-4px)';
+                  e.currentTarget.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)';
+                  e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
                 }}
                 cover={
                   <div style={{ position: 'relative', overflow: 'hidden' }}>
@@ -251,7 +190,7 @@ const ReadingHubPage: React.FC = () => {
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
                         target.style.display = 'none';
-                        target.parentElement!.style.background = 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)';
+                        target.parentElement!.style.background = '#2563eb';
                         target.parentElement!.style.display = 'flex';
                         target.parentElement!.style.alignItems = 'center';
                         target.parentElement!.style.justifyContent = 'center';
@@ -265,14 +204,14 @@ const ReadingHubPage: React.FC = () => {
                         right: '12px',
                         background: getDifficultyColor(passage.difficulty),
                         color: 'white',
-                        padding: '6px 12px',
+                        padding: '4px 10px',
                         borderRadius: '20px',
-                        fontSize: '12px',
+                        fontSize: '11px',
                         fontWeight: '600',
                         display: 'flex',
                         alignItems: 'center',
                         gap: '4px',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
                       }}
                     >
                       {getDifficultyIcon(passage.difficulty)}
@@ -307,23 +246,31 @@ const ReadingHubPage: React.FC = () => {
                     )}
                   </Space>
 
-                  <Button
-                    type="primary"
-                    size="large"
-                    block
-                    icon={<Play size={18} />}
-                    onClick={() => handleStartTest(passage)}
-                    style={{
-                      borderRadius: '12px',
-                      height: '48px',
-                      fontWeight: '600',
-                      fontSize: '15px',
-                      background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
-                      border: 'none',
-                    }}
+                  <CoinGuard
+                    cost={20}
+                    type="reading_test"
+                    description={`Reading Test: ${passage.title}`}
+                    onConfirm={() => handleStartTest(passage)}
+                    isSubscriptionBenefit={true}
                   >
-                    Passageni o'qish
-                  </Button>
+                    <Button
+                      type="primary"
+                      size="large"
+                      block
+                      icon={<Play size={18} />}
+                      style={{
+                        borderRadius: '8px',
+                        height: '44px',
+                        fontWeight: '600',
+                        fontSize: '14px',
+                        background: '#2563eb',
+                        border: 'none',
+                        boxShadow: '0 2px 4px rgba(37, 99, 235, 0.2)'
+                      }}
+                    >
+                      Testni boshlash
+                    </Button>
+                  </CoinGuard>
                 </div>
               </Card>
             </motion.div>

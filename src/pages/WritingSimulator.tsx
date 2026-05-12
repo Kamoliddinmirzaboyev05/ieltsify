@@ -47,10 +47,13 @@ const WritingSimulator: React.FC<WritingSimulatorProps> = ({ taskId, onBack }) =
   const { isDark } = useTheme();
 
   useEffect(() => {
-    const loadedTask = writingTaskManager.getById(taskId);
-    if (loadedTask) {
-      setTask(loadedTask);
-    }
+    const loadTask = async () => {
+      const loadedTask = await writingTaskManager.getById(taskId);
+      if (loadedTask) {
+        setTask(loadedTask);
+      }
+    };
+    loadTask();
   }, [taskId]);
 
   // Block keyboard shortcuts for copy/paste/cut
@@ -166,7 +169,7 @@ const WritingSimulator: React.FC<WritingSimulatorProps> = ({ taskId, onBack }) =
       setAiFeedback(evaluation);
 
       // Save submission
-      writingSubmissionManager.add({
+      await writingSubmissionManager.add({
         taskId: task.id,
         task1Content,
         task1WordCount: getWordCount(task1Content),

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Typography, Card, Button, Space, Avatar, Tag, message, Row, Col, Grid, Progress, Divider } from 'antd';
 import { Mic, MicOff, User, Clock, Award, CheckCircle, AlertCircle, ArrowLeft, Play } from 'lucide-react';
-import { SPEAKING_TESTS, SPEAKING_COLLECTIONS, SPEAKING_STATS, type SpeakingTest } from '../mockData';
+import { monetizationService } from '../services/monetizationService';
+import { useSpeakingTests } from '../hooks/useCachedData';
 import { evaluateSpeaking } from '../services/aiService';
+import CoinGuard from '../components/CoinGuard';
 import './SpeakingPage.css';
 
 const { Title, Text, Paragraph } = Typography;
@@ -32,7 +34,14 @@ const SpeakingPageNew: React.FC = () => {
   const isMobile = !screens.md;
   
   const [pageState, setPageState] = useState<PageState>('listing');
-  const [selectedTest, setSelectedTest] = useState<SpeakingTest | null>(null);
+  const [selectedTest, setSelectedTest] = useState<any | null>(null);
+  const { data: speakingTests = [] } = useSpeakingTests();
+  const [stats, setStats] = useState({
+    totalSubmissions: 0,
+    averageScore: 0,
+    highestScore: 0,
+    practiceMinutes: 0
+  });
   const [examPhase, setExamPhase] = useState<ExamPhase>('intro');
   const [currentTopicIndex, setCurrentTopicIndex] = useState(0);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -61,12 +70,7 @@ const SpeakingPageNew: React.FC = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const handleStartTest = (collection: any) => {
-    const test = SPEAKING_TESTS.find(t => t.id === collection.id);
-    if (!test) {
-      message.error('Test not found');
-      return;
-    }
+  const handleStartTest = (test: any) => {
     setSelectedTest(test);
     setExamSession({
       testId: test.id,
@@ -236,9 +240,9 @@ const SpeakingPageNew: React.FC = () => {
       ].join('\n\n');
 
       const totalDuration = 
-        examSession.part1Answers.reduce((sum, a) => sum + a.duration, 0) +
+        examSession.part1Answers.reduce((sum: number, a: Answer) => sum + a.duration, 0) +
         (examSession.part2Answer?.duration || 0) +
-        examSession.part3Answers.reduce((sum, a) => sum + a.duration, 0);
+        examSession.part3Answers.reduce((sum: number, a: Answer) => sum + a.duration, 0);
 
       // Create comprehensive analysis prompt
       const analysisPrompt = `Act as an IELTS Speaking Examiner. Analyze this complete IELTS Speaking test performance.
@@ -300,10 +304,10 @@ Provide a comprehensive analysis in JSON format:
     <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '24px' : '40px' }}>
       <Row gutter={[isMobile ? 12 : 24, isMobile ? 12 : 24]}>
         {[
-          { label: 'Total Submissions', value: SPEAKING_STATS.totalSubmissions, icon: <Mic size={20} color="#ef4444" />, bg: '#fff1f2' },
-          { label: 'Average Score', value: SPEAKING_STATS.averageScore.toFixed(1), icon: <Award size={20} color="#3b82f6" />, bg: '#eff6ff' },
-          { label: 'Highest Score', value: SPEAKING_STATS.highestScore.toFixed(1), icon: <CheckCircle size={20} color="#22c55e" />, bg: '#f0fdf4' },
-          { label: 'Practice Minutes', value: SPEAKING_STATS.practiceMinutes, icon: <Clock size={20} color="#a855f7" />, bg: '#faf5ff' },
+          { label: 'Total Submissions', value: stats.totalSubmissions, icon: <Mic size={20} color="#ef4444" />, bg: '#fff1f2' },
+          { label: 'Average Score', value: stats.averageScore.toFixed(1), icon: <Award size={20} color="#3b82f6" />, bg: '#eff6ff' },
+          { label: 'Highest Score', value: stats.highestScore.toFixed(1), icon: <CheckCircle size={20} color="#22c55e" />, bg: '#f0fdf4' },
+          { label: 'Practice Minutes', value: stats.practiceMinutes, icon: <Clock size={20} color="#a855f7" />, bg: '#faf5ff' },
         ].map((stat, i) => (
           <Col xs={12} sm={12} lg={6} key={i}>
             <Card style={{ borderRadius: '16px', border: 'none', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' }}>
@@ -324,33 +328,46 @@ Provide a comprehensive analysis in JSON format:
       <div>
         <Title level={4} style={{ marginBottom: '24px' }}>Full Mock Tests</Title>
         <Row gutter={[isMobile ? 16 : 24, isMobile ? 16 : 24]}>
-          {SPEAKING_COLLECTIONS.filter(c => c.recommended).map(collection => (
-            <Col xs={24} md={12} lg={8} key={collection.id}>
-              <Card 
-                style={{ borderRadius: '24px', border: 'none', boxShadow: '0 10px 25px rgba(0,0,0,0.03)', height: '100%' }}
-              >
-                <Tag color="blue" style={{ width: 'fit-content', borderRadius: '20px', padding: '2px 12px', marginBottom: '16px' }}>
-                  Recommended
-                </Tag>
-                <Title level={4} style={{ fontSize: '18px', marginBottom: '12px', minHeight: '54px' }}>{collection.title}</Title>
-                <Paragraph type="secondary" style={{ fontSize: '14px', marginBottom: '24px' }}>{collection.description}</Paragraph>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Space>
-                    <Clock size={14} color="#64748b" />
-                    <Text type="secondary" style={{ fontSize: '12px' }}>{collection.duration}</Text>
-                  </Space>
-                  <Button 
-                    type="primary" 
-                    danger 
-                    onClick={() => handleStartTest(collection)}
-                    style={{ borderRadius: '8px', fontWeight: 'bold' }}
-                  >
-                    Start Test
-                  </Button>
-                </div>
-              </Card>
-            </Col>
-          ))}
+          {speakingTests.length > 0 ? (
+            speakingTests.map(collection => (
+              <Col xs={24} md={12} lg={8} key={collection.id}>
+                <Card 
+                  style={{ borderRadius: '24px', border: 'none', boxShadow: '0 10px 25px rgba(0,0,0,0.03)', height: '100%' }}
+                >
+                  <Tag color="blue" style={{ width: 'fit-content', borderRadius: '20px', padding: '2px 12px', marginBottom: '16px' }}>
+                    Recommended
+                  </Tag>
+                  <Title level={4} style={{ fontSize: '18px', marginBottom: '12px', minHeight: '54px' }}>{collection.title}</Title>
+                  <Paragraph type="secondary" style={{ fontSize: '14px', marginBottom: '24px' }}>{collection.description}</Paragraph>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Space>
+                      <Clock size={14} color="#64748b" />
+                      <Text type="secondary" style={{ fontSize: '12px' }}>15 mins</Text>
+                    </Space>
+                    <CoinGuard
+                      cost={100}
+                      type="speaking_test"
+                      description={`Speaking Test: ${collection.title}`}
+                      onConfirm={() => handleStartTest(collection)}
+                      isSubscriptionBenefit={true}
+                    >
+                      <Button 
+                        type="primary" 
+                        danger 
+                        style={{ borderRadius: '8px', fontWeight: 'bold' }}
+                      >
+                        Start Test
+                      </Button>
+                    </CoinGuard>
+                  </div>
+                </Card>
+              </Col>
+            ))
+          ) : (
+            <div className="w-full text-center py-12">
+               <Text type="secondary" italic>Testlar yuklanmoqda...</Text>
+             </div>
+          )}
         </Row>
       </div>
     </div>
@@ -383,7 +400,7 @@ Provide a comprehensive analysis in JSON format:
     if (examPhase === 'part1') {
       const currentTopic = selectedTest.part1Topics[currentTopicIndex];
       const currentQuestion = currentTopic.questions[currentQuestionIndex];
-      const progress = ((currentTopicIndex * 4 + currentQuestionIndex + 1) / (selectedTest.part1Topics.reduce((sum, t) => sum + t.questions.length, 0))) * 100;
+      const progress = ((currentTopicIndex * 4 + currentQuestionIndex + 1) / (selectedTest.part1Topics.reduce((sum: number, t: any) => sum + t.questions.length, 0))) * 100;
 
       return (
         <div style={{ maxWidth: '900px', margin: '0 auto' }}>
@@ -445,7 +462,7 @@ Provide a comprehensive analysis in JSON format:
             <Title level={3} style={{ marginBottom: '24px' }}>{selectedTest.part2.cueCard}</Title>
             <Paragraph strong style={{ fontSize: '16px', marginBottom: '16px' }}>You should say:</Paragraph>
             <ul style={{ fontSize: '16px', lineHeight: '2' }}>
-              {selectedTest.part2.points.map((point, idx) => (
+              {selectedTest.part2.points.map((point: string, idx: number) => (
                 <li key={idx}>{point}</li>
               ))}
             </ul>

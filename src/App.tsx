@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
-import { ConfigProvider, theme as antdTheme } from 'antd';
+import { ConfigProvider, theme as antdTheme, App as AntdApp } from 'antd';
 import { AnimatePresence } from 'framer-motion';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import AppLayout from './components/AppLayout';
@@ -19,8 +19,10 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import VocabularyPage from './pages/VocabularyPage';
 import SmartArticlePage from './pages/SmartArticlePage';
+import OnboardingPage from './pages/OnboardingPage';
 import PageTransition from './components/PageTransition';
 import HtmlViewerPage from './pages/HtmlViewerPage';
+import ReloadPrompt from './components/ReloadPrompt';
 
 const DashboardLayout: React.FC = () => {
   const location = useLocation();
@@ -42,6 +44,7 @@ const AnimateRoutes: React.FC = () => {
         <Route path="/" element={<PageTransition><LandingPage /></PageTransition>} />
         <Route path="/login" element={<PageTransition><LoginPage /></PageTransition>} />
         <Route path="/register" element={<PageTransition><RegisterPage /></PageTransition>} />
+        <Route path="/onboarding" element={<PageTransition><OnboardingPage /></PageTransition>} />
 
         {/* Protected Dashboard Routes */}
         <Route path="/dashboard" element={<DashboardLayout />}>
@@ -76,13 +79,13 @@ const AppContent: React.FC = () => {
       theme={{
         algorithm: isDark ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
         token: {
-          colorPrimary: '#10b981',
-          borderRadius: 16,
+          colorPrimary: '#2563eb',
+          borderRadius: 12,
           fontFamily: "'Plus Jakarta Sans', Inter, system-ui, sans-serif",
           colorBgBase: isDark ? '#0f172a' : '#ffffff',
-          colorTextBase: isDark ? '#ffffff' : '#1f2937',
+          colorTextBase: isDark ? '#ffffff' : '#111827',
           colorBgContainer: isDark ? '#1e293b' : '#ffffff',
-          colorBorder: isDark ? 'rgba(16, 185, 129, 0.15)' : '#e5e7eb',
+          colorBorder: isDark ? 'rgba(255, 255, 255, 0.1)' : '#e5e7eb',
         },
         components: {
           Layout: {
@@ -91,9 +94,9 @@ const AppContent: React.FC = () => {
             siderBg: isDark ? '#0f172a' : '#ffffff',
           },
           Card: {
-            borderRadiusLG: 20,
+            borderRadiusLG: 12,
             colorBgContainer: isDark ? '#1e293b' : '#ffffff',
-            colorBorderSecondary: isDark ? 'rgba(16, 185, 129, 0.15)' : '#e5e7eb',
+            colorBorderSecondary: isDark ? 'rgba(255, 255, 255, 0.1)' : '#e5e7eb',
           },
           Menu: {
             darkItemBg: '#0f172a',
@@ -131,9 +134,12 @@ const AppContent: React.FC = () => {
         },
       }}
     >
-      <BrowserRouter>
-        <AnimateRoutes />
-      </BrowserRouter>
+      <AntdApp>
+        <BrowserRouter>
+          <AnimateRoutes />
+          <ReloadPrompt />
+        </BrowserRouter>
+      </AntdApp>
     </ConfigProvider>
   );
 };

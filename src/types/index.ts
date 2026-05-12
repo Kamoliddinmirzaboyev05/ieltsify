@@ -92,15 +92,25 @@ export interface SearchResult {
 export interface ReadingPassage {
   id: string;
   title: string;
-  htmlContent: string;
-  uploadDate: string;
-  imageUrl?: string;
+  slug: string;
+  html_content_url: string;
+  cover_image_url: string;
+  difficulty: 'easy' | 'medium' | 'hard';
+  word_count: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface ListeningTest {
   id: string;
   title: string;
-  htmlContent: string;
-  uploadDate: string;
-  imageUrl?: string;
+  slug: string;
+  description: string;
+  html_file_url: string;
+  cover_image_url: string;
+  difficulty: 'easy' | 'medium' | 'hard';
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
 }

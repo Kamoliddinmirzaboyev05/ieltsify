@@ -17,12 +17,15 @@ const GlobalSearch: React.FC<GlobalSearchProps> = ({ visible, onClose }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (query.length > 1) {
-      const searchResults = globalSearch(query);
-      setResults(searchResults);
-    } else {
-      setResults([]);
-    }
+    const performSearch = async () => {
+      if (query.length > 1) {
+        const searchResults = await globalSearch(query);
+        setResults(searchResults);
+      } else {
+        setResults([]);
+      }
+    };
+    performSearch();
   }, [query]);
 
   const handleResultClick = (result: any) => {

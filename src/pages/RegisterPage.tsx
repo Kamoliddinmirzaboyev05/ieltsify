@@ -6,8 +6,8 @@ import {
   Form, 
   Checkbox, 
   Grid,
-  message,
-  Divider
+  Divider,
+  App
 } from 'antd';
 import { 
   Lock, 
@@ -19,25 +19,46 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { DotPattern } from '../components/DotPattern';
 import { registerUser, googleAuth, saveAuthTokens, saveUserProfile } from '../services/authService';
+import { monetizationService } from '../services/monetizationService';
+import { supabase } from '../lib/supabase';
 
 const { Title, Text } = Typography;
 const { useBreakpoint } = Grid;
 
 const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
+  const { message } = App.useApp();
   const screens = useBreakpoint();
   const isMobile = !screens.md;
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [form] = Form.useForm();
+  const googleInitialized = React.useRef(false);
 
   // Load Google Sign-In script
   useEffect(() => {
+    let mounted = true;
+
     const handleGoogleResponse = (response: { credential: string }) => {
-      handleGoogleAuth(response);
+      if (mounted) handleGoogleAuth(response);
     };
 
     const loadGoogleScript = () => {
+      // Check if script already exists
+      const existingScript = document.querySelector('script[src="https://accounts.google.com/gsi/client"]');
+      
+      if (existingScript) {
+        if (window.google) {
+          initializeGoogleSignIn();
+        } else {
+          // Script is loading, wait for it
+          existingScript.addEventListener('load', () => {
+            if (mounted) initializeGoogleSignIn();
+          });
+        }
+        return;
+      }
+
       const script = document.createElement('script');
       script.src = 'https://accounts.google.com/gsi/client';
       script.async = true;
@@ -45,11 +66,13 @@ const RegisterPage: React.FC = () => {
       document.body.appendChild(script);
 
       script.onload = () => {
-        initializeGoogleSignIn();
+        if (mounted) initializeGoogleSignIn();
       };
     };
 
     const initializeGoogleSignIn = () => {
+      if (googleInitialized.current || (window as any).google?.accounts?.id?.initialized) return;
+
       const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
       const enableGoogleAuth = import.meta.env.VITE_ENABLE_GOOGLE_AUTH === 'true';
 
@@ -59,32 +82,43 @@ const RegisterPage: React.FC = () => {
       }
 
       if (window.google) {
-        window.google.accounts.id.initialize({
-          client_id: clientId,
-          callback: handleGoogleResponse,
-          auto_select: false,
-          cancel_on_tap_outside: true,
-        });
+        try {
+          window.google.accounts.id.initialize({
+            client_id: clientId,
+            callback: handleGoogleResponse,
+            auto_select: false,
+            cancel_on_tap_outside: true,
+          });
+          
+          googleInitialized.current = true;
+          (window as any).google.accounts.id.initialized = true;
 
-        // Render the button
-        const buttonDiv = document.getElementById('google-signin-button');
-        if (buttonDiv) {
-          window.google.accounts.id.renderButton(
-            buttonDiv,
-            {
-              theme: 'filled_black',
-              size: 'large',
-              width: buttonDiv.offsetWidth,
-              text: 'signup_with',
-              shape: 'rectangular',
-              logo_alignment: 'left',
-            }
-          );
+          // Render the button
+          const buttonDiv = document.getElementById('google-signin-button');
+          if (buttonDiv) {
+            window.google.accounts.id.renderButton(
+              buttonDiv,
+              {
+                theme: 'filled_black',
+                size: 'large',
+                width: buttonDiv.offsetWidth,
+                text: 'signup_with',
+                shape: 'rectangular',
+                logo_alignment: 'left',
+              }
+            );
+          }
+        } catch (error) {
+          console.warn('Google Sign-In initialization failed:', error);
         }
       }
     };
 
     loadGoogleScript();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const handleGoogleAuth = async (response: { credential: string }) => {
@@ -117,6 +151,22 @@ const RegisterPage: React.FC = () => {
       // Save tokens
       saveAuthTokens(accessToken, refreshToken);
       
+      // Onboard user (bonus + referral)
+      // NOTE: Basic onboarding (bonus + profile) is now handled by DB trigger
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const urlParams = new URLSearchParams(window.location.search);
+          const refCode = urlParams.get('ref');
+          if (refCode) {
+            // Only call if there is a referral code, as the trigger handles the rest
+            await monetizationService.onboardUser(user.id, refCode);
+          }
+        }
+      } catch (onboardError) {
+        console.warn('Referral onboarding skip/error:', onboardError);
+      }
+
       // Save user profile if provided
       if (authResponse.user) {
         saveUserProfile(authResponse.user);
@@ -126,9 +176,9 @@ const RegisterPage: React.FC = () => {
       
       message.success('Google orqali muvaffaqiyatli ro\'yxatdan o\'tdingiz!');
       
-      // Redirect to dashboard
+      // Redirect to onboarding
       setTimeout(() => {
-        navigate('/dashboard');
+        navigate('/onboarding');
       }, 500);
     } catch (error: unknown) {
       console.error('❌ Google Sign-In error:', error);
@@ -136,7 +186,9 @@ const RegisterPage: React.FC = () => {
       let errorMessage = 'Google orqali ro\'yxatdan o\'tishda xatolik';
       
       if (error instanceof Error && error.message) {
-        if (error.message.includes('Invalid Google token')) {
+        if (error.message.includes('origin')) {
+          errorMessage = 'Google Sign-In uchun ruxsat etilmagan origin. Backend sozlamalarini tekshiring.';
+        } else if (error.message.includes('Invalid Google token')) {
           errorMessage = 'Google token noto\'g\'ri. Bu muammo backend sozlamalari bilan bog\'liq. Backend administratoriga murojaat qiling.';
         } else if (error.message.includes('already exists')) {
           errorMessage = 'Bu Google akkaunt allaqachon ro\'yxatdan o\'tgan. Iltimos, kirish sahifasiga o\'ting.';
@@ -186,17 +238,41 @@ const RegisterPage: React.FC = () => {
       
       console.log('✅ Register response:', response);
       
-      // Backend returns: {message: "...", tokens: {access: "...", refresh: "..."}, user: {...}}
+      // Supabase behavior: if email confirmation is enabled, session will be null
       const accessToken = response.tokens?.access || response.access || response.access_token;
       const refreshToken = response.tokens?.refresh || response.refresh || response.refresh_token;
       
       if (!accessToken || !refreshToken) {
+        // Check if user was created (email confirmation might be required)
+        if (response.user) {
+          message.success('Ro\'yxatdan o\'tish muvaffaqiyatli! Iltimos, emailingizni tasdiqlang.', 10);
+          setTimeout(() => {
+            navigate('/login');
+          }, 3000);
+          return;
+        }
         console.error('❌ Missing tokens in response:', response);
         throw new Error('Server javobida tokenlar yo\'q');
       }
       
       // Save tokens to localStorage
       saveAuthTokens(accessToken, refreshToken);
+      
+      // Onboard user (bonus + referral)
+      // NOTE: Basic onboarding (bonus + profile) is now handled by DB trigger
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const urlParams = new URLSearchParams(window.location.search);
+          const refCode = urlParams.get('ref');
+          if (refCode) {
+            // Only call if there is a referral code, as the trigger handles the rest
+            await monetizationService.onboardUser(user.id, refCode);
+          }
+        }
+      } catch (onboardError) {
+        console.warn('Referral onboarding skip/error:', onboardError);
+      }
       
       // Save user profile if provided
       if (response.user) {
@@ -207,9 +283,9 @@ const RegisterPage: React.FC = () => {
       
       message.success('Muvaffaqiyatli ro\'yxatdan o\'tdingiz!');
       
-      // Redirect to dashboard
+      // Redirect to onboarding
       setTimeout(() => {
-        navigate('/dashboard');
+        navigate('/onboarding');
       }, 500);
     } catch (error: unknown) {
       console.error('❌ Registration error:', error);
@@ -218,61 +294,62 @@ const RegisterPage: React.FC = () => {
       let errorMessage = 'Ro\'yxatdan o\'tishda xatolik yuz berdi';
       
       if (error instanceof Error && error.message) {
-        // Try to parse JSON error message
-        try {
-          const errorObj = JSON.parse(error.message);
-          console.log('Parsed error object:', errorObj);
-          
-          // Build user-friendly error message
-          const errorMessages: string[] = [];
-          
-          if (errorObj.username) {
-            const msg = Array.isArray(errorObj.username) ? errorObj.username[0] : errorObj.username;
-            errorMessages.push(`Username: ${msg}`);
-          }
-          if (errorObj.email) {
-            const msg = Array.isArray(errorObj.email) ? errorObj.email[0] : errorObj.email;
-            errorMessages.push(`Email: ${msg}`);
-          }
-          if (errorObj.password) {
-            const msg = Array.isArray(errorObj.password) ? errorObj.password[0] : errorObj.password;
-            errorMessages.push(`Parol: ${msg}`);
-          }
-          if (errorObj.first_name) {
-            const msg = Array.isArray(errorObj.first_name) ? errorObj.first_name[0] : errorObj.first_name;
-            errorMessages.push(`Ism: ${msg}`);
-          }
-          if (errorObj.last_name) {
-            const msg = Array.isArray(errorObj.last_name) ? errorObj.last_name[0] : errorObj.last_name;
-            errorMessages.push(`Familiya: ${msg}`);
-          }
-          if (errorObj.detail) {
-            errorMessages.push(errorObj.detail);
-          }
-          if (errorObj.non_field_errors) {
-            const msg = Array.isArray(errorObj.non_field_errors) ? errorObj.non_field_errors[0] : errorObj.non_field_errors;
-            errorMessages.push(msg);
-          }
-          
-          if (errorMessages.length > 0) {
-            errorMessage = errorMessages.join('\n');
-          }
-        } catch {
-          // Not a JSON error, use the message directly
-          if (error.message.includes('Username:')) {
-            errorMessage = error.message;
-          } else if (error.message.includes('Email:')) {
-            errorMessage = error.message;
-          } else if (error.message.includes('Password:') || error.message.includes('Parol:')) {
-            errorMessage = error.message;
-          } else if (error.message.includes('already exists')) {
-            errorMessage = 'Bu email yoki username allaqachon ro\'yxatdan o\'tgan';
-          } else if (error.message.includes('Server javob bermadi')) {
-            errorMessage = error.message;
-          } else if (error.message.includes('Serverga ulanib')) {
-            errorMessage = error.message;
-          } else {
-            errorMessage = error.message;
+        if (error.message.includes('rate limit')) {
+          errorMessage = 'Email yuborish limiti oshib ketdi. Iltimos, bir ozdan keyin urinib ko\'ring.';
+        } else {
+          // Try to parse JSON error message
+          try {
+            const errorObj = JSON.parse(error.message);
+            const errorMessages: string[] = [];
+            
+            if (errorObj.username) {
+              const msg = Array.isArray(errorObj.username) ? errorObj.username[0] : errorObj.username;
+              errorMessages.push(`Username: ${msg}`);
+            }
+            if (errorObj.email) {
+              const msg = Array.isArray(errorObj.email) ? errorObj.email[0] : errorObj.email;
+              errorMessages.push(`Email: ${msg}`);
+            }
+            if (errorObj.password) {
+              const msg = Array.isArray(errorObj.password) ? errorObj.password[0] : errorObj.password;
+              errorMessages.push(`Parol: ${msg}`);
+            }
+            if (errorObj.first_name) {
+              const msg = Array.isArray(errorObj.first_name) ? errorObj.first_name[0] : errorObj.first_name;
+              errorMessages.push(`Ism: ${msg}`);
+            }
+            if (errorObj.last_name) {
+              const msg = Array.isArray(errorObj.last_name) ? errorObj.last_name[0] : errorObj.last_name;
+              errorMessages.push(`Familiya: ${msg}`);
+            }
+            if (errorObj.detail) {
+              errorMessages.push(errorObj.detail);
+            }
+            if (errorObj.non_field_errors) {
+              const msg = Array.isArray(errorObj.non_field_errors) ? errorObj.non_field_errors[0] : errorObj.non_field_errors;
+              errorMessages.push(msg);
+            }
+            
+            if (errorMessages.length > 0) {
+              errorMessage = errorMessages.join('\n');
+            }
+          } catch {
+            // Not a JSON error, use the message directly
+            if (error.message.includes('Username:')) {
+              errorMessage = error.message;
+            } else if (error.message.includes('Email:')) {
+              errorMessage = error.message;
+            } else if (error.message.includes('Password:') || error.message.includes('Parol:')) {
+              errorMessage = error.message;
+            } else if (error.message.includes('already exists')) {
+              errorMessage = 'Bu email yoki username allaqachon ro\'yxatdan o\'tgan';
+            } else if (error.message.includes('Server javob bermadi')) {
+              errorMessage = error.message;
+            } else if (error.message.includes('Serverga ulanib')) {
+              errorMessage = error.message;
+            } else {
+              errorMessage = error.message;
+            }
           }
         }
       }

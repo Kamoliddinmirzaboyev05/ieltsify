@@ -4,8 +4,8 @@
   "description": "O'zbekistondagi eng yaxshi IELTS tayyorgarlik platformasi. Reading, Listening, Writing, Speaking va Vocabulary mashqlari.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#10b981",
+  "background_color": "#f8fafc",
+  "theme_color": "#2563eb",
   "orientation": "portrait-primary",
   "icons": [
     {

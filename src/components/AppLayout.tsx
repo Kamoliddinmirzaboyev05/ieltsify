@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, Menu, Avatar, Breadcrumb, theme, Button, Drawer } from 'antd';
+import { Layout, Menu, Avatar, Breadcrumb, theme, Button, Drawer, Badge, message } from 'antd';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Home,
@@ -18,6 +18,8 @@ import { FiSidebar } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 import { SIDEBAR_MENU } from '../mockData';
 import { useTheme } from '../contexts/ThemeContext';
+import { monetizationService } from '../services/monetizationService';
+import { supabase } from '../lib/supabase';
 
 const { Header, Sider, Content } = Layout;
 
@@ -46,10 +48,91 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   });
   const [mobileVisible, setMobileVisible] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [coins, setCoins] = useState<number>(0);
+  const [isPro, setIsPro] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { token } = theme.useToken();
   const { isDark, toggleTheme } = useTheme();
+
+  useEffect(() => {
+    let channel: any;
+
+    const loadMonetizationData = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const balance = await monetizationService.getBalance(user.id);
+        setCoins(balance);
+        const { data: subscription, error: subError } = await supabase
+          .from('user_subscriptions')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('status', 'active')
+          .gt('expires_at', new Date().toISOString())
+          .maybeSingle();
+
+        setIsPro(!!subscription);
+
+        // Realtime balance update
+        const userCoinsChannel = supabase
+          .channel(`user-coins-${user.id}`)
+          .on(
+            'postgres_changes',
+            {
+              event: 'UPDATE',
+              schema: 'public',
+              table: 'user_coins',
+              filter: `user_id=eq.${user.id}`,
+            },
+            (payload) => {
+              setCoins(payload.new.balance);
+            }
+          );
+        
+        channel = userCoinsChannel.subscribe();
+
+        // Check for daily login reward
+        checkDailyLogin(user.id);
+      }
+    };
+
+    loadMonetizationData();
+
+    return () => {
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
+    };
+  }, []);
+
+  const checkDailyLogin = async (userId: string) => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const lastLoginKey = `last_login_reward_${userId}`;
+      const lastLogin = localStorage.getItem(lastLoginKey);
+
+      if (lastLogin !== today) {
+        const reward = Math.floor(Math.random() * 11) + 10; // 10-20 coins
+        const { error } = await supabase.rpc('add_coins_and_log', {
+          p_user_id: userId,
+          p_amount: reward,
+          p_type: 'daily_login',
+          p_description: 'Kunlik kirish mukofoti'
+        });
+
+        if (!error) {
+          localStorage.setItem(lastLoginKey, today);
+          message.success({
+            content: `Xush kelibsiz! Kunlik kirish uchun ${reward} coin berildi.`,
+            icon: <img src="/coin.png" alt="coin" style={{ width: 16, height: 16 }} />,
+            duration: 5
+          });
+        }
+      }
+    } catch (err) {
+      console.error('Daily login reward error:', err);
+    }
+  };
 
   // Keyboard shortcut for search (Ctrl/Cmd + K)
   useEffect(() => {
@@ -79,16 +162,16 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     <>
       <div style={{ height: 64, margin: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <img
-          src="/logo.png"
+          src={collapsed && !isMobile ? "/logohead.png" : "/logo.png"}
           alt="IELTSIFY Logo"
           onError={(e) => {
             const t = e.currentTarget as HTMLImageElement;
-            t.src = '/logo.png';
+            t.src = collapsed && !isMobile ? '/logohead.png' : '/logo.png';
           }}
           style={{
             width: '100%',
             height: 'auto',
-            maxHeight: 40,
+            maxHeight: collapsed && !isMobile ? 32 : 40,
             objectFit: 'contain',
             display: 'block'
           }}
@@ -110,17 +193,17 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                     left: -24,
                     width: '4px',
                     height: '24px',
-                    background: '#10b981',
+                    background: '#2563eb',
                     borderRadius: '0 4px 4px 0'
                   }}
                   transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 />
               )}
-              <span style={{ fontWeight: currentPath === item.key ? 700 : 500, fontSize: 15, letterSpacing: 0.2, color: currentPath === item.key ? '#10b981' : (isDark ? '#94a3b8' : '#64748b') }}>{item.label}</span>
+              <span style={{ fontWeight: currentPath === item.key ? 700 : 500, fontSize: 15, letterSpacing: 0.2, color: currentPath === item.key ? '#2563eb' : (isDark ? '#94a3b8' : '#64748b') }}>{item.label}</span>
             </div>
           ),
           style: {
-            color: currentPath === item.key ? '#10b981' : (isDark ? '#94a3b8' : '#64748b'),
+            color: currentPath === item.key ? '#2563eb' : (isDark ? '#94a3b8' : '#64748b'),
             fontSize: 15
           }
         }))}
@@ -210,31 +293,22 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                 type="text"
                 icon={<FiSidebar size={20} />}
                 onClick={() => {
-                  setCollapsed(prev => {
-                    const next = !prev;
-                    localStorage.setItem('ieltsify_sidebar_collapsed', next ? '1' : '0');
-                    return next;
-                  });
+                  setCollapsed(!collapsed);
+                  localStorage.setItem('ieltsify_sidebar_collapsed', !collapsed ? '1' : '0');
                 }}
-                style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center',
-                  color: token.colorText
+                style={{
+                  color: token.colorTextSecondary,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
                 }}
               />
             )}
             {isMobile && (
               <Button
                 type="text"
-                icon={<FiSidebar size={20} />}
+                icon={<FiSidebar size={24} />}
                 onClick={() => setMobileVisible(true)}
-                style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center',
-                  color: token.colorText
-                }}
               />
             )}
             <div className={isMobile ? 'mobile-hide' : ''}>
@@ -249,22 +323,31 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                       .split('-')
                       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
                       .join(' ');
-                    return [{ title: pageName }];
+                    return [
+                      { title: 'Dashboard', href: '/dashboard' },
+                      { title: pageName }
+                    ];
                   }
                   return [{ title: 'Dashboard' }];
                 })()}
+                style={{ fontSize: '13px' }}
               />
             </div>
           </div>
+
+
           <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '12px' : '20px' }}>
             <div 
-              className="hidden md:flex items-center bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700/50 rounded-full px-3 py-1 cursor-pointer hover:bg-yellow-100 dark:hover:bg-yellow-900/30 transition-colors"
+              className="flex items-center bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700/50 rounded-full px-3 py-1 cursor-pointer hover:bg-yellow-100 dark:hover:bg-yellow-900/30 transition-colors"
               onClick={() => navigate('/dashboard/pricing')}
               style={{ marginRight: '8px' }}
             >
-              <img src="/coin.png" alt="Coin" className="w-5 h-5 mr-1.5" onError={(e) => (e.currentTarget.style.display = 'none')} />
-              <span className="font-bold text-yellow-600 dark:text-yellow-400 text-sm">120</span>
+              <img src="/coin.png" alt="coin" style={{ width: 20, height: 20, marginRight: 6 }} />
+              <span className="font-bold text-yellow-600 dark:text-yellow-400 text-sm">{coins}</span>
             </div>
+            {isPro && (
+              <Badge count="PRO" style={{ backgroundColor: '#2563eb', fontSize: '10px' }} />
+            )}
             <Button
               type="text"
               icon={isDark ? <Sun size={20} /> : <Moon size={20} />}
@@ -281,8 +364,8 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               icon={<User size={18} />} 
               size={36}
               style={{ 
-                backgroundColor: 'rgba(16, 185, 129, 0.15)', 
-                color: '#10b981',
+                backgroundColor: 'rgba(37, 99, 235, 0.1)', 
+                color: '#2563eb',
                 cursor: 'pointer'
               }} 
               onClick={() => navigate('/dashboard/profile')}

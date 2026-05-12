@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   Typography, 
   Card, 
@@ -8,7 +8,8 @@ import {
   Tag, 
   Button, 
   Space,
-  Grid
+  Grid,
+  Spin
 } from 'antd';
 import { 
   PenTool, 
@@ -26,7 +27,7 @@ import {
   Tooltip, 
   ResponsiveContainer 
 } from 'recharts';
-import { RECENT_REPORTS, WRITING_PROGRESS } from '../mockData';
+import { useWritingSubmissions } from '../hooks/useCachedData';
 
 const { Title, Text } = Typography;
 const { useBreakpoint } = Grid;
@@ -34,13 +35,33 @@ const { useBreakpoint } = Grid;
 const ReportsPage: React.FC = () => {
   const screens = useBreakpoint();
   const isMobile = !screens.md;
+  const { data: rawSubmissions = [], isLoading } = useWritingSubmissions();
+
+  const submissions = React.useMemo(() => {
+    return rawSubmissions.map((s, index) => ({
+      key: s.id,
+      date: new Date(s.submittedAt).toLocaleDateString(),
+      type: 'Writing',
+      topic: `Task ${index + 1}`,
+      score: s.aiFeedback?.overallScore || 0,
+      attempt: index + 1
+    }));
+  }, [rawSubmissions]);
+
+  const avgScore = submissions.length > 0 
+    ? (submissions.reduce((acc, s) => acc + s.score, 0) / submissions.length).toFixed(1) 
+    : '0.0';
 
   const summaryCards = [
-    { title: 'Avg Writing', value: '7.2', icon: <PenTool size={isMobile ? 20 : 24} color="#6B46C1" />, bgColor: '#f3e8ff' },
-    { title: 'Avg Speaking', value: '6.8', icon: <Mic size={isMobile ? 20 : 24} color="#6B46C1" />, bgColor: '#f3e8ff' },
-    { title: 'Tests Taken', value: '12', icon: <BarChart2 size={isMobile ? 20 : 24} color="#6B46C1" />, bgColor: '#f3e8ff' },
-    { title: 'Est. Band', value: '7.0', icon: <TrendingUp size={isMobile ? 20 : 24} color="#6B46C1" />, bgColor: '#f3e8ff' },
+    { title: 'Avg Writing', value: avgScore, icon: <PenTool size={isMobile ? 20 : 24} color="#6B46C1" />, bgColor: '#f3e8ff' },
+    { title: 'Avg Speaking', value: '0.0', icon: <Mic size={isMobile ? 20 : 24} color="#6B46C1" />, bgColor: '#f3e8ff' },
+    { title: 'Tests Taken', value: submissions.length.toString(), icon: <BarChart2 size={isMobile ? 20 : 24} color="#6B46C1" />, bgColor: '#f3e8ff' },
+    { title: 'Est. Band', value: avgScore, icon: <TrendingUp size={isMobile ? 20 : 24} color="#6B46C1" />, bgColor: '#f3e8ff' },
   ];
+
+  if (isLoading) {
+    return <div style={{ display: 'flex', justifyContent: 'center', padding: '100px' }}><Spin size="large" /></div>;
+  }
 
   const columns = [
     {
@@ -132,7 +153,7 @@ const ReportsPage: React.FC = () => {
           >
             <Table 
               columns={columns} 
-              dataSource={RECENT_REPORTS} 
+              dataSource={submissions} 
               pagination={false}
               scroll={{ x: 600 }}
               style={{ borderRadius: '8px', overflow: 'hidden' }}
@@ -151,7 +172,7 @@ const ReportsPage: React.FC = () => {
             </Text>
             <div style={{ width: '100%', height: isMobile ? '200px' : '250px' }}>
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={WRITING_PROGRESS} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
+                <LineChart data={submissions} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                   <XAxis 
                     dataKey="attempt" 

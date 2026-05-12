@@ -34,11 +34,12 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { fetchUserProfile, updateUserProfile, clearAuthTokens, changePassword, type ProfileData } from '../services/authService';
+import { monetizationService } from '../services/monetizationService';
 
 const { Title, Text } = Typography;
 
 const ProfilePage: React.FC = () => {
-  theme.useToken();
+  const { token } = theme.useToken();
   const navigate = useNavigate();
   
   const [profile, setProfile] = useState<ProfileData | null>(null);
@@ -57,6 +58,7 @@ const ProfilePage: React.FC = () => {
   const [targetDate, setTargetDate] = useState('');
   const [emailNotifications, setEmailNotifications] = useState(false);
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
+  const [coins, setCoins] = useState<number>(0);
 
   useEffect(() => {
     loadProfile();
@@ -78,6 +80,10 @@ const ProfilePage: React.FC = () => {
       setTargetDate(data.target_date || '');
       setEmailNotifications(data.email_notifications || false);
       setTwoFactorEnabled(data.two_factor_enabled || false);
+
+      // Fetch coins
+      const balance = await monetizationService.getBalance(data.id as string);
+      setCoins(balance);
     } catch (error: any) {
       console.error('Failed to load profile:', error);
       message.error('Ma\'lumotlarni yuklashda xatolik');
@@ -195,27 +201,54 @@ const ProfilePage: React.FC = () => {
         {/* Left Column: Profile Summary */}
         <Col xs={24} lg={8}>
           <Card 
-            style={{ borderRadius: '24px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.02)', textAlign: 'center' }}
-            bodyStyle={{ padding: '40px 24px' }}
+            style={{ 
+              borderRadius: '24px', 
+              border: 'none', 
+              boxShadow: '0 4px 20px rgba(0,0,0,0.05)', 
+              textAlign: 'center',
+              background: token.colorBgContainer
+            }}
+            styles={{ body: { padding: '40px 24px' } }}
           >
             <div style={{ position: 'relative', display: 'inline-block', marginBottom: '24px' }}>
               <Avatar 
                 size={120} 
                 src={profile.picture}
                 icon={!profile.picture && <User size={60} />}
-                style={{ backgroundColor: '#f3e8ff', color: '#6B46C1', border: '4px solid #fff', boxShadow: '0 10px 25px rgba(107, 70, 193, 0.1)' }} 
+                style={{ 
+                  backgroundColor: token.colorPrimaryBg, 
+                  color: token.colorPrimary, 
+                  border: `4px solid ${token.colorBgContainer}`, 
+                  boxShadow: `0 10px 25px ${token.colorPrimary}20` 
+                }} 
               />
               <Button 
                 type="primary" 
                 shape="circle" 
                 icon={<Camera size={14} />} 
                 size="small"
-                style={{ position: 'absolute', bottom: 5, right: 5, backgroundColor: '#6B46C1', border: '2px solid #fff' }}
+                style={{ 
+                  position: 'absolute', 
+                  bottom: 5, 
+                  right: 5, 
+                  backgroundColor: token.colorPrimary, 
+                  border: `2px solid ${token.colorBgContainer}` 
+                }}
               />
             </div>
-            <Title level={3} style={{ margin: '0 0 8px 0' }}>{fullName}</Title>
+            <Title level={3} style={{ margin: '0 0 8px 0', color: token.colorText }}>{fullName}</Title>
             <Text type="secondary" style={{ display: 'block', marginBottom: '16px' }}>{profile.email}</Text>
-            <Tag color="purple" style={{ borderRadius: '20px', padding: '2px 16px', fontWeight: 'bold' }}>{membership}</Tag>
+            
+            <Space size={8}>
+              <Tag color="blue" style={{ borderRadius: '20px', padding: '2px 16px', fontWeight: 'bold' }}>{membership}</Tag>
+              <div 
+                className="flex items-center bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700/50 rounded-full px-3 py-0.5 cursor-pointer hover:bg-yellow-100 dark:hover:bg-yellow-900/30 transition-colors"
+                onClick={() => navigate('/dashboard/pricing')}
+              >
+                <img src="/coin.png" alt="coin" style={{ width: 14, height: 14, marginRight: 4 }} />
+                <span className="font-bold text-yellow-600 dark:text-yellow-400 text-xs">{coins}</span>
+              </div>
+            </Space>
             
             <Divider style={{ margin: '32px 0' }} />
             
@@ -224,11 +257,11 @@ const ProfilePage: React.FC = () => {
                 <Statistic 
                   title="Joined" 
                   value={joinedDate} 
-                  valueStyle={{ fontSize: '14px', fontWeight: 'bold' }} 
+                  valueStyle={{ fontSize: '14px', fontWeight: 'bold', color: token.colorText }} 
                 />
               </Col>
               <Col span={12}>
-                <Statistic title="Status" value="Active" valueStyle={{ fontSize: '14px', fontWeight: 'bold', color: '#10b981' }} />
+                <Statistic title="Status" value="Active" valueStyle={{ fontSize: '14px', fontWeight: 'bold', color: token.colorSuccess }} />
               </Col>
             </Row>
 
@@ -237,28 +270,43 @@ const ProfilePage: React.FC = () => {
               danger 
               icon={<LogOut size={16} />}
               onClick={handleLogout}
-              style={{ marginTop: '32px', borderRadius: '12px', height: '48px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+              style={{ 
+                marginTop: '32px', 
+                borderRadius: '12px', 
+                height: '48px', 
+                fontWeight: 'bold', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                gap: '8px' 
+              }}
             >
               Log Out
             </Button>
           </Card>
 
           <Card 
-            title={<Space><Target size={18} color="#6B46C1" /> My IELTS Goals</Space>}
-            style={{ borderRadius: '24px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.02)', marginTop: '24px' }}
+            title={<Space><Target size={18} color={token.colorPrimary} /> My IELTS Goals</Space>}
+            style={{ 
+              borderRadius: '24px', 
+              border: 'none', 
+              boxShadow: '0 4px 20px rgba(0,0,0,0.05)', 
+              marginTop: '24px',
+              background: token.colorBgContainer
+            }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
               <div>
                 <Text type="secondary" style={{ fontSize: '12px' }}>TARGET SCORE</Text>
-                <Title level={2} style={{ margin: 0 }}>{profile.target_score || 'N/A'}</Title>
+                <Title level={2} style={{ margin: 0, color: token.colorText }}>{profile.target_score || 'N/A'}</Title>
               </div>
               <div style={{ textAlign: 'right' }}>
                 <Text type="secondary" style={{ fontSize: '12px' }}>CURRENT SCORE</Text>
-                <Title level={4} style={{ margin: 0 }}>{overallScore}</Title>
+                <Title level={4} style={{ margin: 0, color: token.colorText }}>{overallScore}</Title>
               </div>
             </div>
             <Text type="secondary" style={{ display: 'block', marginBottom: '8px', fontSize: '13px' }}>Overall Progress</Text>
-            <Progress percent={Math.min(progressPercent, 100)} strokeColor="#6B46C1" />
+            <Progress percent={Math.min(progressPercent, 100)} strokeColor={token.colorPrimary} />
             <Text type="secondary" style={{ display: 'block', marginTop: '16px', fontSize: '12px', textAlign: 'center' }}>
               {profile.target_score && parseFloat(overallScore) < profile.target_score
                 ? `Keep practicing! You are ${(profile.target_score - parseFloat(overallScore)).toFixed(1)} bands away from your goal.`
@@ -272,32 +320,37 @@ const ProfilePage: React.FC = () => {
         {/* Right Column: Performance & Settings */}
         <Col xs={24} lg={16}>
           <Card 
-            title={<Space><Settings size={18} color="#6B46C1" /> Account Settings</Space>}
-            style={{ borderRadius: '24px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}
-            bodyStyle={{ padding: '0 0 24px 0' }}
+            title={<Space><Settings size={18} color={token.colorPrimary} /> Account Settings</Space>}
+            style={{ 
+              borderRadius: '24px', 
+              border: 'none', 
+              boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
+              background: token.colorBgContainer
+            }}
+            styles={{ body: { padding: '0 0 24px 0' } }}
           >
             <div style={{ padding: '24px' }}>
               <Row gutter={[24, 24]}>
                 <Col xs={24} md={12}>
-                  <Text strong style={{ display: 'block', marginBottom: '8px' }}>Full Name</Text>
+                  <Text strong style={{ display: 'block', marginBottom: '8px', color: token.colorText }}>Full Name</Text>
                   <Input 
                     value={name} 
                     onChange={(e) => setName(e.target.value)}
-                    prefix={<User size={14} color="#94a3b8" />} 
+                    prefix={<User size={14} color={token.colorTextQuaternary} />} 
                     style={{ borderRadius: '8px', height: '40px' }} 
                   />
                 </Col>
                 <Col xs={24} md={12}>
-                  <Text strong style={{ display: 'block', marginBottom: '8px' }}>Email Address</Text>
+                  <Text strong style={{ display: 'block', marginBottom: '8px', color: token.colorText }}>Email Address</Text>
                   <Input 
                     value={email} 
                     disabled
-                    prefix={<Mail size={14} color="#94a3b8" />} 
+                    prefix={<Mail size={14} color={token.colorTextQuaternary} />} 
                     style={{ borderRadius: '8px', height: '40px' }} 
                   />
                 </Col>
                 <Col xs={24} md={12}>
-                  <Text strong style={{ display: 'block', marginBottom: '8px' }}>Target Band Score</Text>
+                  <Text strong style={{ display: 'block', marginBottom: '8px', color: token.colorText }}>Target Band Score</Text>
                   <Input 
                     type="number"
                     min={0}
@@ -305,18 +358,18 @@ const ProfilePage: React.FC = () => {
                     step={0.5}
                     value={targetScore} 
                     onChange={(e) => setTargetScore(parseFloat(e.target.value) || undefined)}
-                    prefix={<Target size={14} color="#94a3b8" />} 
+                    prefix={<Target size={14} color={token.colorTextQuaternary} />} 
                     style={{ borderRadius: '8px', height: '40px' }} 
                     placeholder="7.5"
                   />
                 </Col>
                 <Col xs={24} md={12}>
-                  <Text strong style={{ display: 'block', marginBottom: '8px' }}>Target Date</Text>
+                  <Text strong style={{ display: 'block', marginBottom: '8px', color: token.colorText }}>Target Date</Text>
                   <Input 
                     type="date" 
                     value={targetDate} 
                     onChange={(e) => setTargetDate(e.target.value)}
-                    prefix={<Calendar size={14} color="#94a3b8" />} 
+                    prefix={<Calendar size={14} color={token.colorTextQuaternary} />} 
                     style={{ borderRadius: '8px', height: '40px' }} 
                   />
                 </Col>
@@ -325,7 +378,13 @@ const ProfilePage: React.FC = () => {
                 type="primary" 
                 loading={saving}
                 onClick={handleSaveChanges}
-                style={{ marginTop: '24px', borderRadius: '8px', padding: '0 32px', backgroundColor: '#6B46C1', height: '40px' }}
+                style={{ 
+                  marginTop: '24px', 
+                  borderRadius: '8px', 
+                  padding: '0 32px', 
+                  backgroundColor: token.colorPrimary, 
+                  height: '40px' 
+                }}
               >
                 Save Changes
               </Button>
@@ -334,13 +393,13 @@ const ProfilePage: React.FC = () => {
             <Divider style={{ margin: 0 }} />
 
             <div style={{ padding: '24px' }}>
-              <Title level={5} style={{ marginBottom: '20px' }}>Security & Notifications</Title>
+              <Title level={5} style={{ marginBottom: '20px', color: token.colorText }}>Security & Notifications</Title>
               <Space direction="vertical" style={{ width: '100%' }} size={16}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Space size={12}>
-                    <div style={{ backgroundColor: '#f1f5f9', padding: '8px', borderRadius: '8px' }}><Bell size={16} /></div>
+                    <div style={{ backgroundColor: token.colorFillAlter, padding: '8px', borderRadius: '8px', color: token.colorText }}><Bell size={16} /></div>
                     <div>
-                      <Text strong style={{ display: 'block' }}>Email Notifications</Text>
+                      <Text strong style={{ display: 'block', color: token.colorText }}>Email Notifications</Text>
                       <Text type="secondary" style={{ fontSize: '12px' }}>Receive daily practice reminders and tips.</Text>
                     </div>
                   </Space>
@@ -351,9 +410,9 @@ const ProfilePage: React.FC = () => {
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Space size={12}>
-                    <div style={{ backgroundColor: '#f1f5f9', padding: '8px', borderRadius: '8px' }}><Lock size={16} /></div>
+                    <div style={{ backgroundColor: token.colorFillAlter, padding: '8px', borderRadius: '8px', color: token.colorText }}><Lock size={16} /></div>
                     <div>
-                      <Text strong style={{ display: 'block' }}>Two-Factor Authentication</Text>
+                      <Text strong style={{ display: 'block', color: token.colorText }}>Two-Factor Authentication</Text>
                       <Text type="secondary" style={{ fontSize: '12px' }}>Add an extra layer of security to your account.</Text>
                     </div>
                   </Space>
@@ -364,16 +423,16 @@ const ProfilePage: React.FC = () => {
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Space size={12}>
-                    <div style={{ backgroundColor: '#f1f5f9', padding: '8px', borderRadius: '8px' }}><Lock size={16} /></div>
+                    <div style={{ backgroundColor: token.colorFillAlter, padding: '8px', borderRadius: '8px', color: token.colorText }}><Lock size={16} /></div>
                     <div>
-                      <Text strong style={{ display: 'block' }}>Change Password</Text>
+                      <Text strong style={{ display: 'block', color: token.colorText }}>Change Password</Text>
                       <Text type="secondary" style={{ fontSize: '12px' }}>Update your account password.</Text>
                     </div>
                   </Space>
                   <Button 
                     type="primary" 
                     onClick={() => setPasswordModalVisible(true)}
-                    style={{ borderRadius: '8px' }}
+                    style={{ borderRadius: '8px', backgroundColor: token.colorPrimary }}
                   >
                     O'zgartirish
                   </Button>
@@ -384,13 +443,13 @@ const ProfilePage: React.FC = () => {
             <Divider style={{ margin: 0 }} />
 
             <div style={{ padding: '24px' }}>
-              <Title level={5} style={{ marginBottom: '20px' }}>Subscription Plan</Title>
-              <Card style={{ borderRadius: '16px', backgroundColor: '#f8fafc', border: '1px solid #e2e8f0' }}>
+              <Title level={5} style={{ marginBottom: '20px', color: token.colorText }}>Subscription Plan</Title>
+              <Card style={{ borderRadius: '16px', backgroundColor: token.colorFillAlter, border: `1px solid ${token.colorBorderSecondary}` }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Space size={16}>
-                    <div style={{ backgroundColor: '#6B46C1', padding: '10px', borderRadius: '12px' }}><CreditCard size={20} color="white" /></div>
+                    <div style={{ backgroundColor: token.colorPrimary, padding: '10px', borderRadius: '12px' }}><CreditCard size={20} color="white" /></div>
                     <div>
-                      <Text strong style={{ display: 'block' }}>{membership} Plan</Text>
+                      <Text strong style={{ display: 'block', color: token.colorText }}>{membership} Plan</Text>
                       <Text type="secondary" style={{ fontSize: '12px' }}>
                         {profile.is_vip && profile.vip_expires_at
                           ? `Expires: ${new Date(profile.vip_expires_at).toLocaleDateString()}`
@@ -398,21 +457,27 @@ const ProfilePage: React.FC = () => {
                       </Text>
                     </div>
                   </Space>
-                  <Button type="link" style={{ color: '#6B46C1', fontWeight: 'bold' }}>Upgrade Plan</Button>
+                  <Button type="link" style={{ color: token.colorPrimary, fontWeight: 'bold' }} onClick={() => navigate('/dashboard/pricing')}>Upgrade Plan</Button>
                 </div>
               </Card>
             </div>
           </Card>
 
           <Card 
-            title={<Space><BarChart3 size={18} color="#6B46C1" /> Skill Breakdown</Space>}
-            style={{ borderRadius: '24px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.02)', marginTop: '24px' }}
+            title={<Space><BarChart3 size={18} color={token.colorPrimary} /> Skill Breakdown</Space>}
+            style={{ 
+              borderRadius: '24px', 
+              border: 'none', 
+              boxShadow: '0 4px 20px rgba(0,0,0,0.05)', 
+              marginTop: '24px',
+              background: token.colorBgContainer
+            }}
           >
             <Row gutter={[24, 24]}>
               {skillProgress.map((skill, i) => (
                 <Col xs={24} md={12} key={i}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                    <Text strong>{skill.name}</Text>
+                    <Text strong style={{ color: token.colorText }}>{skill.name}</Text>
                     <Text strong style={{ color: skill.color }}>{skill.score} / {skill.maxScore}</Text>
                   </div>
                   <Progress percent={(skill.score / skill.maxScore) * 100} strokeColor={skill.color} showInfo={false} />
@@ -433,6 +498,7 @@ const ProfilePage: React.FC = () => {
         }}
         footer={null}
         centered
+        styles={{ mask: { backdropFilter: 'blur(4px)' } }}
       >
         <Form
           form={passwordForm}
@@ -444,12 +510,11 @@ const ProfilePage: React.FC = () => {
             name="current_password"
             label="Joriy parol"
             rules={[
-              { required: true, message: 'Joriy parolni kiriting' },
-              { min: 1, message: 'Parol kamida 1 ta belgidan iborat bo\'lishi kerak' }
+              { required: true, message: 'Joriy parolni kiriting' }
             ]}
           >
             <Input.Password 
-              prefix={<Lock size={16} />}
+              prefix={<Lock size={16} color={token.colorTextQuaternary} />}
               placeholder="Joriy parol"
               style={{ borderRadius: '8px', height: '40px' }}
             />
@@ -460,11 +525,11 @@ const ProfilePage: React.FC = () => {
             label="Yangi parol"
             rules={[
               { required: true, message: 'Yangi parolni kiriting' },
-              { min: 1, message: 'Parol kamida 1 ta belgidan iborat bo\'lishi kerak' }
+              { min: 6, message: 'Parol kamida 6 ta belgidan iborat bo\'lishi kerak' }
             ]}
           >
             <Input.Password 
-              prefix={<Lock size={16} />}
+              prefix={<Lock size={16} color={token.colorTextQuaternary} />}
               placeholder="Yangi parol"
               style={{ borderRadius: '8px', height: '40px' }}
             />
@@ -487,7 +552,7 @@ const ProfilePage: React.FC = () => {
             ]}
           >
             <Input.Password 
-              prefix={<Lock size={16} />}
+              prefix={<Lock size={16} color={token.colorTextQuaternary} />}
               placeholder="Yangi parolni tasdiqlash"
               style={{ borderRadius: '8px', height: '40px' }}
             />
@@ -507,7 +572,7 @@ const ProfilePage: React.FC = () => {
                 type="primary" 
                 htmlType="submit"
                 loading={changingPassword}
-                style={{ backgroundColor: '#6B46C1' }}
+                style={{ backgroundColor: token.colorPrimary }}
               >
                 Saqlash
               </Button>

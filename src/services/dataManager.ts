@@ -1,173 +1,353 @@
-// Central Data Manager - localStorage operations
+// Central Data Manager - Supabase operations
+import { supabase } from '../lib/supabase';
 import type { VocabularyWord, Article, ListeningResource, UserNote, WritingTask, WritingDraft, ReadingPassage, ListeningTest, WritingSubmission } from '../types';
-
-const STORAGE_KEYS = {
-  VOCABULARY: 'ieltsify_vocabulary',
-  ARTICLES: 'ieltsify_articles',
-  LISTENING: 'ieltsify_listening',
-  NOTES: 'ieltsify_notes',
-  WRITING_TASKS: 'ieltsify_writing_tasks',
-  WRITING_DRAFTS: 'ieltsify_writing_drafts',
-  READING_PASSAGES: 'ieltsify_reading_passages',
-  LISTENING_TESTS: 'ieltsify_listening_tests',
-  WRITING_SUBMISSIONS: 'ieltsify_writing_submissions',
-} as const;
-
-// Generic localStorage helpers
-const getFromStorage = <T>(key: string): T[] => {
-  try {
-    const data = localStorage.getItem(key);
-    return data ? JSON.parse(data) : [];
-  } catch (error) {
-    console.error(`Error reading ${key}:`, error);
-    return [];
-  }
-};
-
-const saveToStorage = <T>(key: string, data: T[]): void => {
-  try {
-    localStorage.setItem(key, JSON.stringify(data));
-  } catch (error) {
-    console.error(`Error saving ${key}:`, error);
-  }
-};
 
 // Vocabulary Operations
 export const vocabularyManager = {
-  getAll: (): VocabularyWord[] => getFromStorage<VocabularyWord>(STORAGE_KEYS.VOCABULARY),
+  getAll: async (): Promise<VocabularyWord[]> => {
+    const { data, error } = await supabase.from('vocabulary').select('*');
+    if (error) {
+      console.error('Error reading vocabulary:', error);
+      return [];
+    }
+    return data || [];
+  },
   
-  add: (word: Omit<VocabularyWord, 'id' | 'addedDate' | 'reviewCount'>): VocabularyWord => {
-    const words = vocabularyManager.getAll();
-    const newWord: VocabularyWord = {
+  add: async (word: Omit<VocabularyWord, 'id' | 'addedDate' | 'reviewCount'>): Promise<VocabularyWord> => {
+    const { data: { user } } = await supabase.auth.getUser();
+    const newWord = {
       ...word,
-      id: `vocab_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      user_id: user?.id,
       addedDate: new Date().toISOString(),
       reviewCount: 0,
     };
-    words.push(newWord);
-    saveToStorage(STORAGE_KEYS.VOCABULARY, words);
-    return newWord;
+    const { data, error } = await supabase.from('vocabulary').insert(newWord).select().single();
+    if (error) throw error;
+    return data;
   },
   
-  update: (id: string, updates: Partial<VocabularyWord>): void => {
-    const words = vocabularyManager.getAll();
-    const index = words.findIndex(w => w.id === id);
-    if (index !== -1) {
-      words[index] = { ...words[index], ...updates };
-      saveToStorage(STORAGE_KEYS.VOCABULARY, words);
+  update: async (id: string, updates: Partial<VocabularyWord>): Promise<void> => {
+    const { error } = await supabase.from('vocabulary').update(updates).eq('id', id);
+    if (error) throw error;
+  },
+  
+  delete: async (id: string): Promise<void> => {
+    const { error } = await supabase.from('vocabulary').delete().eq('id', id);
+    if (error) throw error;
+  },
+  
+  search: async (query: string): Promise<VocabularyWord[]> => {
+    const { data, error } = await supabase
+      .from('vocabulary')
+      .select('*')
+      .or(`word.ilike.%${query}%,definition.ilike.%${query}%`);
+    if (error) {
+      console.error('Error searching vocabulary:', error);
+      return [];
     }
-  },
-  
-  delete: (id: string): void => {
-    const words = vocabularyManager.getAll().filter(w => w.id !== id);
-    saveToStorage(STORAGE_KEYS.VOCABULARY, words);
-  },
-  
-  search: (query: string): VocabularyWord[] => {
-    const words = vocabularyManager.getAll();
-    const lowerQuery = query.toLowerCase();
-    return words.filter(w => 
-      w.word.toLowerCase().includes(lowerQuery) ||
-      w.definition.toLowerCase().includes(lowerQuery)
-    );
+    return data || [];
   },
 };
 
 // Article Operations
 export const articleManager = {
-  getAll: (): Article[] => getFromStorage<Article>(STORAGE_KEYS.ARTICLES),
+  getAll: async (): Promise<Article[]> => {
+    const { data, error } = await supabase.from('articles').select('*');
+    if (error) {
+      console.error('Error reading articles:', error);
+      return [];
+    }
+    return data || [];
+  },
   
-  add: (article: Omit<Article, 'id' | 'uploadDate'>): Article => {
-    const articles = articleManager.getAll();
-    const newArticle: Article = {
+  add: async (article: Omit<Article, 'id' | 'uploadDate'>): Promise<Article> => {
+    const newArticle = {
       ...article,
-      id: `article_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       uploadDate: new Date().toISOString(),
     };
-    articles.push(newArticle);
-    saveToStorage(STORAGE_KEYS.ARTICLES, articles);
-    return newArticle;
+    const { data, error } = await supabase.from('articles').insert(newArticle).select().single();
+    if (error) throw error;
+    return data;
   },
   
-  update: (id: string, updates: Partial<Article>): void => {
-    const articles = articleManager.getAll();
-    const index = articles.findIndex(a => a.id === id);
-    if (index !== -1) {
-      articles[index] = { ...articles[index], ...updates };
-      saveToStorage(STORAGE_KEYS.ARTICLES, articles);
-    }
+  update: async (id: string, updates: Partial<Article>): Promise<void> => {
+    const { error } = await supabase.from('articles').update(updates).eq('id', id);
+    if (error) throw error;
   },
   
-  delete: (id: string): void => {
-    const articles = articleManager.getAll().filter(a => a.id !== id);
-    saveToStorage(STORAGE_KEYS.ARTICLES, articles);
+  delete: async (id: string): Promise<void> => {
+    const { error } = await supabase.from('articles').delete().eq('id', id);
+    if (error) throw error;
   },
   
-  getById: (id: string): Article | undefined => {
-    return articleManager.getAll().find(a => a.id === id);
+  getById: async (id: string): Promise<Article | undefined> => {
+    const { data, error } = await supabase.from('articles').select('*').eq('id', id).single();
+    if (error) return undefined;
+    return data;
   },
 };
 
 // Listening Operations
 export const listeningManager = {
-  getAll: (): ListeningResource[] => getFromStorage<ListeningResource>(STORAGE_KEYS.LISTENING),
+  getAll: async (): Promise<ListeningResource[]> => {
+    const { data, error } = await supabase.from('listening').select('*');
+    if (error) {
+      console.error('Error reading listening:', error);
+      return [];
+    }
+    return data || [];
+  },
   
-  add: (resource: Omit<ListeningResource, 'id' | 'uploadDate'>): ListeningResource => {
-    const resources = listeningManager.getAll();
-    const newResource: ListeningResource = {
+  add: async (resource: Omit<ListeningResource, 'id' | 'uploadDate'>): Promise<ListeningResource> => {
+    const newResource = {
       ...resource,
-      id: `listening_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       uploadDate: new Date().toISOString(),
     };
-    resources.push(newResource);
-    saveToStorage(STORAGE_KEYS.LISTENING, resources);
-    return newResource;
+    const { data, error } = await supabase.from('listening').insert(newResource).select().single();
+    if (error) throw error;
+    return data;
   },
   
-  update: (id: string, updates: Partial<ListeningResource>): void => {
-    const resources = listeningManager.getAll();
-    const index = resources.findIndex(r => r.id === id);
-    if (index !== -1) {
-      resources[index] = { ...resources[index], ...updates };
-      saveToStorage(STORAGE_KEYS.LISTENING, resources);
-    }
+  update: async (id: string, updates: Partial<ListeningResource>): Promise<void> => {
+    const { error } = await supabase.from('listening').update(updates).eq('id', id);
+    if (error) throw error;
   },
   
-  delete: (id: string): void => {
-    const resources = listeningManager.getAll().filter(r => r.id !== id);
-    saveToStorage(STORAGE_KEYS.LISTENING, resources);
+  delete: async (id: string): Promise<void> => {
+    const { error } = await supabase.from('listening').delete().eq('id', id);
+    if (error) throw error;
   },
 };
 
 // Notes Operations
 export const notesManager = {
-  getAll: (): UserNote[] => getFromStorage<UserNote>(STORAGE_KEYS.NOTES),
+  getAll: async (): Promise<UserNote[]> => {
+    const { data, error } = await supabase.from('notes').select('*');
+    if (error) {
+      console.error('Error reading notes:', error);
+      return [];
+    }
+    return data || [];
+  },
   
-  add: (note: Omit<UserNote, 'id' | 'timestamp'>): UserNote => {
-    const notes = notesManager.getAll();
-    const newNote: UserNote = {
+  add: async (note: Omit<UserNote, 'id' | 'timestamp'>): Promise<UserNote> => {
+    const { data: { user } } = await supabase.auth.getUser();
+    const newNote = {
       ...note,
-      id: `note_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      user_id: user?.id,
       timestamp: new Date().toISOString(),
     };
-    notes.push(newNote);
-    saveToStorage(STORAGE_KEYS.NOTES, notes);
-    return newNote;
+    const { data, error } = await supabase.from('notes').insert(newNote).select().single();
+    if (error) throw error;
+    return data;
   },
   
-  getByResource: (resourceId: string): UserNote[] => {
-    return notesManager.getAll().filter(n => n.resourceId === resourceId);
+  getByResource: async (resourceId: string): Promise<UserNote[]> => {
+    const { data, error } = await supabase.from('notes').select('*').eq('resourceId', resourceId);
+    if (error) return [];
+    return data || [];
   },
   
-  delete: (id: string): void => {
-    const notes = notesManager.getAll().filter(n => n.id !== id);
-    saveToStorage(STORAGE_KEYS.NOTES, notes);
+  delete: async (id: string): Promise<void> => {
+    const { error } = await supabase.from('notes').delete().eq('id', id);
+    if (error) throw error;
+  },
+};
+
+// Writing Task Operations
+export const writingTaskManager = {
+  getAll: async (): Promise<WritingTask[]> => {
+    const { data, error } = await supabase.from('writing_tasks').select('*');
+    if (error) {
+      console.error('Error reading writing tasks:', error);
+      return [];
+    }
+    return data || [];
+  },
+  
+  add: async (task: Omit<WritingTask, 'id' | 'uploadDate'>): Promise<WritingTask> => {
+    const newTask = {
+      title: task.title,
+      task1_question: task.task1Question,
+      task1_image_url: task.task1ImageUrl,
+      task2_question: task.task2Question,
+      upload_date: new Date().toISOString(),
+    };
+    const { data, error } = await supabase.from('writing_tasks').insert(newTask).select().single();
+    if (error) throw error;
+    return data;
+  },
+  
+  update: async (id: string, updates: Partial<WritingTask>): Promise<void> => {
+    const { error } = await supabase.from('writing_tasks').update(updates).eq('id', id);
+    if (error) throw error;
+  },
+  
+  delete: async (id: string): Promise<void> => {
+    const { error } = await supabase.from('writing_tasks').delete().eq('id', id);
+    if (error) throw error;
+  },
+  
+  getById: async (id: string): Promise<WritingTask | undefined> => {
+    const { data, error } = await supabase.from('writing_tasks').select('*').eq('id', id).single();
+    if (error) return undefined;
+    return data;
+  },
+};
+
+// Writing Draft Operations
+export const writingDraftManager = {
+  getAll: async (): Promise<WritingDraft[]> => {
+    const { data, error } = await supabase.from('writing_drafts').select('*');
+    if (error) {
+      console.error('Error reading writing drafts:', error);
+      return [];
+    }
+    return data || [];
+  },
+  
+  getByTaskId: async (taskId: string): Promise<WritingDraft | undefined> => {
+    const { data: { user } } = await supabase.auth.getUser();
+    const { data, error } = await supabase
+      .from('writing_drafts')
+      .select('*')
+      .eq('task_id', taskId)
+      .eq('user_id', user?.id)
+      .eq('submitted', false)
+      .maybeSingle();
+    
+    if (error) return undefined;
+    return data || undefined;
+  },
+  
+  save: async (draft: Omit<WritingDraft, 'id' | 'lastSaved'>): Promise<WritingDraft> => {
+    const { data: { user } } = await supabase.auth.getUser();
+    const savedDraft = {
+      task_id: draft.taskId,
+      content: draft.content,
+      word_count: draft.wordCount,
+      time_spent: draft.timeSpent,
+      user_id: user?.id,
+      last_saved: new Date().toISOString(),
+      submitted: draft.submitted,
+    };
+    
+    const { data, error } = await supabase
+      .from('writing_drafts')
+      .upsert(savedDraft)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+  
+  submit: async (taskId: string): Promise<void> => {
+    const { data: { user } } = await supabase.auth.getUser();
+    const { error } = await supabase
+      .from('writing_drafts')
+      .update({ submitted: true })
+      .eq('task_id', taskId)
+      .eq('user_id', user?.id)
+      .eq('submitted', false);
+    
+    if (error) throw error;
+  },
+  
+  delete: async (id: string): Promise<void> => {
+    const { error } = await supabase.from('writing_drafts').delete().eq('id', id);
+    if (error) throw error;
+  },
+};
+
+// Reading Passage Operations
+export const readingPassageManager = {
+  getAll: async (): Promise<ReadingPassage[]> => {
+    const { data, error } = await supabase.from('reading_passages').select('*');
+    if (error) return [];
+    return data || [];
+  },
+  
+  getById: async (id: string): Promise<ReadingPassage | undefined> => {
+    const { data, error } = await supabase.from('reading_passages').select('*').eq('id', id).single();
+    if (error) return undefined;
+    return data;
+  },
+};
+
+// Listening Test Operations
+export const listeningTestManager = {
+  getAll: async (): Promise<ListeningTest[]> => {
+    const { data, error } = await supabase.from('listening_tests').select('*');
+    if (error) return [];
+    return data || [];
+  },
+  
+  getById: async (id: string): Promise<ListeningTest | undefined> => {
+    const { data, error } = await supabase.from('listening_tests').select('*').eq('id', id).single();
+    if (error) return undefined;
+    return data;
+  },
+};
+
+// Writing Submission Operations
+export const writingSubmissionManager = {
+  getAll: async (): Promise<WritingSubmission[]> => {
+    const { data, error } = await supabase.from('writing_submissions').select('*');
+    if (error) return [];
+    return data || [];
+  },
+  
+  add: async (submission: Omit<WritingSubmission, 'id' | 'submittedAt'>): Promise<WritingSubmission> => {
+    const { data: { user } } = await supabase.auth.getUser();
+    const newSubmission = {
+      task_id: submission.taskId,
+      task1_content: submission.task1Content,
+      task1_word_count: submission.task1WordCount,
+      task2_content: submission.task2Content,
+      task2_word_count: submission.task2WordCount,
+      total_time_spent: submission.totalTimeSpent,
+      user_id: user?.id,
+      submitted_at: new Date().toISOString(),
+      ai_feedback: submission.aiFeedback,
+    };
+    const { data, error } = await supabase.from('writing_submissions').insert(newSubmission).select().single();
+    if (error) throw error;
+    return data;
+  },
+  
+  getByTaskId: async (taskId: string): Promise<WritingSubmission[]> => {
+    const { data: { user } } = await supabase.auth.getUser();
+    const { data, error } = await supabase
+      .from('writing_submissions')
+      .select('*')
+      .eq('task_id', taskId)
+      .eq('user_id', user?.id);
+    if (error) return [];
+    return data || [];
+  },
+};
+
+// Speaking Test Operations
+export const speakingTestManager = {
+  getAll: async (): Promise<any[]> => {
+    const { data, error } = await supabase.from('speaking_tests').select('*');
+    if (error) {
+      console.error('Error reading speaking tests:', error);
+      return [];
+    }
+    return data || [];
+  },
+  
+  getById: async (id: string): Promise<any | undefined> => {
+    const { data, error } = await supabase.from('speaking_tests').select('*').eq('id', id).single();
+    if (error) return undefined;
+    return data;
   },
 };
 
 // Global Search
-export const globalSearch = (query: string) => {
-  const lowerQuery = query.toLowerCase();
+export const globalSearch = async (query: string) => {
   const results: Array<{
     id: string;
     type: 'vocabulary' | 'article' | 'listening';
@@ -176,227 +356,49 @@ export const globalSearch = (query: string) => {
   }> = [];
 
   // Search vocabulary
-  vocabularyManager.getAll().forEach(word => {
-    if (word.word.toLowerCase().includes(lowerQuery) || 
-        word.definition.toLowerCase().includes(lowerQuery)) {
-      results.push({
-        id: word.id,
-        type: 'vocabulary',
-        title: word.word,
-        snippet: word.definition.substring(0, 100),
-      });
-    }
+  const vocabResults = await vocabularyManager.search(query);
+  vocabResults.forEach(word => {
+    results.push({
+      id: word.id,
+      type: 'vocabulary',
+      title: word.word,
+      snippet: word.definition.substring(0, 100),
+    });
   });
 
   // Search articles
-  articleManager.getAll().forEach(article => {
-    if (article.title.toLowerCase().includes(lowerQuery) ||
-        article.htmlContent.toLowerCase().includes(lowerQuery)) {
+  const { data: articles, error: articleError } = await supabase
+    .from('articles')
+    .select('*')
+    .or(`title.ilike.%${query}%,htmlContent.ilike.%${query}%`);
+  
+  if (!articleError && articles) {
+    articles.forEach(article => {
       results.push({
         id: article.id,
         type: 'article',
         title: article.title,
         snippet: article.htmlContent.replace(/<[^>]*>/g, '').substring(0, 100),
       });
-    }
-  });
+    });
+  }
 
   // Search listening
-  listeningManager.getAll().forEach(resource => {
-    if (resource.title.toLowerCase().includes(lowerQuery)) {
+  const { data: listening, error: listeningError } = await supabase
+    .from('listening')
+    .select('*')
+    .ilike('title', `%${query}%`);
+  
+  if (!listeningError && listening) {
+    listening.forEach(resource => {
       results.push({
         id: resource.id,
         type: 'listening',
         title: resource.title,
         snippet: `${resource.category} - ${resource.difficulty}`,
       });
-    }
-  });
+    });
+  }
 
   return results;
-};
-
-
-// Writing Task Operations
-export const writingTaskManager = {
-  getAll: (): WritingTask[] => getFromStorage<WritingTask>(STORAGE_KEYS.WRITING_TASKS),
-  
-  add: (task: Omit<WritingTask, 'id' | 'uploadDate'>): WritingTask => {
-    const tasks = writingTaskManager.getAll();
-    const newTask: WritingTask = {
-      ...task,
-      id: `writing_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      uploadDate: new Date().toISOString(),
-    };
-    tasks.push(newTask);
-    saveToStorage(STORAGE_KEYS.WRITING_TASKS, tasks);
-    return newTask;
-  },
-  
-  update: (id: string, updates: Partial<WritingTask>): void => {
-    const tasks = writingTaskManager.getAll();
-    const index = tasks.findIndex(t => t.id === id);
-    if (index !== -1) {
-      tasks[index] = { ...tasks[index], ...updates };
-      saveToStorage(STORAGE_KEYS.WRITING_TASKS, tasks);
-    }
-  },
-  
-  delete: (id: string): void => {
-    const tasks = writingTaskManager.getAll().filter(t => t.id !== id);
-    saveToStorage(STORAGE_KEYS.WRITING_TASKS, tasks);
-  },
-  
-  getById: (id: string): WritingTask | undefined => {
-    return writingTaskManager.getAll().find(t => t.id === id);
-  },
-};
-
-// Writing Draft Operations
-export const writingDraftManager = {
-  getAll: (): WritingDraft[] => getFromStorage<WritingDraft>(STORAGE_KEYS.WRITING_DRAFTS),
-  
-  getByTaskId: (taskId: string): WritingDraft | undefined => {
-    return writingDraftManager.getAll().find(d => d.taskId === taskId && !d.submitted);
-  },
-  
-  save: (draft: Omit<WritingDraft, 'id' | 'lastSaved'>): WritingDraft => {
-    const drafts = writingDraftManager.getAll();
-    const existingIndex = drafts.findIndex(d => d.taskId === draft.taskId && !d.submitted);
-    
-    const savedDraft: WritingDraft = {
-      ...draft,
-      id: existingIndex !== -1 ? drafts[existingIndex].id : `draft_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      lastSaved: new Date().toISOString(),
-    };
-    
-    if (existingIndex !== -1) {
-      drafts[existingIndex] = savedDraft;
-    } else {
-      drafts.push(savedDraft);
-    }
-    
-    saveToStorage(STORAGE_KEYS.WRITING_DRAFTS, drafts);
-    return savedDraft;
-  },
-  
-  submit: (taskId: string): void => {
-    const drafts = writingDraftManager.getAll();
-    const index = drafts.findIndex(d => d.taskId === taskId && !d.submitted);
-    if (index !== -1) {
-      drafts[index].submitted = true;
-      saveToStorage(STORAGE_KEYS.WRITING_DRAFTS, drafts);
-    }
-  },
-  
-  delete: (id: string): void => {
-    const drafts = writingDraftManager.getAll().filter(d => d.id !== id);
-    saveToStorage(STORAGE_KEYS.WRITING_DRAFTS, drafts);
-  },
-};
-
-
-// Reading Passage Operations (for Reading Mock Tests)
-export const readingPassageManager = {
-  getAll: (): ReadingPassage[] => getFromStorage<ReadingPassage>(STORAGE_KEYS.READING_PASSAGES),
-  
-  add: (passage: Omit<ReadingPassage, 'id' | 'uploadDate'>): ReadingPassage => {
-    const passages = readingPassageManager.getAll();
-    const newPassage: ReadingPassage = {
-      ...passage,
-      id: `reading_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      uploadDate: new Date().toISOString(),
-    };
-    passages.push(newPassage);
-    saveToStorage(STORAGE_KEYS.READING_PASSAGES, passages);
-    return newPassage;
-  },
-  
-  update: (id: string, updates: Partial<ReadingPassage>): void => {
-    const passages = readingPassageManager.getAll();
-    const index = passages.findIndex(p => p.id === id);
-    if (index !== -1) {
-      passages[index] = { ...passages[index], ...updates };
-      saveToStorage(STORAGE_KEYS.READING_PASSAGES, passages);
-    }
-  },
-  
-  delete: (id: string): void => {
-    const passages = readingPassageManager.getAll().filter(p => p.id !== id);
-    saveToStorage(STORAGE_KEYS.READING_PASSAGES, passages);
-  },
-  
-  getById: (id: string): ReadingPassage | undefined => {
-    return readingPassageManager.getAll().find(p => p.id === id);
-  },
-};
-
-// Listening Test Operations (for Listening Mock Tests)
-export const listeningTestManager = {
-  getAll: (): ListeningTest[] => getFromStorage<ListeningTest>(STORAGE_KEYS.LISTENING_TESTS),
-  
-  add: (test: Omit<ListeningTest, 'id' | 'uploadDate'>): ListeningTest => {
-    const tests = listeningTestManager.getAll();
-    const newTest: ListeningTest = {
-      ...test,
-      id: `listening_test_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      uploadDate: new Date().toISOString(),
-    };
-    tests.push(newTest);
-    saveToStorage(STORAGE_KEYS.LISTENING_TESTS, tests);
-    return newTest;
-  },
-  
-  update: (id: string, updates: Partial<ListeningTest>): void => {
-    const tests = listeningTestManager.getAll();
-    const index = tests.findIndex(t => t.id === id);
-    if (index !== -1) {
-      tests[index] = { ...tests[index], ...updates };
-      saveToStorage(STORAGE_KEYS.LISTENING_TESTS, tests);
-    }
-  },
-  
-  delete: (id: string): void => {
-    const tests = listeningTestManager.getAll().filter(t => t.id !== id);
-    saveToStorage(STORAGE_KEYS.LISTENING_TESTS, tests);
-  },
-  
-  getById: (id: string): ListeningTest | undefined => {
-    return listeningTestManager.getAll().find(t => t.id === id);
-  },
-};
-
-
-// Writing Submission Operations
-export const writingSubmissionManager = {
-  getAll: (): WritingSubmission[] => getFromStorage<WritingSubmission>(STORAGE_KEYS.WRITING_SUBMISSIONS),
-  
-  add: (submission: Omit<WritingSubmission, 'id' | 'submittedAt'>): WritingSubmission => {
-    const submissions = writingSubmissionManager.getAll();
-    const newSubmission: WritingSubmission = {
-      ...submission,
-      id: `submission_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      submittedAt: new Date().toISOString(),
-    };
-    submissions.push(newSubmission);
-    saveToStorage(STORAGE_KEYS.WRITING_SUBMISSIONS, submissions);
-    return newSubmission;
-  },
-  
-  update: (id: string, updates: Partial<WritingSubmission>): void => {
-    const submissions = writingSubmissionManager.getAll();
-    const index = submissions.findIndex(s => s.id === id);
-    if (index !== -1) {
-      submissions[index] = { ...submissions[index], ...updates };
-      saveToStorage(STORAGE_KEYS.WRITING_SUBMISSIONS, submissions);
-    }
-  },
-  
-  getById: (id: string): WritingSubmission | undefined => {
-    return writingSubmissionManager.getAll().find(s => s.id === id);
-  },
-  
-  getByTaskId: (taskId: string): WritingSubmission[] => {
-    return writingSubmissionManager.getAll().filter(s => s.taskId === taskId);
-  },
 };

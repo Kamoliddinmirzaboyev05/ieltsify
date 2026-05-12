@@ -7,78 +7,17 @@ import { motion } from 'framer-motion';
 const { Title, Text, Paragraph } = Typography;
 const { useBreakpoint } = Grid;
 
-interface ListeningTest {
-  id: number;
-  title: string;
-  slug: string;
-  description: string;
-  html_file_url: string;
-  cover_image_url: string;
-  difficulty: 'easy' | 'medium' | 'hard';
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-}
-
-interface ListeningTestsResponse {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: ListeningTest[];
-}
+import { useListeningTests } from '../hooks/useCachedData';
+import CoinGuard from '../components/CoinGuard';
+import type { ListeningTest } from '../types';
 
 const ListeningHubPage: React.FC = () => {
   const navigate = useNavigate();
   const screens = useBreakpoint();
   const isMobile = !screens.md;
   
-  const [tests, setTests] = useState<ListeningTest[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: tests = [], isLoading: loading } = useListeningTests();
   const [difficulty, setDifficulty] = useState<string>('all');
-
-  useEffect(() => {
-    loadTests();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const loadTests = async () => {
-    setLoading(true);
-    try {
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://ieltsify.pythonanywhere.com';
-      const accessToken = localStorage.getItem('access_token');
-      
-      const headers: HeadersInit = {
-        'Content-Type': 'application/json',
-      };
-      
-      if (accessToken) {
-        headers['Authorization'] = `Bearer ${accessToken}`;
-      }
-      
-      const response = await fetch(`${API_BASE_URL}/listening-tests/`, {
-        headers,
-      });
-      
-      if (!response.ok) {
-        if (response.status === 401) {
-          message.error('Iltimos, tizimga kiring');
-          navigate('/login');
-          return;
-        }
-        throw new Error('Failed to load listening tests');
-      }
-
-      const data: ListeningTestsResponse = await response.json();
-      // Show all tests (including inactive ones for development)
-      setTests(data.results);
-      console.log('📊 Loaded tests:', data.results.length, 'tests');
-    } catch (error) {
-      console.error('Error loading listening tests:', error);
-      message.error('Listening testlarni yuklashda xatolik yuz berdi');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleStartTest = (test: ListeningTest) => {
     navigate(`/dashboard/listening/${test.slug}`, { state: { test } });
@@ -86,7 +25,7 @@ const ListeningHubPage: React.FC = () => {
 
   const filteredTests = difficulty === 'all'
     ? tests
-    : tests.filter(t => t.difficulty === difficulty);
+    : (tests as ListeningTest[]).filter(t => t.difficulty === difficulty);
 
   const getDifficultyColor = (diff: string) => {
     const colors: Record<string, string> = {
@@ -124,7 +63,7 @@ const ListeningHubPage: React.FC = () => {
       >
         <div>
           <Title level={1} style={{ margin: 0, fontSize: isMobile ? '28px' : '36px', fontWeight: '800' }}>
-            <Headphones size={isMobile ? 32 : 40} style={{ marginRight: '12px', verticalAlign: 'middle', color: '#10b981' }} />
+            <Headphones size={isMobile ? 32 : 40} style={{ marginRight: '12px', verticalAlign: 'middle', color: '#2563eb' }} />
             Listening Tests
           </Title>
           <Text type="secondary" style={{ fontSize: isMobile ? '14px' : '16px' }}>
@@ -156,21 +95,21 @@ const ListeningHubPage: React.FC = () => {
           marginBottom: '32px'
         }}
       >
-        <Card style={{ borderRadius: '16px', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', border: 'none' }}>
+        <Card style={{ borderRadius: '12px', background: '#2563eb', border: 'none' }}>
           <div style={{ color: 'white' }}>
             <BookOpen size={24} style={{ marginBottom: '8px' }} />
             <Title level={3} style={{ color: 'white', margin: '8px 0' }}>{tests.length}</Title>
             <Text style={{ color: 'rgba(255,255,255,0.9)' }}>Jami testlar</Text>
           </div>
         </Card>
-        <Card style={{ borderRadius: '16px', background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', border: 'none' }}>
+        <Card style={{ borderRadius: '12px', background: '#4b5563', border: 'none' }}>
           <div style={{ color: 'white' }}>
             <Clock size={24} style={{ marginBottom: '8px' }} />
             <Title level={3} style={{ color: 'white', margin: '8px 0' }}>30-40 min</Title>
             <Text style={{ color: 'rgba(255,255,255,0.9)' }}>Test davomiyligi</Text>
           </div>
         </Card>
-        <Card style={{ borderRadius: '16px', background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', border: 'none' }}>
+        <Card style={{ borderRadius: '12px', background: '#334155', border: 'none' }}>
           <div style={{ color: 'white' }}>
             <TrendingUp size={24} style={{ marginBottom: '8px' }} />
             <Title level={3} style={{ color: 'white', margin: '8px 0' }}>Band 9.0</Title>
@@ -219,19 +158,19 @@ const ListeningHubPage: React.FC = () => {
               <Card
                 hoverable
                 style={{
-                  borderRadius: '20px',
+                  borderRadius: '12px',
                   overflow: 'hidden',
-                  border: 'none',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                  border: '1px solid #e5e7eb',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
                   transition: 'all 0.3s ease',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-8px)';
-                  e.currentTarget.style.boxShadow = '0 12px 24px rgba(0,0,0,0.15)';
+                  e.currentTarget.style.transform = 'translateY(-4px)';
+                  e.currentTarget.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)';
+                  e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
                 }}
                 cover={
                   <div style={{ position: 'relative', overflow: 'hidden' }}>
@@ -248,7 +187,7 @@ const ListeningHubPage: React.FC = () => {
                           // Fallback gradient if image fails to load
                           const target = e.target as HTMLImageElement;
                           target.style.display = 'none';
-                          target.parentElement!.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                          target.parentElement!.style.background = '#2563eb';
                           target.parentElement!.style.display = 'flex';
                           target.parentElement!.style.alignItems = 'center';
                           target.parentElement!.style.justifyContent = 'center';
@@ -259,7 +198,7 @@ const ListeningHubPage: React.FC = () => {
                       <div style={{
                         width: '100%',
                         height: '220px',
-                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        background: '#2563eb',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -280,14 +219,14 @@ const ListeningHubPage: React.FC = () => {
                         right: '12px',
                         background: getDifficultyColor(test.difficulty),
                         color: 'white',
-                        padding: '6px 12px',
+                        padding: '4px 10px',
                         borderRadius: '20px',
-                        fontSize: '12px',
+                        fontSize: '11px',
                         fontWeight: '600',
                         display: 'flex',
                         alignItems: 'center',
                         gap: '4px',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
                       }}
                     >
                       {getDifficultyIcon(test.difficulty)}
@@ -323,23 +262,31 @@ const ListeningHubPage: React.FC = () => {
                     )}
                   </Space>
 
-                  <Button
-                    type="primary"
-                    size="large"
-                    block
-                    icon={<Play size={18} />}
-                    onClick={() => handleStartTest(test)}
-                    style={{
-                      borderRadius: '12px',
-                      height: '48px',
-                      fontWeight: '600',
-                      fontSize: '15px',
-                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                      border: 'none',
-                    }}
-                  >
-                    Testni boshlash
-                  </Button>
+                  <CoinGuard
+                      cost={20}
+                      type="listening_test"
+                      description={`Listening Test: ${test.title}`}
+                      onConfirm={() => handleStartTest(test)}
+                      isSubscriptionBenefit={true}
+                    >
+                      <Button
+                        type="primary"
+                        size="large"
+                        block
+                        icon={<Play size={18} />}
+                        style={{
+                          borderRadius: '8px',
+                          height: '44px',
+                          fontWeight: '600',
+                          fontSize: '14px',
+                          background: '#2563eb',
+                          border: 'none',
+                          boxShadow: '0 2px 4px rgba(37, 99, 235, 0.2)'
+                        }}
+                      >
+                        Testni boshlash
+                      </Button>
+                    </CoinGuard>
                 </div>
               </Card>
             </motion.div>

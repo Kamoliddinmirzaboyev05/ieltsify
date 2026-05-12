@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Flame, Star, Target, CheckCircle2, Circle, Headphones, BookOpen, Mic, PenLine, TrendingUp } from 'lucide-react';
+import { fetchUserProfile } from '../services/authService';
+import { supabase } from '../lib/supabase';
 
 type SkillArea = 'Listening' | 'Reading' | 'Writing' | 'Speaking' | 'Vocabulary';
 type DailyTaskStatus = 'pending' | 'completed';
@@ -46,14 +48,6 @@ function levelProgress(totalXP: number, currentLevel: number) {
   return { pct, nextLevel };
 }
 
-function initialProgress(): UserProgress {
-  return { userId: 'u1', targetScore: 7.5, bestScore: 6.5, weakArea: 'Listening' };
-}
-
-function initialGamification(): GamificationStats {
-  return { currentStreak: 5, totalXP: 860, currentLevel: 3, badges: ['Starter', 'First-Week'], todayActive: false };
-}
-
 function generateDaily(area: SkillArea): DailyTask[] {
   const presets: Record<SkillArea, DailyTask[]> = {
     Listening: [
@@ -95,13 +89,65 @@ function areaIcon(area: SkillArea): React.ReactNode {
 }
 
 const DashboardHome: React.FC = () => {
-  const [progress, setProgress] = useState<UserProgress>(initialProgress());
-  const [stats, setStats] = useState<GamificationStats>(initialGamification());
+  const [progress, setProgress] = useState<UserProgress>({
+    userId: '',
+    targetScore: 7.0,
+    bestScore: 0,
+    weakArea: 'Listening'
+  });
+  const [stats, setStats] = useState<GamificationStats>({
+    currentStreak: 0,
+    totalXP: 0,
+    currentLevel: 1,
+    badges: [],
+    todayActive: false
+  });
   const [tasks, setTasks] = useState<DailyTask[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    setTasks(generateDaily(progress.weakArea));
-  }, [progress.weakArea]);
+    const loadDashboardData = async () => {
+      try {
+        const userProfile = await fetchUserProfile();
+        if (userProfile) {
+          // Fetch coin data for XP
+          const { data: coinData } = await supabase
+            .from('user_coins')
+            .select('total_earned, balance')
+            .eq('user_id', userProfile.id)
+            .single();
+
+          setProgress(prev => ({
+            ...prev,
+            userId: userProfile.id as string,
+            targetScore: userProfile.target_score || 7.0,
+            bestScore: userProfile.skills ? (Object.values(userProfile.skills).reduce((a, b) => a + b, 0) / 4) : 0,
+            weakArea: (userProfile.role as SkillArea) || 'Listening'
+          }));
+          
+          setStats(prev => ({
+            ...prev,
+            totalXP: coinData?.total_earned || 0,
+            currentLevel: Math.floor((coinData?.total_earned || 0) / 100) + 1,
+            todayActive: !!userProfile.last_login && 
+              new Date(userProfile.last_login).toDateString() === new Date().toDateString()
+          }));
+        }
+      } catch (error) {
+        console.error('Error loading dashboard data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadDashboardData();
+  }, []);
+
+  useEffect(() => {
+    if (!isLoading) {
+      setTasks(generateDaily(progress.weakArea));
+    }
+  }, [progress.weakArea, isLoading]);
 
   const level = useMemo(() => levelProgress(stats.totalXP, stats.currentLevel), [stats.totalXP, stats.currentLevel]);
   const targetPct = useMemo(() => {
@@ -135,208 +181,211 @@ const DashboardHome: React.FC = () => {
   };
 
   return (
-    <div className="bg-gray-50 dark:bg-transparent p-6 md:p-8 space-y-6">
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+    <div className="bg-transparent p-4 md:p-6 space-y-6">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-gray-100 dark:border-slate-800 pb-6">
         <div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-slate-100">Action-Oriented Dashboard</h1>
-          <p className="text-slate-500 dark:text-slate-400 text-sm md:text-base">Self-driven IELTS growth with gamification and next best actions.</p>
+          <h1 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100">Xush kelibsiz!</h1>
+          <p className="text-slate-500 dark:text-slate-400 text-sm">Bugungi IELTS tayyorgarligingizni davom ettiring.</p>
         </div>
-        <div className="text-right">
-          <div className="text-xs font-semibold text-slate-500 dark:text-slate-400">Target</div>
-          <div className="text-3xl font-extrabold text-rose-500 leading-none">8.0</div>
+        <div className="flex items-center gap-4">
+          <div className="text-right">
+            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Target Score</div>
+            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400 leading-none">{progress.targetScore.toFixed(1)}</div>
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-emerald-500/15 shadow-sm p-5 flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-orange-50 text-orange-600 dark:bg-orange-500/10 dark:text-orange-400 grid place-items-center">
-            <Flame className="w-6 h-6" />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-orange-50 text-orange-600 dark:bg-orange-500/10 dark:text-orange-400 grid place-items-center shrink-0">
+            <Flame className="w-5 h-5" />
           </div>
           <div className="flex-1">
-            <div className="text-sm text-gray-500 dark:text-slate-400 font-medium">Streak</div>
-            <div className="text-3xl font-bold text-gray-800 dark:text-slate-100">{stats.currentStreak} days</div>
-            <div className={`text-xs ${stats.todayActive ? 'text-emerald-600' : 'text-slate-500'}`}>
-              {stats.todayActive ? 'Today active' : 'Complete a task to keep streak'}
-            </div>
+            <div className="text-xs text-gray-500 dark:text-slate-400 font-medium">Streak</div>
+            <div className="text-lg font-bold text-gray-800 dark:text-slate-100">{stats.currentStreak} kun</div>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-emerald-500/15 shadow-sm p-5">
-          <div className="flex items-center justify-between mb-3">
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm p-4">
+          <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 grid place-items-center">
+              <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400 grid place-items-center shrink-0">
                 <Star className="w-5 h-5" />
               </div>
               <div>
-                <div className="text-sm text-gray-500 dark:text-slate-400 font-medium">Level</div>
-                <div className="text-3xl font-bold text-gray-800 dark:text-slate-100 leading-none">Lv {stats.currentLevel}</div>
+                <div className="text-xs text-gray-500 dark:text-slate-400 font-medium">Level</div>
+                <div className="text-lg font-bold text-gray-800 dark:text-slate-100 leading-none">{stats.currentLevel}-daraja</div>
               </div>
             </div>
-            <div className="text-sm text-gray-500 dark:text-slate-400">{stats.totalXP} XP</div>
           </div>
-          <div className="w-full h-2 bg-gray-100 dark:bg-slate-700 rounded-full overflow-hidden">
-            <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${level.pct}%` }} />
+          <div className="w-full h-1.5 bg-gray-100 dark:bg-slate-700 rounded-full overflow-hidden">
+            <div className="h-full bg-blue-600 rounded-full" style={{ width: `${level.pct}%` }} />
           </div>
-          <div className="text-xs text-gray-500 dark:text-slate-400 mt-2">Next: Level {stats.currentLevel + 1}</div>
         </div>
 
-        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-emerald-500/15 shadow-sm p-5">
-          <div className="flex items-center justify-between mb-3">
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm p-4">
+          <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400 grid place-items-center">
+              <div className="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 grid place-items-center shrink-0">
                 <Target className="w-5 h-5" />
               </div>
               <div>
-                <div className="text-sm text-gray-500 dark:text-slate-400 font-medium">Target Progress</div>
-                <div className="text-3xl font-bold text-gray-800 dark:text-slate-100 leading-none">
-                  {progress.bestScore.toFixed(1)} / {progress.targetScore.toFixed(1)}
+                <div className="text-xs text-gray-500 dark:text-slate-400 font-medium">Progress</div>
+                <div className="text-lg font-bold text-gray-800 dark:text-slate-100 leading-none">
+                  {progress.bestScore.toFixed(1)}
                 </div>
               </div>
             </div>
-            <div className="text-sm text-gray-500 dark:text-slate-400">{Math.round(targetPct)}%</div>
+            <div className="text-xs font-bold text-indigo-600 dark:text-indigo-400">{Math.round(targetPct)}%</div>
           </div>
-          <div className="w-full h-2 bg-gray-100 dark:bg-slate-700 rounded-full overflow-hidden">
-            <div className="h-full bg-blue-500 rounded-full" style={{ width: `${targetPct}%` }} />
+          <div className="w-full h-1.5 bg-gray-100 dark:bg-slate-700 rounded-full overflow-hidden">
+            <div className="h-full bg-indigo-600 rounded-full" style={{ width: `${targetPct}%` }} />
           </div>
-          <div className="text-xs text-gray-500 dark:text-slate-400 mt-2">Best score toward target</div>
         </div>
 
-        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-emerald-500/15 shadow-sm p-5">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-violet-50 text-violet-600 dark:bg-violet-500/10 dark:text-violet-400 grid place-items-center">
-                {areaIcon(progress.weakArea)}
-              </div>
-              <div>
-                <div className="text-sm text-gray-500 dark:text-slate-400 font-medium">Weak Area</div>
-                <div className="text-3xl font-bold text-gray-800 dark:text-slate-100 leading-none">{progress.weakArea}</div>
-              </div>
-            </div>
-            <div className="text-sm text-gray-500 dark:text-slate-400">Best {progress.bestScore.toFixed(1)}</div>
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400 grid place-items-center shrink-0">
+            {areaIcon(progress.weakArea)}
           </div>
-          <button
-            onClick={onPracticeNow}
-            className="w-full bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-400 dark:hover:bg-emerald-500/25 py-2 px-6 rounded-lg text-sm font-semibold transition"
-          >
-            Practice Now
-          </button>
+          <div className="flex-1">
+            <div className="text-xs text-gray-500 dark:text-slate-400 font-medium">Weak Area</div>
+            <div className="text-lg font-bold text-gray-800 dark:text-slate-100 truncate">{progress.weakArea}</div>
+          </div>
         </div>
       </div>
 
-      <div className="bg-gradient-to-r from-emerald-500 to-blue-600 rounded-3xl text-white p-6 md:p-8 shadow">
-        <div className="flex items-center gap-3 mb-2">
-          <img
-            src="/logohead.png"
-            onError={(e) => ((e.currentTarget as HTMLImageElement).src = '/logo.png')}
-            alt="IELTSify"
-            className="h-7 object-contain"
-          />
-          <div className="text-xl md:text-2xl font-bold">AI Writing Evaluation</div>
-          <span className="ml-auto text-xs bg-emerald-600/90 px-2 py-1 rounded-md font-semibold">95%+ ACCURACY</span>
+      <div className="bg-blue-600 rounded-xl text-white p-6 shadow-md relative overflow-hidden group">
+        <div className="relative z-10">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="bg-white/20 p-2 rounded-lg backdrop-blur-sm">
+              <PenLine className="w-5 h-5 text-white" />
+            </div>
+            <div className="text-xl font-bold">AI Writing Evaluation</div>
+          </div>
+          <p className="text-sm text-blue-50/90 max-w-2xl">
+            Insholaringizni AI orqali tekshiring va batafsil tahlil hamda band-score oling.
+          </p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <button className="px-5 py-2 rounded-lg bg-white text-blue-600 text-sm font-bold hover:bg-blue-50 transition-colors shadow-sm">
+              Tekshirishni boshlash
+            </button>
+            <div className="flex items-center gap-2 text-xs font-medium text-blue-100/80 bg-blue-700/30 px-3 py-2 rounded-lg border border-white/10">
+              <CheckCircle2 className="w-4 h-4" />
+              95%+ Aniqlik
+            </div>
+          </div>
         </div>
-        <p className="text-sm md:text-base text-white/90 max-w-3xl">
-          Get actionable band-based feedback on essays with examples and targeted fixes.
-        </p>
-        <div className="mt-4">
-          <button className="px-6 py-2 rounded-lg bg-white text-emerald-600 font-semibold hover:shadow-lg transition">
-            Start Writing Evaluation
-          </button>
-        </div>
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-20 -mt-20 blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-32 h-32 bg-blue-400/10 rounded-full -ml-10 -mb-10 blur-2xl" />
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <div className="xl:col-span-2 space-y-6">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-6 mt-0 border border-gray-100 dark:border-emerald-500/15">
-            <div className="flex items-center justify-between mb-4">
-              <div className="text-lg font-bold text-gray-800 dark:text-slate-100">Today’s Action Plan</div>
+          <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm">
+            <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-slate-700">
+              <div className="text-base font-bold text-gray-800 dark:text-slate-100 flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5 text-blue-600" />
+                Kunlik Reja
+              </div>
               <button
                 onClick={onCompleteAll}
-                className="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-emerald-500/15 bg-gray-50 dark:bg-slate-800 text-gray-700 dark:text-slate-200 text-sm hover:bg-gray-100 dark:hover:bg-slate-700 disabled:opacity-50 transition"
-                disabled={tasks.every(t => t.status === 'completed')}
+                className="px-3 py-1.5 rounded-lg text-blue-600 dark:text-blue-400 text-xs font-bold hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors disabled:opacity-50"
+                disabled={!tasks || tasks.length === 0 || tasks.every(t => t.status === 'completed')}
               >
-                Complete All
+                Hammasini yakunlash
               </button>
             </div>
-            <div className="divide-y divide-gray-100 dark:divide-emerald-500/10">
-              {tasks.slice(0, 3).map(t => {
-                const done = t.status === 'completed';
-                return (
-                  <div key={t.id} className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-emerald-500/10 last:border-0">
-                    <div className="flex items-center gap-3 flex-1 px-3 -mx-3 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800/60 transition">
-                      <input
-                        type="checkbox"
-                        checked={done}
-                        onChange={() => onToggleTask(t.id)}
-                        className="w-5 h-5 accent-emerald-600"
-                      />
-                      <div>
-                        <div className={`font-semibold ${done ? 'text-emerald-700 line-through' : 'text-gray-800 dark:text-slate-100'}`}>{t.title}</div>
-                        <div className="text-xs text-gray-500 dark:text-slate-400 flex items-center gap-2 mt-1">
-                          {areaIcon(t.area)}
-                          <span>{t.area}</span>
-                          <span>•</span>
-                          <span className="bg-yellow-100 text-yellow-700 dark:bg-yellow-500/15 dark:text-yellow-400 text-[11px] font-bold px-2 py-0.5 rounded-full">+{t.xp} XP</span>
+            <div className="divide-y divide-gray-100 dark:divide-slate-700">
+              {tasks && tasks.length > 0 ? (
+                tasks.slice(0, 3).map(t => {
+                  const done = t.status === 'completed';
+                  return (
+                    <div key={t.id} className="flex items-center justify-between p-4 hover:bg-gray-50/50 dark:hover:bg-slate-700/30 transition-colors">
+                      <div className="flex items-center gap-4 flex-1">
+                        <button 
+                          onClick={() => onToggleTask(t.id)}
+                          className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${
+                            done 
+                              ? 'bg-blue-600 border-blue-600 text-white' 
+                              : 'bg-transparent border-gray-300 dark:border-slate-600'
+                          }`}
+                        >
+                          {done && <CheckCircle2 className="w-4 h-4" />}
+                        </button>
+                        <div>
+                          <div className={`text-sm font-semibold ${done ? 'text-gray-400 line-through' : 'text-gray-800 dark:text-slate-100'}`}>{t.title}</div>
+                          <div className="flex items-center gap-3 mt-1">
+                            <span className="text-[10px] font-bold uppercase text-gray-400 tracking-wider flex items-center gap-1">
+                              {areaIcon(t.area)}
+                              {t.area}
+                            </span>
+                            <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-1.5 py-0.5 rounded">+{t.xp} XP</span>
+                          </div>
                         </div>
                       </div>
                     </div>
-                    <div className={`text-sm ${done ? 'text-emerald-600' : 'text-gray-400 dark:text-slate-500'}`}>
-                      {done ? <CheckCircle2 className="w-5 h-5" /> : <Circle className="w-5 h-5" />}
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })
+              ) : (
+                <div className="py-12 text-center text-gray-500 dark:text-slate-400 italic text-sm">
+                  Rejalar yuklanmoqda...
+                </div>
+              )}
+            </div>
+            <div className="p-4 border-top border-gray-100 dark:border-slate-700">
+              <button 
+                onClick={onPracticeNow}
+                className="w-full py-2.5 rounded-lg bg-gray-50 dark:bg-slate-700/50 text-gray-600 dark:text-slate-300 text-xs font-bold hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
+              >
+                Barcha topshiriqlarni ko'rish
+              </button>
             </div>
           </div>
         </div>
 
-        <div className="space-y-6">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-emerald-500/15 shadow-sm p-6">
-            <div className="flex items-center justify-between mb-3">
-              <div className="text-lg font-bold text-gray-800 dark:text-slate-100">Weak Area</div>
-              <div className="text-xs px-2 py-1 rounded-md bg-gray-100 dark:bg-slate-700/60 text-gray-600 dark:text-slate-300">
-                Best {progress.bestScore.toFixed(1)}
+        <div className="space-y-4">
+          <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm p-4">
+            <h3 className="text-sm font-bold text-gray-800 dark:text-slate-100 mb-4 flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-blue-600" />
+              Statistika
+            </h3>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-gray-500">Jami XP</span>
+                <span className="font-bold text-gray-800 dark:text-slate-100">{stats.totalXP}</span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-gray-500">Faollik</span>
+                <span className={`font-bold ${stats.todayActive ? 'text-blue-600' : 'text-gray-400'}`}>
+                  {stats.todayActive ? 'Bugun faol' : 'Noaktiv'}
+                </span>
+              </div>
+              <div className="pt-2 border-t border-gray-100 dark:border-slate-700">
+                <div className="flex items-center justify-between text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">
+                  <span>Level Progress</span>
+                  <span>{Math.round(level.pct)}%</span>
+                </div>
+                <div className="w-full h-1.5 bg-gray-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                  <div className="h-full bg-blue-600 rounded-full" style={{ width: `${level.pct}%` }} />
+                </div>
               </div>
             </div>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 grid place-items-center">
-                {areaIcon(progress.weakArea)}
-              </div>
-              <div className="font-semibold text-gray-800 dark:text-slate-100">{progress.weakArea}</div>
-            </div>
+          </div>
+
+          <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm p-4">
+            <h3 className="text-sm font-bold text-gray-800 dark:text-slate-100 mb-4 flex items-center gap-2">
+              <Mic className="w-4 h-4 text-blue-600" />
+              Tezkor Mashq
+            </h3>
+            <p className="text-xs text-gray-500 mb-4 leading-relaxed">
+              Weak area bo'yicha darhol mashq qilishni boshlang.
+            </p>
             <button
               onClick={onPracticeNow}
-              className="w-full bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-400 dark:hover:bg-emerald-500/25 py-1.5 px-4 rounded-lg text-sm font-semibold transition"
+              className="w-full bg-blue-600 text-white py-2 rounded-lg text-xs font-bold hover:bg-blue-700 transition-colors shadow-sm shadow-blue-200 dark:shadow-none"
             >
-              Practice Now
+              Mashqni boshlash
             </button>
-          </div>
-
-          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-emerald-500/15 shadow-sm p-6">
-            <div className="text-lg font-bold text-gray-800 dark:text-slate-100 mb-3">Level Progress</div>
-            <div className="w-full h-2 bg-gray-100 dark:bg-slate-700 rounded-full overflow-hidden">
-              <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${level.pct}%` }} />
-            </div>
-            <div className="flex items-center justify-between text-xs text-gray-500 dark:text-slate-400 mt-2">
-              <div>Level {stats.currentLevel}</div>
-              <div>{stats.totalXP} XP</div>
-              <div>Next Level {stats.currentLevel + 1}</div>
-            </div>
-          </div>
-
-          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-emerald-500/15 shadow-sm p-6">
-            <div className="text-lg font-bold text-gray-800 dark:text-slate-100 mb-3">Streak</div>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-orange-50 text-orange-600 dark:bg-orange-500/10 dark:text-orange-400 grid place-items-center">
-                <Flame className="w-5 h-5" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold leading-none text-gray-800 dark:text-slate-100">{stats.currentStreak}</div>
-                <div className="text-xs text-gray-500 dark:text-slate-400">days streak</div>
-              </div>
-            </div>
-            <div className={`mt-2 text-xs ${stats.todayActive ? 'text-emerald-600' : 'text-gray-500 dark:text-slate-400'}`}>
-              {stats.todayActive ? 'Today active' : 'Complete a task to keep streak'}
-            </div>
           </div>
         </div>
       </div>
