@@ -1,3 +1,5 @@
+/* eslint-disable */
+// @ts-nocheck - Deno Edge Function - not part of the main app build
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 
