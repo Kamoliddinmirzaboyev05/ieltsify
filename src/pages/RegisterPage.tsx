@@ -1,618 +1,556 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Typography, 
-  Button, 
-  Input, 
-  Form, 
-  Checkbox, 
-  Grid,
-  Divider,
-  App
-} from 'antd';
-import { 
-  Lock, 
-  Mail, 
+import React, { useState, useEffect } from "react";
+import { message, Slider } from "antd";
+import {
+  Lock,
+  Mail,
   User,
-  ArrowLeft
-} from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { DotPattern } from '../components/DotPattern';
-import { registerUser, googleAuth, saveAuthTokens, saveUserProfile } from '../services/authService';
-import { monetizationService } from '../services/monetizationService';
-import { supabase } from '../lib/supabase';
+  ArrowLeft,
+  ArrowRight,
+  Target,
+  Clock,
+  BookOpen,
+  CheckCircle,
+  Eye,
+  EyeOff,
+} from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  registerUser,
+  googleAuth,
+  saveAuthTokens,
+  saveUserProfile,
+  authenticatedFetch,
+} from "../services/authService";
 
-const { Title, Text } = Typography;
-const { useBreakpoint } = Grid;
+declare global {
+  interface Window {
+    google?: any;
+  }
+}
+
+const SKILLS = [
+  { key: "listening", label: "Listening" },
+  { key: "reading", label: "Reading" },
+  { key: "writing", label: "Writing" },
+  { key: "speaking", label: "Speaking" },
+];
 
 const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
-  const { message } = App.useApp();
-  const screens = useBreakpoint();
-  const isMobile = !screens.md;
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
-  const [form] = Form.useForm();
-  const googleInitialized = React.useRef(false);
+  const [step, setStep] = useState(0);
+  const [showPassword, setShowPassword] = useState(false);
 
-  // Load Google Sign-In script
+  const googleEnabled =
+    import.meta.env.VITE_ENABLE_GOOGLE_AUTH === "true" &&
+    !!import.meta.env.VITE_GOOGLE_CLIENT_ID;
+
   useEffect(() => {
-    let mounted = true;
+    if (!googleEnabled || step !== 0) return;
 
-    const handleGoogleResponse = (response: { credential: string }) => {
-      if (mounted) handleGoogleAuth(response);
-    };
-
-    const loadGoogleScript = () => {
-      // Check if script already exists
-      const existingScript = document.querySelector('script[src="https://accounts.google.com/gsi/client"]');
-      
-      if (existingScript) {
-        if (window.google) {
-          initializeGoogleSignIn();
-        } else {
-          // Script is loading, wait for it
-          existingScript.addEventListener('load', () => {
-            if (mounted) initializeGoogleSignIn();
-          });
-        }
-        return;
-      }
-
-      const script = document.createElement('script');
-      script.src = 'https://accounts.google.com/gsi/client';
-      script.async = true;
-      script.defer = true;
-      document.body.appendChild(script);
-
-      script.onload = () => {
-        if (mounted) initializeGoogleSignIn();
-      };
-    };
-
-    const initializeGoogleSignIn = () => {
-      if (googleInitialized.current || (window as any).google?.accounts?.id?.initialized) return;
-
-      const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-      const enableGoogleAuth = import.meta.env.VITE_ENABLE_GOOGLE_AUTH === 'true';
-
-      if (!clientId || !enableGoogleAuth) {
-        console.log('Google OAuth is disabled or client ID not configured');
-        return;
-      }
-
+    const timer = setTimeout(() => {
       if (window.google) {
-        try {
-          window.google.accounts.id.initialize({
-            client_id: clientId,
-            callback: handleGoogleResponse,
-            auto_select: false,
-            cancel_on_tap_outside: true,
+        window.google.accounts.id.initialize({
+          client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+          callback: handleGoogleResponse,
+          auto_select: false,
+        });
+        const btn = document.getElementById("google-btn-register");
+        if (btn) {
+          window.google.accounts.id.renderButton(btn, {
+            theme: "filled_black",
+            size: "large",
+            width: btn.offsetWidth,
+            text: "signup_with",
+            shape: "rectangular",
           });
-          
-          googleInitialized.current = true;
-          (window as any).google.accounts.id.initialized = true;
-
-          // Render the button
-          const buttonDiv = document.getElementById('google-signin-button');
-          if (buttonDiv) {
-            window.google.accounts.id.renderButton(
-              buttonDiv,
-              {
-                theme: 'filled_black',
-                size: 'large',
-                width: buttonDiv.offsetWidth,
-                text: 'signup_with',
-                shape: 'rectangular',
-                logo_alignment: 'left',
-              }
-            );
-          }
-        } catch (error) {
-          console.warn('Google Sign-In initialization failed:', error);
         }
       }
-    };
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [step]);
 
-    loadGoogleScript();
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  const handleGoogleAuth = async (response: { credential: string }) => {
+  const handleGoogleResponse = async (response: { credential: string }) => {
+    if (!response.credential) return;
     setGoogleLoading(true);
     try {
-      console.log('🔐 Google Sign-In response received');
-      
-      const idToken = response.credential;
-      
-      if (!idToken) {
-        throw new Error('Google ID token topilmadi');
-      }
+      const authResponse = await googleAuth(response.credential);
+      const accessToken =
+        authResponse.tokens?.access ||
+        authResponse.access ||
+        authResponse.access_token;
+      const refreshToken =
+        authResponse.tokens?.refresh ||
+        authResponse.refresh ||
+        authResponse.refresh_token;
 
-      console.log('📤 Sending Google ID token to backend...');
-      
-      // Send to backend
-      const authResponse = await googleAuth(idToken);
-      
-      console.log('✅ Backend response:', authResponse);
-      
-      // Extract tokens (backend might return different formats)
-      const accessToken = authResponse.tokens?.access || authResponse.access || authResponse.access_token;
-      const refreshToken = authResponse.tokens?.refresh || authResponse.refresh || authResponse.refresh_token;
-      
-      if (!accessToken || !refreshToken) {
-        console.error('❌ Missing tokens in response:', authResponse);
-        throw new Error('Server javobida tokenlar yo\'q');
-      }
-      
-      // Save tokens
+      if (!accessToken || !refreshToken) throw new Error("Tokenlar topilmadi");
+
       saveAuthTokens(accessToken, refreshToken);
-      
-      // Onboard user (bonus + referral)
-      // NOTE: Basic onboarding (bonus + profile) is now handled by DB trigger
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          const urlParams = new URLSearchParams(window.location.search);
-          const refCode = urlParams.get('ref');
-          if (refCode) {
-            // Only call if there is a referral code, as the trigger handles the rest
-            await monetizationService.onboardUser(user.id, refCode);
-          }
-        }
-      } catch (onboardError) {
-        console.warn('Referral onboarding skip/error:', onboardError);
-      }
+      if (authResponse.user) saveUserProfile(authResponse.user);
 
-      // Save user profile if provided
-      if (authResponse.user) {
-        saveUserProfile(authResponse.user);
-      }
-      
-      console.log('✅ Google authentication successful');
-      
-      message.success('Google orqali muvaffaqiyatli ro\'yxatdan o\'tdingiz!');
-      
-      // Redirect to onboarding
-      setTimeout(() => {
-        navigate('/onboarding');
-      }, 500);
+      message.success("Google orqali muvaffaqiyatli ro'yxatdan o'tdingiz!");
+      setStep(1); // Onboarding'ga o'tish
     } catch (error: unknown) {
-      console.error('❌ Google Sign-In error:', error);
-      
-      let errorMessage = 'Google orqali ro\'yxatdan o\'tishda xatolik';
-      
-      if (error instanceof Error && error.message) {
-        if (error.message.includes('origin')) {
-          errorMessage = 'Google Sign-In uchun ruxsat etilmagan origin. Backend sozlamalarini tekshiring.';
-        } else if (error.message.includes('Invalid Google token')) {
-          errorMessage = 'Google token noto\'g\'ri. Bu muammo backend sozlamalari bilan bog\'liq. Backend administratoriga murojaat qiling.';
-        } else if (error.message.includes('already exists')) {
-          errorMessage = 'Bu Google akkaunt allaqachon ro\'yxatdan o\'tgan. Iltimos, kirish sahifasiga o\'ting.';
-        } else if (error.message.includes('Invalid')) {
-          errorMessage = 'Google autentifikatsiya xatosi. Qaytadan urinib ko\'ring.';
-        } else if (error.message.includes('Server javob bermadi')) {
-          errorMessage = error.message;
-        } else if (error.message.includes('Serverga ulanib')) {
-          errorMessage = error.message;
-        } else {
-          errorMessage = error.message;
-        }
-      }
-      
-      message.error(errorMessage, 7);
+      const msg =
+        error instanceof Error
+          ? error.message
+          : "Google orqali ro'yxatdan o'tishda xatolik";
+      message.error(msg);
     } finally {
       setGoogleLoading(false);
     }
   };
 
-  const onFinish = async (values: { username: string; name: string; email: string; password: string; agree: boolean }) => {
+  // Registration fields
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [password, setPassword] = useState("");
+
+  // Onboarding fields
+  const [currentBand, setCurrentBand] = useState<number>(5.0);
+  const [targetBand, setTargetBand] = useState<number>(7.0);
+  const [examType, setExamType] = useState<string>("academic");
+  const [dailyHours, setDailyHours] = useState<number>(1);
+  const [weakSkills, setWeakSkills] = useState<string[]>([]);
+  const [strongSkills, setStrongSkills] = useState<string[]>([]);
+  const [targetDate, setTargetDate] = useState<string>("");
+
+  const totalSteps = 5;
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (
+      !username.trim() ||
+      !email.trim() ||
+      !fullName.trim() ||
+      !password.trim()
+    ) {
+      message.error("Barcha maydonlarni to'ldiring");
+      return;
+    }
+    if (password.length < 8) {
+      message.error("Parol kamida 8 ta belgidan iborat bo'lishi kerak");
+      return;
+    }
+
     setLoading(true);
     try {
-      console.log('📝 Register attempt:', { 
-        username: values.username,
-        name: values.name, 
-        email: values.email 
+      const nameParts = fullName.trim().split(/\s+/);
+      const response = await registerUser({
+        username: username.toLowerCase().trim(),
+        email: email.toLowerCase().trim(),
+        first_name: nameParts[0] || "",
+        last_name: nameParts.slice(1).join(" ") || "",
+        password,
       });
-      
-      // Split name into first_name and last_name
-      const nameParts = values.name.trim().split(/\s+/); // Split by any whitespace
-      const firstName = nameParts[0] || 'User';
-      const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : 'User';
-      
-      const registerData = {
-        username: values.username.toLowerCase().trim(),
-        email: values.email.toLowerCase().trim(),
-        first_name: firstName,
-        last_name: lastName,
-        password: values.password,
-      };
-      
-      console.log('📤 Sending registration data:', { ...registerData, password: '***' });
-      
-      // Call register API
-      const response = await registerUser(registerData);
-      
-      console.log('✅ Register response:', response);
-      
-      // Supabase behavior: if email confirmation is enabled, session will be null
-      const accessToken = response.tokens?.access || response.access || response.access_token;
-      const refreshToken = response.tokens?.refresh || response.refresh || response.refresh_token;
-      
-      if (!accessToken || !refreshToken) {
-        // Check if user was created (email confirmation might be required)
-        if (response.user) {
-          message.success('Ro\'yxatdan o\'tish muvaffaqiyatli! Iltimos, emailingizni tasdiqlang.', 10);
-          setTimeout(() => {
-            navigate('/login');
-          }, 3000);
-          return;
-        }
-        console.error('❌ Missing tokens in response:', response);
-        throw new Error('Server javobida tokenlar yo\'q');
-      }
-      
-      // Save tokens to localStorage
+
+      const accessToken =
+        response.tokens?.access || response.access || response.access_token;
+      const refreshToken =
+        response.tokens?.refresh || response.refresh || response.refresh_token;
+      if (!accessToken || !refreshToken) throw new Error("Tokenlar topilmadi");
+
       saveAuthTokens(accessToken, refreshToken);
-      
-      // Onboard user (bonus + referral)
-      // NOTE: Basic onboarding (bonus + profile) is now handled by DB trigger
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          const urlParams = new URLSearchParams(window.location.search);
-          const refCode = urlParams.get('ref');
-          if (refCode) {
-            // Only call if there is a referral code, as the trigger handles the rest
-            await monetizationService.onboardUser(user.id, refCode);
-          }
-        }
-      } catch (onboardError) {
-        console.warn('Referral onboarding skip/error:', onboardError);
-      }
-      
-      // Save user profile if provided
-      if (response.user) {
-        saveUserProfile(response.user);
-      }
-      
-      console.log('✅ Tokens saved successfully');
-      
-      message.success('Muvaffaqiyatli ro\'yxatdan o\'tdingiz!');
-      
-      // Redirect to onboarding
-      setTimeout(() => {
-        navigate('/onboarding');
-      }, 500);
+      if (response.user) saveUserProfile(response.user);
+      setStep(1);
     } catch (error: unknown) {
-      console.error('❌ Registration error:', error);
-      
-      // Parse error message
-      let errorMessage = 'Ro\'yxatdan o\'tishda xatolik yuz berdi';
-      
-      if (error instanceof Error && error.message) {
-        if (error.message.includes('rate limit')) {
-          errorMessage = 'Email yuborish limiti oshib ketdi. Iltimos, bir ozdan keyin urinib ko\'ring.';
-        } else {
-          // Try to parse JSON error message
-          try {
-            const errorObj = JSON.parse(error.message);
-            const errorMessages: string[] = [];
-            
-            if (errorObj.username) {
-              const msg = Array.isArray(errorObj.username) ? errorObj.username[0] : errorObj.username;
-              errorMessages.push(`Username: ${msg}`);
-            }
-            if (errorObj.email) {
-              const msg = Array.isArray(errorObj.email) ? errorObj.email[0] : errorObj.email;
-              errorMessages.push(`Email: ${msg}`);
-            }
-            if (errorObj.password) {
-              const msg = Array.isArray(errorObj.password) ? errorObj.password[0] : errorObj.password;
-              errorMessages.push(`Parol: ${msg}`);
-            }
-            if (errorObj.first_name) {
-              const msg = Array.isArray(errorObj.first_name) ? errorObj.first_name[0] : errorObj.first_name;
-              errorMessages.push(`Ism: ${msg}`);
-            }
-            if (errorObj.last_name) {
-              const msg = Array.isArray(errorObj.last_name) ? errorObj.last_name[0] : errorObj.last_name;
-              errorMessages.push(`Familiya: ${msg}`);
-            }
-            if (errorObj.detail) {
-              errorMessages.push(errorObj.detail);
-            }
-            if (errorObj.non_field_errors) {
-              const msg = Array.isArray(errorObj.non_field_errors) ? errorObj.non_field_errors[0] : errorObj.non_field_errors;
-              errorMessages.push(msg);
-            }
-            
-            if (errorMessages.length > 0) {
-              errorMessage = errorMessages.join('\n');
-            }
-          } catch {
-            // Not a JSON error, use the message directly
-            if (error.message.includes('Username:')) {
-              errorMessage = error.message;
-            } else if (error.message.includes('Email:')) {
-              errorMessage = error.message;
-            } else if (error.message.includes('Password:') || error.message.includes('Parol:')) {
-              errorMessage = error.message;
-            } else if (error.message.includes('already exists')) {
-              errorMessage = 'Bu email yoki username allaqachon ro\'yxatdan o\'tgan';
-            } else if (error.message.includes('Server javob bermadi')) {
-              errorMessage = error.message;
-            } else if (error.message.includes('Serverga ulanib')) {
-              errorMessage = error.message;
-            } else {
-              errorMessage = error.message;
-            }
-          }
-        }
-      }
-      
-      message.error(errorMessage, 5);
+      message.error(
+        error instanceof Error ? error.message : "Ro'yxatdan o'tishda xatolik",
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <>
-      <DotPattern
-        dotSize={2}
-        gap={20}
-        baseColor="#10b981"
-        glowColor="#22d3ee"
-        proximity={150}
-        glowIntensity={1.2}
-        waveSpeed={0.3}
-      />
+  const saveOnboarding = async () => {
+    setLoading(true);
+    try {
+      const response = await authenticatedFetch("/accounts/profile/", {
+        method: "PATCH",
+        body: JSON.stringify({
+          current_band_score: currentBand,
+          target_band_score: targetBand,
+          exam_type: examType,
+          daily_study_hours: dailyHours,
+          weak_skills: weakSkills,
+          strong_skills: strongSkills,
+          target_date: targetDate || undefined,
+          onboarding_completed: true,
+        }),
+      });
+      if (!response.ok) throw new Error("Saqlashda xatolik");
+      message.success("Tabriklaymiz! Profilingiz tayyor.");
+      navigate("/dashboard");
+    } catch {
+      message.error("Saqlashda xatolik");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-      <div style={{ 
-        minHeight: '100vh', 
-        display: 'flex', 
-        flexDirection: 'column',
-        justifyContent: 'center', 
-        alignItems: 'center',
-        padding: isMobile ? '20px' : '40px',
-        position: 'relative',
-        zIndex: 1
-      }}>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          style={{ width: '100%', maxWidth: '400px' }}
-        >
-          <Link to="/" style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            color: '#e2e8f0', 
-            textDecoration: 'none',
-            marginBottom: '24px',
-            width: 'fit-content'
-          }}>
-            <ArrowLeft size={18} style={{ marginRight: '8px' }} />
-            <Text style={{ color: 'inherit', fontWeight: 600 }}>Orqaga</Text>
-          </Link>
+  const nextStep = () => {
+    if (step < totalSteps - 1) setStep(step + 1);
+    else saveOnboarding();
+  };
+  const prevStep = () => {
+    if (step > 1) setStep(step - 1);
+  };
 
-          <div style={{ 
-            backgroundColor: 'rgba(255, 255, 255, 0.05)',
-            backdropFilter: 'blur(20px)',
-            borderRadius: '24px',
-            padding: isMobile ? '32px 24px' : '40px 32px',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)'
-          }}>
-            <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-              <Link to="/" style={{ display: 'inline-block', marginBottom: '16px' }}>
-                <img src="/logohead.png" alt="IELTSIFY" style={{ height: '32px' }} />
-              </Link>
-              <Title level={2} style={{ 
-                color: '#ffffff', 
-                margin: '0 0 8px 0', 
-                fontWeight: 800, 
-                fontSize: isMobile ? '24px' : '28px', 
-                letterSpacing: '-0.5px' 
-              }}>
-                Ro'yxatdan o'tish
-              </Title>
-              <Text style={{ color: '#94a3b8', fontSize: '14px' }}>
+  const toggleSkill = (skill: string, type: "weak" | "strong") => {
+    if (type === "weak") {
+      setWeakSkills((prev) =>
+        prev.includes(skill)
+          ? prev.filter((s) => s !== skill)
+          : [...prev, skill],
+      );
+      setStrongSkills((prev) => prev.filter((s) => s !== skill));
+    } else {
+      setStrongSkills((prev) =>
+        prev.includes(skill)
+          ? prev.filter((s) => s !== skill)
+          : [...prev, skill],
+      );
+      setWeakSkills((prev) => prev.filter((s) => s !== skill));
+    }
+  };
+
+  const renderProgress = () => (
+    <div className="auth-progress">
+      {Array.from({ length: totalSteps }).map((_, i) => (
+        <div
+          key={i}
+          className={`auth-progress-bar ${i <= step ? "active" : ""}`}
+        />
+      ))}
+    </div>
+  );
+
+  const renderStep = () => {
+    switch (step) {
+      case 0:
+        return (
+          <>
+            <div className="auth-header">
+              <h1 className="auth-title">Ro'yxatdan o'tish</h1>
+              <p className="auth-subtitle">
                 IELTS tayyorgarligingizni boshlang
-              </Text>
+              </p>
             </div>
-
-            <Form
-              form={form}
-              name="register"
-              layout="vertical"
-              onFinish={onFinish}
-              requiredMark={false}
-            >
-              <Form.Item
-                name="username"
-                rules={[
-                  { required: true, message: 'Username kiriting' },
-                  { min: 3, message: 'Username kamida 3 ta belgidan iborat bo\'lishi kerak' },
-                  { max: 30, message: 'Username 30 ta belgidan oshmasligi kerak' },
-                  { 
-                    pattern: /^[a-zA-Z0-9_]+$/, 
-                    message: 'Username faqat harflar, raqamlar va _ dan iborat bo\'lishi kerak' 
-                  }
-                ]}
-                style={{ marginBottom: '16px' }}
-              >
-                <Input 
-                  prefix={<User size={18} style={{ color: '#64748b' }} />} 
-                  placeholder="Username (masalan: john_doe)" 
-                  style={{ 
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)', 
-                    border: '1px solid rgba(255, 255, 255, 0.1)', 
-                    color: '#ffffff',
-                    borderRadius: '12px',
-                    height: '48px'
-                  }} 
-                />
-              </Form.Item>
-
-              <Form.Item
-                name="email"
-                rules={[
-                  { required: true, message: 'Email manzilingizni kiriting' },
-                  { type: 'email', message: 'Email manzil noto\'g\'ri formatda' }
-                ]}
-                style={{ marginBottom: '16px' }}
-              >
-                <Input 
-                  prefix={<Mail size={18} style={{ color: '#64748b' }} />} 
-                  placeholder="Email manzil" 
-                  type="email"
-                  style={{ 
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)', 
-                    border: '1px solid rgba(255, 255, 255, 0.1)', 
-                    color: '#ffffff',
-                    borderRadius: '12px',
-                    height: '48px'
-                  }} 
-                />
-              </Form.Item>
-
-              <Form.Item
-                name="name"
-                rules={[
-                  { required: true, message: 'To\'liq ismingizni kiriting' },
-                  { min: 2, message: 'Ism kamida 2 ta harfdan iborat bo\'lishi kerak' },
-                  { 
-                    pattern: /^[a-zA-Z\s]+$/, 
-                    message: 'Ism faqat lotin harflaridan iborat bo\'lishi kerak' 
-                  }
-                ]}
-                style={{ marginBottom: '16px' }}
-              >
-                <Input 
-                  prefix={<User size={18} style={{ color: '#64748b' }} />} 
-                  placeholder="To'liq ism (masalan: John Doe)" 
-                  style={{ 
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)', 
-                    border: '1px solid rgba(255, 255, 255, 0.1)', 
-                    color: '#ffffff',
-                    borderRadius: '12px',
-                    height: '48px'
-                  }} 
-                />
-              </Form.Item>
-
-              <Form.Item
-                name="password"
-                rules={[
-                  { required: true, message: 'Parol kiriting' },
-                  { min: 8, message: 'Parol kamida 8 ta belgidan iborat bo\'lishi kerak' }
-                ]}
-                style={{ marginBottom: '16px' }}
-              >
-                <Input.Password 
-                  prefix={<Lock size={18} style={{ color: '#64748b' }} />} 
-                  placeholder="Parol (kamida 8 ta belgi)" 
-                  style={{ 
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)', 
-                    border: '1px solid rgba(255, 255, 255, 0.1)', 
-                    color: '#ffffff',
-                    borderRadius: '12px',
-                    height: '48px'
-                  }} 
-                />
-              </Form.Item>
-
-              <Form.Item
-                name="agree"
-                valuePropName="checked"
-                rules={[
-                  { 
-                    validator: (_, value) =>
-                      value ? Promise.resolve() : Promise.reject(new Error('Shartlarni qabul qilishingiz kerak'))
-                  }
-                ]}
-                style={{ marginBottom: '24px' }}
-              >
-                <Checkbox style={{ color: '#94a3b8' }}>
-                  <span style={{ color: '#94a3b8', fontSize: '13px' }}>
-                    Men <Link to="/terms" style={{ color: '#10b981' }}>Foydalanish shartlari</Link> va <Link to="/privacy" style={{ color: '#10b981' }}>Maxfiylik siyosati</Link> bilan roziman
-                  </span>
-                </Checkbox>
-              </Form.Item>
-
-              <Form.Item style={{ marginBottom: '0' }}>
-                <Button 
-                  type="primary" 
-                  htmlType="submit" 
-                  block 
-                  loading={loading}
-                  disabled={googleLoading}
-                  className="gradient-btn"
-                  style={{ 
-                    height: '48px', 
-                    borderRadius: '12px', 
-                    fontWeight: 700,
-                    fontSize: '15px'
-                  }}
-                >
-                  {loading ? 'Ro\'yxatdan o\'tmoqda...' : 'Ro\'yxatdan o\'tish'}
-                </Button>
-              </Form.Item>
-            </Form>
-
-            {import.meta.env.VITE_ENABLE_GOOGLE_AUTH === 'true' && import.meta.env.VITE_GOOGLE_CLIENT_ID && (
-              <>
-                <Divider style={{ 
-                  borderColor: 'rgba(255, 255, 255, 0.1)', 
-                  margin: '24px 0',
-                  color: '#94a3b8',
-                  fontSize: '13px'
-                }}>
-                  yoki
-                </Divider>
-
-                <div style={{ marginBottom: '16px' }}>
-                  <div 
-                    id="google-signin-button" 
-                    style={{ 
-                      display: 'flex', 
-                      justifyContent: 'center',
-                      opacity: googleLoading ? 0.5 : 1,
-                      pointerEvents: googleLoading ? 'none' : 'auto',
-                      transition: 'opacity 0.3s ease'
-                    }}
+            <form onSubmit={handleRegister} className="auth-form">
+              <div className="auth-field">
+                <label className="auth-label">Username</label>
+                <div className="auth-input-wrapper">
+                  <User size={16} className="auth-input-icon" />
+                  <input
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder="username"
+                    className="auth-input"
                   />
-                  {googleLoading && (
-                    <div style={{ 
-                      textAlign: 'center', 
-                      marginTop: '12px',
-                      color: '#94a3b8',
-                      fontSize: '13px'
-                    }}>
-                      Google orqali ro'yxatdan o'tmoqda...
-                    </div>
-                  )}
                 </div>
+              </div>
+              <div className="auth-field">
+                <label className="auth-label">Email</label>
+                <div className="auth-input-wrapper">
+                  <Mail size={16} className="auth-input-icon" />
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="email@example.com"
+                    className="auth-input"
+                  />
+                </div>
+              </div>
+              <div className="auth-field">
+                <label className="auth-label">To'liq ism</label>
+                <div className="auth-input-wrapper">
+                  <User size={16} className="auth-input-icon" />
+                  <input
+                    type="text"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="Ism Familiya"
+                    className="auth-input"
+                  />
+                </div>
+              </div>
+              <div className="auth-field">
+                <label className="auth-label">Parol</label>
+                <div className="auth-input-wrapper">
+                  <Lock size={16} className="auth-input-icon" />
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Kamida 8 belgi"
+                    className="auth-input"
+                  />
+                  <button
+                    type="button"
+                    className="auth-eye-btn"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+              </div>
+              <button type="submit" className="auth-btn" disabled={loading}>
+                {loading ? "Yuklanmoqda..." : "Davom etish"}
+              </button>
+            </form>
+            {googleEnabled && (
+              <>
+                <div className="auth-divider">
+                  <span>yoki</span>
+                </div>
+                <div
+                  id="google-btn-register"
+                  className="auth-google-btn"
+                  style={{
+                    opacity: googleLoading ? 0.5 : 1,
+                    pointerEvents: googleLoading ? "none" : "auto",
+                  }}
+                />
+                {googleLoading && (
+                  <p
+                    style={{
+                      textAlign: "center",
+                      color: "#94a3b8",
+                      fontSize: "12px",
+                      marginTop: "8px",
+                    }}
+                  >
+                    Google orqali kirmoqda...
+                  </p>
+                )}
               </>
             )}
+            <p className="auth-footer">
+              Akkauntingiz bormi?{" "}
+              <Link to="/login" className="auth-link">
+                Kirish
+              </Link>
+            </p>
+          </>
+        );
 
-            <div style={{ textAlign: 'center', marginTop: '24px' }}>
-              <Text style={{ color: '#94a3b8', fontSize: '14px' }}>
-                Akkauntingiz bormi? <Link to="/login" style={{ 
-                  color: '#10b981', 
-                  fontWeight: 700 
-                }}>Kirish</Link>
-              </Text>
+      case 1:
+        return (
+          <div className="onboard-step">
+            <div className="onboard-icon">
+              <BookOpen size={24} />
+            </div>
+            <h2 className="onboard-title">Imtihon turi</h2>
+            <p className="onboard-desc">
+              Qaysi IELTS imtihoniga tayyorlanmoqdasiz?
+            </p>
+            <div className="onboard-options-row">
+              {[
+                {
+                  key: "academic",
+                  label: "Academic",
+                  desc: "Universitetga kirish",
+                },
+                {
+                  key: "general",
+                  label: "General Training",
+                  desc: "Ish yoki migratsiya",
+                },
+              ].map((item) => (
+                <div
+                  key={item.key}
+                  className={`onboard-option ${examType === item.key ? "selected" : ""}`}
+                  onClick={() => setExamType(item.key)}
+                >
+                  <strong>{item.label}</strong>
+                  <span>{item.desc}</span>
+                </div>
+              ))}
+            </div>
+            <button className="auth-btn" onClick={nextStep}>
+              Davom etish
+            </button>
+          </div>
+        );
+
+      case 2:
+        return (
+          <div className="onboard-step">
+            <div className="onboard-icon">
+              <Target size={24} />
+            </div>
+            <h2 className="onboard-title">Daraja va maqsad</h2>
+            <p className="onboard-desc">
+              Hozirgi va maqsad balingizni belgilang
+            </p>
+            <div className="onboard-slider-group">
+              <label className="auth-label">
+                Hozirgi daraja: <strong>{currentBand}</strong>
+              </label>
+              <Slider
+                min={3}
+                max={9}
+                step={0.5}
+                value={currentBand}
+                onChange={setCurrentBand}
+              />
+            </div>
+            <div className="onboard-slider-group">
+              <label className="auth-label">
+                Maqsad ball: <strong>{targetBand}</strong>
+              </label>
+              <Slider
+                min={5}
+                max={9}
+                step={0.5}
+                value={targetBand}
+                onChange={setTargetBand}
+              />
+            </div>
+            <div className="auth-field">
+              <label className="auth-label">Imtihon sanasi (taxminiy)</label>
+              <input
+                type="date"
+                value={targetDate}
+                onChange={(e) => setTargetDate(e.target.value)}
+                className="auth-input"
+              />
+            </div>
+            <div className="onboard-btns">
+              <button className="auth-btn-secondary" onClick={prevStep}>
+                Orqaga
+              </button>
+              <button className="auth-btn" onClick={nextStep}>
+                Davom etish
+              </button>
             </div>
           </div>
-        </motion.div>
+        );
+
+      case 3:
+        return (
+          <div className="onboard-step">
+            <div className="onboard-icon">
+              <Clock size={24} />
+            </div>
+            <h2 className="onboard-title">Kunlik vaqt</h2>
+            <p className="onboard-desc">Kuniga qancha vaqt ajrata olasiz?</p>
+            <div className="onboard-grid">
+              {[
+                { v: 0.5, l: "30 daqiqa" },
+                { v: 1, l: "1 soat" },
+                { v: 2, l: "2 soat" },
+                { v: 3, l: "3+ soat" },
+              ].map((item) => (
+                <div
+                  key={item.v}
+                  className={`onboard-option compact ${dailyHours === item.v ? "selected" : ""}`}
+                  onClick={() => setDailyHours(item.v)}
+                >
+                  <strong>{item.l}</strong>
+                </div>
+              ))}
+            </div>
+            <div className="onboard-btns">
+              <button className="auth-btn-secondary" onClick={prevStep}>
+                Orqaga
+              </button>
+              <button className="auth-btn" onClick={nextStep}>
+                Davom etish
+              </button>
+            </div>
+          </div>
+        );
+
+      case 4:
+        return (
+          <div className="onboard-step">
+            <div className="onboard-icon">
+              <CheckCircle size={24} />
+            </div>
+            <h2 className="onboard-title">Kuchli va zaif tomonlar</h2>
+            <p className="onboard-desc">
+              Qaysi ko'nikmalaringiz kuchli, qaysilari zaif?
+            </p>
+            <div className="onboard-skills-section">
+              <label className="auth-label">Zaif tomonlar:</label>
+              <div className="onboard-chips">
+                {SKILLS.map((s) => (
+                  <div
+                    key={`w-${s.key}`}
+                    className={`onboard-chip weak ${weakSkills.includes(s.key) ? "selected" : ""}`}
+                    onClick={() => toggleSkill(s.key, "weak")}
+                  >
+                    {s.label}
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="onboard-skills-section">
+              <label className="auth-label">Kuchli tomonlar:</label>
+              <div className="onboard-chips">
+                {SKILLS.map((s) => (
+                  <div
+                    key={`s-${s.key}`}
+                    className={`onboard-chip strong ${strongSkills.includes(s.key) ? "selected" : ""}`}
+                    onClick={() => toggleSkill(s.key, "strong")}
+                  >
+                    {s.label}
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="onboard-btns">
+              <button className="auth-btn-secondary" onClick={prevStep}>
+                Orqaga
+              </button>
+              <button
+                className="auth-btn"
+                onClick={nextStep}
+                disabled={loading}
+              >
+                {loading ? "Saqlanmoqda..." : "Tugatish"}
+              </button>
+            </div>
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="auth-page">
+      <div className="auth-container">
+        {step === 0 && (
+          <Link to="/" className="auth-back">
+            <ArrowLeft size={16} />
+            <span>Orqaga</span>
+          </Link>
+        )}
+        <div className="auth-card">
+          {step > 0 && renderProgress()}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={step}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.2 }}
+            >
+              {renderStep()}
+            </motion.div>
+          </AnimatePresence>
+        </div>
       </div>
-    </>
+    </div>
   );
 };
 

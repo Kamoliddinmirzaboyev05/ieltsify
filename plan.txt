@@ -1,0 +1,688 @@
+Quyidagi reja sizlarga **texnik yo‘l xarita** bo‘ladi. Ya’ni qaysi xarita, qaysi sun’iy yo‘ldosh, qaysi AI model, qaysi ma’lumotlar kerak — hammasi qisqa va aniq.
+
+# AgroVision AI texnik reja
+
+## 1. Xaritani qaysi texnologiyada qilamiz?
+
+### Tavsiya: **Leaflet / Folium / Streamlit-Folium**
+
+Hackathon uchun eng tez yo‘l:
+
+**Frontend:** Streamlit
+**Xarita:** Folium + streamlit-folium
+**Backend:** FastAPI
+**Sun’iy yo‘ldosh:** Google Earth Engine
+
+Nega aynan shular?
+
+* Streamlit tez tayyor bo‘ladi.
+* Folium xaritada polygon chizishga qulay.
+* Leaflet/Folium bepul.
+* Google Earth Engine Sentinel-2 ma’lumotlarini olish uchun juda qulay.
+
+### Keyingi kuchli versiya uchun
+
+Agar professional web-sayt qilmoqchi bo‘lsangiz:
+
+**Frontend:** React + Leaflet.js / Mapbox GL
+**Backend:** FastAPI
+**Database:** PostgreSQL + PostGIS
+**AI:** PyTorch yoki TensorFlow
+**Satellite:** Google Earth Engine
+
+---
+
+## 2. Yer maydonini belgilash qanday bo‘ladi?
+
+Fermer xaritada dalasining chegarasini chizadi.
+
+### Ishlash jarayoni:
+
+1. Xaritada O‘zbekiston hududi ochiladi.
+2. Fermer o‘z dalasini topadi.
+3. Polygon chizadi.
+4. Chizilgan polygon **GeoJSON** formatda olinadi.
+5. Backend polygon maydonini hisoblaydi.
+6. Natija chiqadi:
+
+   * m²
+   * sotix
+   * gektar
+
+### Polygon ma’lumoti qanday formatda bo‘ladi?
+
+```json
+{
+  "type": "Polygon",
+  "coordinates": [
+    [
+      [71.2345, 40.1234],
+      [71.2355, 40.1238],
+      [71.2360, 40.1225],
+      [71.2345, 40.1234]
+    ]
+  ]
+}
+```
+
+Bu yerda:
+
+* birinchi son — longitude
+* ikkinchi son — latitude
+
+---
+
+## 3. Maydonni qanday o‘lchaymiz?
+
+Ikki xil yo‘l bor.
+
+### 1-usul: Frontendda tez hisoblash
+
+JavaScript/Leaflet orqali polygon area hisoblanadi.
+
+### 2-usul: Backendda aniqroq hisoblash
+
+Python’da:
+
+* `shapely`
+* `pyproj`
+* yoki Google Earth Engine `geometry.area()`
+
+Natija:
+
+```json
+{
+  "area_m2": 2500,
+  "area_sotix": 25,
+  "area_hectare": 0.25
+}
+```
+
+Hackathon uchun backendda hisoblash yaxshi.
+
+---
+
+## 4. Sun’iy yo‘ldosh ma’lumotlari qayerdan olinadi?
+
+### Asosiy manba: **Google Earth Engine**
+
+Google Earth Engine orqali quyidagi datasetlardan foydalaniladi:
+
+### 1. Sentinel-2 Surface Reflectance
+
+Dataset nomi:
+
+```text
+COPERNICUS/S2_SR_HARMONIZED
+```
+
+Bu o‘simlik holatini aniqlash uchun asosiy dataset. Google Earth Engine katalogida Sentinel-2 SR Harmonized dataset’i 2017-yildan mavjud va 5 kunlik revisit intervalga ega deb ko‘rsatilgan. ([Google for Developers][1])
+
+Sentinel-2 13 ta spektral band oladi; 10 m, 20 m va 60 m fazoviy aniqlikdagi bandlarga ega. ([Copernicus Data Space Ecosystem][2]) ESA ma’lumotida ham Sentinel-2 uchun 10 m resolution va 5-day revisit time berilgan. ([European Space Agency][3])
+
+### Sentinel-2’dan olinadigan bandlar
+
+| Band | Nima uchun kerak |
+| ---- | ---------------- |
+| B2   | Blue             |
+| B3   | Green            |
+| B4   | Red              |
+| B8   | Near Infrared    |
+| B11  | SWIR             |
+| B12  | SWIR             |
+
+### Hisoblanadigan indekslar
+
+#### NDVI — o‘simlik sog‘ligi
+
+```text
+NDVI = (B8 - B4) / (B8 + B4)
+```
+
+NDVI o‘simlik sog‘ligi va yashillik darajasini baholashda ishlatiladi.
+
+#### NDMI — namlik/stress indeksi
+
+```text
+NDMI = (B8 - B11) / (B8 + B11)
+```
+
+Bu o‘simlikdagi namlik holatini taxmin qilishda yordam beradi.
+
+#### NDWI — suv / namlik ko‘rsatkichi
+
+```text
+NDWI = (B3 - B8) / (B3 + B8)
+```
+
+Suv yuzasi yoki namlik holatini ko‘rishda yordam beradi.
+
+---
+
+## 5. Sun’iy yo‘ldoshdan qanday formatda ma’lumot olamiz?
+
+Backendga polygon yuboriladi. Backend Google Earth Engine’dan shu polygon ichidagi o‘rtacha ko‘rsatkichlarni oladi.
+
+Natija JSON bo‘ladi:
+
+```json
+{
+  "ndvi_mean": 0.62,
+  "ndvi_min": 0.31,
+  "ndvi_max": 0.81,
+  "ndmi_mean": 0.18,
+  "cloud_percentage": 7,
+  "image_date": "2026-05-18",
+  "field_status": "O'rtacha yaxshi"
+}
+```
+
+Agar vaqt yetsa, NDVI xaritasini ham rasm/tile sifatida chiqarish mumkin:
+
+```json
+{
+  "ndvi_tile_url": "https://earthengine.googleapis.com/..."
+}
+```
+
+---
+
+## 6. Ob-havo ma’lumotlari qayerdan olinadi?
+
+### Tavsiya: **Open-Meteo API**
+
+Open-Meteo API bepul, API key talab qilmaydi va forecast/historical weather beradi. Open-Meteo o‘zini “free weather forecast and historical weather API” deb ta’riflaydi; saytida API key kerak emasligi ko‘rsatilgan. ([Open Meteo][4])
+
+Olinadigan ma’lumotlar:
+
+* hozirgi harorat;
+* maksimal/minimal harorat;
+* yog‘ingarchilik;
+* shamol;
+* nisbiy namlik;
+* 7–14 kunlik prognoz;
+* tarixiy ob-havo.
+
+Open-Meteo Historical Weather API reanalysis datasetlariga asoslanadi va stansiya, radar, sun’iy yo‘ldosh hamda model ma’lumotlarini birlashtiradi. ([Open Meteo][5])
+
+### Ob-havo JSON natijasi
+
+```json
+{
+  "temperature": 34,
+  "humidity": 28,
+  "rain_next_7_days": 0,
+  "wind_speed": 12,
+  "weather_risk": "Issiq va quruq"
+}
+```
+
+---
+
+## 7. Suv ta’minoti va sug‘orish qanday aniqlanadi?
+
+Bu qismni ikki darajada qilish kerak.
+
+## A) MVP uchun — sun’iy yo‘ldosh + ob-havo asosida
+
+Tizim quyidagilarni tahlil qiladi:
+
+* NDVI pasayyaptimi?
+* NDMI pastmi?
+* keyingi 7 kunda yomg‘ir bormi?
+* harorat yuqorimi?
+* dala maydoni qancha?
+* ekin turi nima?
+* oxirgi sug‘orish qachon bo‘lgan?
+
+Natija:
+
+```json
+{
+  "water_risk": "Yuqori",
+  "soil_moisture_status": "Past",
+  "irrigation_advice": "Kechki payt sug'orish tavsiya etiladi",
+  "water_saving_advice": [
+    "Kunduzi sug'ormang",
+    "Begona o'tlarni kamaytiring",
+    "Tuproq yuzasini yumshating",
+    "Imkon bo'lsa tomchilatib sug'orishdan foydalaning"
+  ]
+}
+```
+
+## B) Keyingi professional versiya uchun
+
+Suv ta’minoti aniqroq bo‘lishi uchun qo‘shimcha ma’lumot kerak bo‘ladi:
+
+* fermer oxirgi sug‘orish sanasini kiritadi;
+* suv kelish navbati kiritiladi;
+* mahalliy suv xo‘jaligi jadvali qo‘shiladi;
+* kanal / ariq yaqinidagi suv holati sensor yoki qo‘lda kiritiladi;
+* Telegram orqali suv kelganini foydalanuvchilar belgilashi mumkin.
+
+### Kuchli fishka
+
+**“Suv navbati va dalaning suv stressi”** funksiyasi.
+
+Fermer kiritadi:
+
+```json
+{
+  "last_irrigation_date": "2026-05-10",
+  "water_cycle_days": 15,
+  "crop": "pomidor"
+}
+```
+
+Tizim chiqaradi:
+
+> “Keyingi suv kelguncha taxminan 4 kun bor. Hozir namlik past. Ekin stressga tushmasligi uchun kechki payt yordamchi sug‘orish tavsiya qilinadi.”
+
+Muhim: tizim “suv aniq falon kuni keladi” demaydi. U **suv ehtiyoji va xavfini** hisoblaydi.
+
+---
+
+## 8. AI modeli nimalar bilan o‘qitiladi?
+
+AI model ikki qismdan iborat bo‘ladi.
+
+# 1-model: Rasm orqali ekin va kasallik aniqlash
+
+### Model vazifasi
+
+Fermer yuklagan rasmga qarab:
+
+* ekin turini taxmin qiladi;
+* kasallikni aniqlaydi;
+* zararkunandani aniqlaydi;
+* sog‘lom yoki muammoli ekanini aytadi.
+
+### O‘qitish uchun datasetlar
+
+Boshlanishiga ishlatish mumkin:
+
+1. **PlantVillage Dataset**
+   PlantVillage ochiq dataset bo‘lib, 54 mingdan ortiq sog‘lom va kasallangan o‘simlik barglari rasmlarini o‘z ichiga oladi; 14 crop species va 26 diseases bo‘yicha ishlatiladi. ([GitHub][6])
+
+2. **Kaggle plant disease datasets**
+   Pomidor, kartoshka, uzum, olma kabi ekin kasalliklari uchun juda ko‘p dataset bor.
+
+3. **O‘zimiz yig‘adigan lokal dataset**
+   Bu eng muhim. Chunki O‘zbekistondagi real dala sharoiti PlantVillage’dagi laboratoriya rasmlaridan farq qiladi.
+
+O‘zimiz yig‘adigan rasmlar:
+
+* pomidor bargi;
+* bodring bargi;
+* paxta bargi;
+* uzum bargi;
+* shira tushgan holat;
+* qurt yegan barg;
+* zang;
+* chirish;
+* sarg‘ayish;
+* sog‘lom barg.
+
+### Model klasslari
+
+Boshlanishiga 8–12 ta klass yetadi:
+
+```text
+healthy
+aphid_shira
+worm_damage_qurt
+rust_zang
+leaf_spot_barg_dogi
+rot_chirish
+yellowing_sargayish
+water_stress_suv_stress
+nutrient_deficiency_oziqa_yetishmovchiligi
+tomato
+grape
+cotton
+```
+
+### Model arxitekturasi
+
+Hackathon uchun:
+
+* MobileNetV2
+* EfficientNetB0
+* ResNet50
+
+Agar rasm ichida hasharotni joylashgan joyi bilan ko‘rsatmoqchi bo‘lsangiz:
+
+* YOLOv8 / YOLOv11
+
+Ammo 3 kunlik MVP uchun **classification** modeli yetadi.
+
+---
+
+# 2-model: Tavsiya beruvchi AI
+
+Bu model rasmni o‘zi o‘qitmaydi. U mavjud natijalarni birlashtirib, fermer tilida xulosa beradi.
+
+Kirish ma’lumotlari:
+
+```json
+{
+  "crop": "pomidor",
+  "image_result": "shira ehtimoli",
+  "confidence": 0.82,
+  "ndvi": 0.46,
+  "ndmi": 0.12,
+  "temperature": 35,
+  "rain_next_7_days": 0,
+  "soil_moisture": "past",
+  "area_sotix": 20
+}
+```
+
+Chiqish:
+
+```json
+{
+  "problem": "Shira zararkunandasi ehtimoli bor",
+  "risk": "O'rtacha yuqori",
+  "reason": "Rasmda shira belgisi bor, havo issiq, namlik past va NDVI pasaygan.",
+  "advice": [
+    "Shiraga qarshi dori ishlatish tavsiya etiladi",
+    "Barg ostini tekshiring",
+    "Kechki payt sug'oring",
+    "Zararlangan joylarni ajrating"
+  ]
+}
+```
+
+Bu qismni LLM bilan yoki oddiy rule-based engine bilan qilish mumkin. Hackathon uchun rule-based + LLM eng yaxshi.
+
+---
+
+## 9. Tavsiya tizimi qanday ishlaydi?
+
+Tizim 4 ta natijani birlashtiradi:
+
+1. Rasm tahlili
+2. Sun’iy yo‘ldosh NDVI/NDMI
+3. Ob-havo va namlik
+4. Ekin kasalliklari bazasi
+
+### Misol qoida
+
+```text
+Agar rasmda shira chiqsa
+VA harorat yuqori bo‘lsa
+VA NDVI pasaygan bo‘lsa
+→ Shira xavfi o‘rtacha-yuqori
+→ Shiraga qarshi dori + barg ostini tekshirish tavsiya qilinadi
+```
+
+Yoki:
+
+```text
+Agar barg sarg‘aygan bo‘lsa
+VA namlik past bo‘lsa
+VA yomg‘ir kutilmasa
+→ Suv stressi ehtimoli yuqori
+→ Kechki payt sug‘orish tavsiya qilinadi
+```
+
+---
+
+## 10. Ma’lumotlar bazasida nima saqlanadi?
+
+### Database: PostgreSQL + PostGIS
+
+Saqlanadigan ma’lumotlar:
+
+```text
+users
+fields
+field_polygons
+satellite_results
+weather_results
+uploaded_images
+ai_predictions
+recommendations
+irrigation_history
+```
+
+### Field jadvali
+
+```json
+{
+  "field_id": 1,
+  "user_id": 5,
+  "crop": "pomidor",
+  "area_sotix": 20,
+  "polygon": "GeoJSON",
+  "created_at": "2026-05-21"
+}
+```
+
+---
+
+## 11. Texnologiyalar ro‘yxati
+
+### Frontend
+
+Hackathon uchun:
+
+```text
+Streamlit
+Folium
+streamlit-folium
+```
+
+Professional versiya:
+
+```text
+React
+Leaflet.js
+Tailwind CSS
+```
+
+### Backend
+
+```text
+Python
+FastAPI
+Pydantic
+Uvicorn
+```
+
+### AI
+
+```text
+PyTorch yoki TensorFlow
+MobileNetV2 / EfficientNet
+OpenCV
+Pillow
+```
+
+### Satellite
+
+```text
+Google Earth Engine Python API
+Sentinel-2
+Sentinel-1
+Landsat
+```
+
+### Weather
+
+```text
+Open-Meteo API
+```
+
+### Database
+
+```text
+PostgreSQL
+PostGIS
+```
+
+### Deployment
+
+```text
+Streamlit Cloud
+Railway
+Render
+Hugging Face Spaces
+```
+
+---
+
+## 12. API endpointlar rejasi
+
+### 1. Maydon tahlili
+
+```http
+POST /analyze-field
+```
+
+Kirish:
+
+```json
+{
+  "polygon": "GeoJSON",
+  "crop": "pomidor"
+}
+```
+
+Chiqish:
+
+```json
+{
+  "area_sotix": 20,
+  "ndvi": 0.62,
+  "ndmi": 0.18,
+  "field_status": "Yaxshi"
+}
+```
+
+### 2. Rasm tahlili
+
+```http
+POST /analyze-image
+```
+
+Kirish:
+
+```text
+image file
+```
+
+Chiqish:
+
+```json
+{
+  "crop_prediction": "pomidor",
+  "disease_prediction": "shira",
+  "confidence": 0.82
+}
+```
+
+### 3. Suv tavsiyasi
+
+```http
+POST /water-advice
+```
+
+Kirish:
+
+```json
+{
+  "area_sotix": 20,
+  "crop": "pomidor",
+  "ndvi": 0.46,
+  "ndmi": 0.12,
+  "temperature": 35,
+  "rain_next_7_days": 0
+}
+```
+
+Chiqish:
+
+```json
+{
+  "water_risk": "Yuqori",
+  "advice": "Kechki payt sug'orish tavsiya etiladi"
+}
+```
+
+### 4. Yakuniy tavsiya
+
+```http
+POST /final-recommendation
+```
+
+Chiqish:
+
+```json
+{
+  "summary": "Pomidor dalasida shira va suv stressi ehtimoli bor",
+  "actions": [
+    "Shiraga qarshi dori ishlating",
+    "Barg ostini tekshiring",
+    "Kechki payt sug'oring"
+  ]
+}
+```
+
+---
+
+## 13. 3 kunlik MVP reja
+
+### 1-kun
+
+* Streamlit web sahifa ochish.
+* Xarita qo‘yish.
+* Polygon chizish.
+* Maydon hisoblash.
+* Open-Meteo’dan ob-havo olish.
+* Google Earth Engine’da Sentinel-2 NDVI test qilish.
+
+### 2-kun
+
+* Rasm yuklash funksiyasi.
+* MobileNet/EfficientNet modelini o‘qitish yoki tayyor modelni fine-tune qilish.
+* Rasmga qarab kasallik klassifikatsiyasi.
+* NDVI + ob-havo + rasm natijalarini JSON’da birlashtirish.
+
+### 3-kun
+
+* Tavsiya engine yozish.
+* Suv tavsiyasi qo‘shish.
+* Fermer tilida xulosa chiqarish.
+* Demo ma’lumotlar tayyorlash.
+* Pitch va taqdimot tayyorlash.
+
+---
+
+## 14. Eng muhim MVP funksiyalar
+
+3 kunda shularni albatta qiling:
+
+1. Xaritada dala chizish.
+2. Maydonni sotix/gektarda chiqarish.
+3. Rasm yuklash.
+4. AI orqali kasallik yoki zararkunanda taxmini.
+5. NDVI natijasini olish.
+6. Open-Meteo orqali ob-havo olish.
+7. Suv xavfi va sug‘orish tavsiyasi.
+8. Yakuniy xulosa: dori + sug‘orish + parvarish tavsiyasi.
+
+---
+
+## 15. Taqdimotda aytiladigan qisqa texnik gap
+
+> Biz xarita uchun Leaflet/Folium texnologiyasidan foydalanamiz. Fermer dalasini polygon shaklida belgilaydi va bu GeoJSON formatida backendga yuboriladi. Backend maydonni hisoblaydi, Google Earth Engine orqali Sentinel-2 sun’iy yo‘ldoshidan NDVI va namlik indekslarini oladi. Open-Meteo API orqali ob-havo va yomg‘ir prognozi olinadi. Fermer yuklagan rasm esa EfficientNet/MobileNet asosidagi AI modelda tahlil qilinadi. Yakunda rasm, sun’iy yo‘ldosh, ob-havo va suv holati birlashtirilib, fermerga oddiy tilda dori, o‘g‘it va sug‘orish tavsiyasi beriladi.
+
+[1]: https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S2_SR_HARMONIZED?utm_source=chatgpt.com "Harmonized Sentinel-2 MSI: MultiSpectral Instrument ..."
+[2]: https://dataspace.copernicus.eu/data-collections/copernicus-sentinel-missions/sentinel-2?utm_source=chatgpt.com "Sentinel-2"
+[3]: https://www.esa.int/Applications/Observing_the_Earth/Copernicus/Sentinel-2?utm_source=chatgpt.com "ESA - Sentinel-2"
+[4]: https://open-meteo.com/?utm_source=chatgpt.com "Open-Meteo.com: 🌤️ Free Open-Source Weather API"
+[5]: https://open-meteo.com/en/docs/historical-weather-api?utm_source=chatgpt.com "️ Historical Weather API"
+[6]: https://github.com/spmohanty/plantvillage-dataset?utm_source=chatgpt.com "spMohanty/PlantVillage-Dataset"

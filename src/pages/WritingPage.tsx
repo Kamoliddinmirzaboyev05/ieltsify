@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, Typography, Button, Space, Tag, Empty, Grid, Row, Col } from 'antd';
 import { Clock, Plus, Play } from 'lucide-react';
-import { useWritingTasks } from '../hooks/useCachedData';
+import { writingTaskManager } from '../services/dataManager';
 import WritingSimulator from './WritingSimulator';
+import type { WritingTask } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
-import CoinGuard from '../components/CoinGuard';
 
 const { Title, Text, Paragraph } = Typography;
 const { useBreakpoint } = Grid;
@@ -14,8 +14,16 @@ const WritingPage: React.FC = () => {
   const isMobile = !screens.md;
   const { isDark } = useTheme();
   
-  const { data: tasks = [] } = useWritingTasks();
+  const [tasks, setTasks] = useState<WritingTask[]>([]);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadTasks();
+  }, []);
+
+  const loadTasks = () => {
+    setTasks(writingTaskManager.getAll());
+  };
 
   const handleStartTask = (taskId: string) => {
     setSelectedTaskId(taskId);
@@ -23,6 +31,7 @@ const WritingPage: React.FC = () => {
 
   const handleBackToList = () => {
     setSelectedTaskId(null);
+    loadTasks();
   };
 
   const filteredTasks = tasks;
@@ -58,11 +67,10 @@ const WritingPage: React.FC = () => {
           icon={<Plus size={20} />}
           onClick={() => window.location.href = '/dashboard/writing-manager'}
           style={{
-            borderRadius: '8px',
+            borderRadius: '12px',
             fontWeight: '600',
-            height: '44px',
-            width: isMobile ? '100%' : 'auto',
-            background: '#2563eb'
+            height: '48px',
+            width: isMobile ? '100%' : 'auto'
           }}
         >
           Add New Task
@@ -75,9 +83,9 @@ const WritingPage: React.FC = () => {
         gap: '8px',
         marginBottom: '24px',
         padding: '12px 16px',
-        backgroundColor: isDark ? 'rgba(37, 99, 235, 0.1)' : '#eff6ff',
-        borderRadius: '8px',
-        border: isDark ? '1px solid rgba(37, 99, 235, 0.2)' : '1px solid #2563eb',
+        backgroundColor: isDark ? 'rgba(59, 130, 246, 0.1)' : '#eff6ff',
+        borderRadius: '12px',
+        border: isDark ? '1px solid rgba(59, 130, 246, 0.2)' : '1px solid #3b82f6',
       }}>
         <Text style={{ fontSize: '14px', color: isDark ? '#60a5fa' : '#1e40af', fontWeight: '600' }}>
           💡 Full IELTS Writing Test: Task 1 (20 min, 150+ words) + Task 2 (40 min, 250+ words) = 60 minutes total
@@ -87,9 +95,9 @@ const WritingPage: React.FC = () => {
       {/* Info Card */}
       <Card
         style={{
-          borderRadius: '12px',
+          borderRadius: '6px',
           marginBottom: '24px',
-          background: '#2563eb',
+          background: '#10b981',
           border: 'none',
           color: 'white',
         }}
@@ -122,7 +130,7 @@ const WritingPage: React.FC = () => {
 
       {/* Task List */}
       {filteredTasks.length === 0 ? (
-        <Card style={{ borderRadius: '12px', textAlign: 'center', padding: '60px 20px' }}>
+        <Card style={{ borderRadius: '6px', textAlign: 'center', padding: '60px 20px' }}>
           <Empty
             description={
               <div>
@@ -140,7 +148,7 @@ const WritingPage: React.FC = () => {
             size="large"
             icon={<Plus size={20} />}
             onClick={() => window.location.href = '/dashboard/writing-manager'}
-            style={{ marginTop: '24px', borderRadius: '8px', fontWeight: '600', background: '#2563eb' }}
+            style={{ marginTop: '24px', borderRadius: '12px', fontWeight: '600' }}
           >
             Add Writing Task
           </Button>
@@ -152,7 +160,7 @@ const WritingPage: React.FC = () => {
               <Card
                 hoverable
                 style={{
-                  borderRadius: '12px',
+                  borderRadius: '6px',
                   border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid #e2e8f0',
                   height: '100%',
                 }}
@@ -206,27 +214,20 @@ const WritingPage: React.FC = () => {
                       60 mins total • 400+ words
                     </Text>
                   </Space>
-                  <CoinGuard
-                    cost={80}
-                    type="writing_test"
-                    description={`Writing Test: ${task.title}`}
-                    onConfirm={() => handleStartTask(task.id)}
+                  <Button
+                    type="primary"
+                    icon={<Play size={16} />}
+                    onClick={() => handleStartTask(task.id)}
+                    style={{
+                      borderRadius: '8px',
+                      fontWeight: '600',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                    }}
                   >
-                    <Button
-                      type="primary"
-                      icon={<Play size={16} />}
-                      style={{
-                        borderRadius: '6px',
-                        fontWeight: '600',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px',
-                        background: '#2563eb'
-                      }}
-                    >
-                      Start
-                    </Button>
-                  </CoinGuard>
+                    Start
+                  </Button>
                 </div>
               </Card>
             </Col>
@@ -237,7 +238,7 @@ const WritingPage: React.FC = () => {
       {/* Tips Card */}
       <Card
         style={{
-          borderRadius: '12px',
+          borderRadius: '6px',
           marginTop: '32px',
           backgroundColor: isDark ? 'rgba(251, 191, 36, 0.1)' : '#fffbeb',
           border: isDark ? '1px solid rgba(251, 191, 36, 0.3)' : '1px solid #fbbf24',
