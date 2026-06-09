@@ -1,8 +1,4 @@
-import { supabase } from "../lib/supabase";
-
-export interface GoogleAuthData {
-  id_token: string;
-}
+// Auth service using backend API (VITE_API_BASE_URL) instead of Supabase
 
 export interface RegisterData {
   username: string;
@@ -50,12 +46,7 @@ export interface ProfileData {
   target_date?: string;
   email_notifications?: boolean;
   two_factor_enabled?: boolean;
-  skills?: {
-    listening: number;
-    reading: number;
-    writing: number;
-    speaking: number;
-  };
+  skills?: { listening: number; reading: number; writing: number; speaking: number; };
   weak_skills?: string[];
   strong_skills?: string[];
   daily_study_hours?: number;
@@ -66,15 +57,6 @@ export interface ProfileData {
   listening_attempt_count?: number;
 }
 
-export interface ProfileResponse {
-  success: boolean;
-  data: {
-    user_info: ProfileData;
-    email_verified: boolean;
-    created_at: string;
-  };
-}
-
 export interface AuthResponse {
   access_token?: string;
   refresh_token?: string;
@@ -83,282 +65,100 @@ export interface AuthResponse {
   role?: string;
   user?: UserProfile;
   message?: string;
-  tokens?: {
-    access: string;
-    refresh: string;
-  };
+  tokens?: { access: string; refresh: string; };
 }
 
-// Google OAuth Login/Register
+const API = () => import.meta.env.VITE_API_BASE_URL || '';
+
+const apiPost = async (path: string, body: unknown) => {
+  const res = await fetch(`${API()}${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || err.message || 'Xatolik yuz berdi');
+  }
+  return res.json();
+};
+
 export const googleAuth = async (idToken: string): Promise<AuthResponse> => {
-  try {
-    const { data, error } = await supabase.auth.signInWithIdToken({
-      provider: "google",
-      token: idToken,
-    });
-
-    if (error) throw error;
-
-    const userProfile: UserProfile = {
-      id: data.user?.id,
-      email: data.user?.email || "",
-      name: data.user?.user_metadata?.full_name,
-      picture: data.user?.user_metadata?.avatar_url,
-      email_verified: !!data.user?.email_confirmed_at,
-    };
-
-    return {
-      access: data.session?.access_token,
-      refresh: data.session?.refresh_token,
-      user: userProfile,
-    };
-  } catch (error: unknown) {
-    console.error("❌ Google Auth Error:", error);
-    const message = error instanceof Error ? error.message : "Google autentifikatsiya xatosi.";
-    throw new Error(message);
-  }
+  try { return await apiPost('/auth/google/', { id_token: idToken }); }
+  catch (e: unknown) { throw new Error(e instanceof Error ? e.message : 'Google autentifikatsiya xatosi.'); }
 };
 
-// Email/Password Register
-export const registerUser = async (
-  registerData: RegisterData,
-): Promise<AuthResponse> => {
-  try {
-    const { data, error } = await supabase.auth.signUp({
-      email: registerData.email,
-      password: registerData.password,
-      options: {
-        data: {
-          username: registerData.username,
-          first_name: registerData.first_name,
-          last_name: registerData.last_name,
-          full_name: `${registerData.first_name} ${registerData.last_name}`,
-        },
-      },
-    });
-
-    if (error) throw error;
-
-    const userProfile: UserProfile = {
-      id: data.user?.id,
-      email: data.user?.email || "",
-      username: registerData.username,
-      first_name: registerData.first_name,
-      last_name: registerData.last_name,
-      email_verified: !!data.user?.email_confirmed_at,
-    };
-
-    return {
-      access: data.session?.access_token,
-      refresh: data.session?.refresh_token,
-      user: userProfile,
-    };
-  } catch (error: unknown) {
-    console.error("❌ Register Error:", error);
-    const message = error instanceof Error ? error.message : "Ro'yxatdan o'tishda xatolik yuz berdi";
-    throw new Error(message);
-  }
+export const registerUser = async (d: RegisterData): Promise<AuthResponse> => {
+  try { return await apiPost('/auth/register/', d); }
+  catch (e: unknown) { throw new Error(e instanceof Error ? e.message : "Ro'yxatdan o'tishda xatolik"); }
 };
 
-// Email/Password Login
-export const loginUser = async (
-  loginData: LoginData,
-): Promise<AuthResponse> => {
-  try {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: loginData.username,
-      password: loginData.password,
-    });
-
-    if (error) throw error;
-
-    const userProfile: UserProfile = {
-      id: data.user?.id,
-      email: data.user?.email || "",
-      username: data.user?.user_metadata?.username,
-      first_name: data.user?.user_metadata?.first_name,
-      last_name: data.user?.user_metadata?.last_name,
-      email_verified: !!data.user?.email_confirmed_at,
-    };
-
-    return {
-      access: data.session?.access_token,
-      refresh: data.session?.refresh_token,
-      user: userProfile,
-    };
-  } catch (error: unknown) {
-    console.error("❌ Login Error:", error);
-    const message = error instanceof Error ? error.message : "Kirishda xatolik";
-    throw new Error(message);
-  }
+export const loginUser = async (d: LoginData): Promise<AuthResponse> => {
+  try { return await apiPost('/auth/login/', d); }
+  catch (e: unknown) { throw new Error(e instanceof Error ? e.message : 'Kirishda xatolik'); }
 };
 
-// Save tokens to localStorage
-export const saveAuthTokens = (accessToken: string, refreshToken: string) => {
-  localStorage.setItem("access_token", accessToken);
-  localStorage.setItem("refresh_token", refreshToken);
+export const saveAuthTokens = (a: string, r: string) => {
+  localStorage.setItem('access_token', a);
+  localStorage.setItem('refresh_token', r);
 };
 
-// Get access token
-export const getAccessToken = (): string | null => {
-  return localStorage.getItem("access_token");
-};
+export const getAccessToken = (): string | null => localStorage.getItem('access_token');
+export const getRefreshToken = (): string | null => localStorage.getItem('refresh_token');
 
-// Get refresh token
-export const getRefreshToken = (): string | null => {
-  return localStorage.getItem("refresh_token");
-};
-
-// Clear tokens (logout)
 export const clearAuthTokens = async () => {
-  await supabase.auth.signOut();
-  localStorage.removeItem("access_token");
-  localStorage.removeItem("refresh_token");
-  localStorage.removeItem("user_profile");
+  localStorage.removeItem('access_token');
+  localStorage.removeItem('refresh_token');
+  localStorage.removeItem('user_profile');
 };
 
-// Save user profile
-export const saveUserProfile = (user: UserProfile) => {
-  localStorage.setItem("user_profile", JSON.stringify(user));
-};
-
-// Get user profile
+export const saveUserProfile = (u: UserProfile) => localStorage.setItem('user_profile', JSON.stringify(u));
 export const getUserProfile = (): UserProfile | null => {
-  const profile = localStorage.getItem("user_profile");
-  return profile ? JSON.parse(profile) : null;
+  const p = localStorage.getItem('user_profile');
+  return p ? JSON.parse(p) : null;
 };
 
-// Check if user is authenticated
-export const isAuthenticated = (): boolean => {
-  return !!getAccessToken();
+export const isAuthenticated = (): boolean => !!getAccessToken();
+
+export const authenticatedFetch = async (url: string, opts: RequestInit = {}): Promise<Response> => {
+  const token = getAccessToken();
+  if (!token) throw new Error('Foydalanuvchi tizimga kirmagan');
+  const headers = new Headers(opts.headers);
+  headers.set('Authorization', `Bearer ${token}`);
+  headers.set('Content-Type', 'application/json');
+  const full = url.startsWith('http') ? url : `${API()}${url}`;
+  return fetch(full, { ...opts, headers });
 };
 
-// authenticatedFetch helper for API calls
-export const authenticatedFetch = async (
-  url: string,
-  options: RequestInit = {},
-): Promise<Response> => {
-  const accessToken = getAccessToken();
-  if (!accessToken) {
-    throw new Error("Foydalanuvchi tizimga kirmagan");
-  }
-
-  const headers = new Headers(options.headers);
-  headers.set("Authorization", `Bearer ${accessToken}`);
-  headers.set("Content-Type", "application/json");
-
-  return fetch(url, { ...options, headers });
-};
-
-// Refresh access token
 export const refreshAccessToken = async (): Promise<string> => {
-  const { data, error } = await supabase.auth.refreshSession();
-
-  if (error || !data.session) {
-    await clearAuthTokens();
-    throw new Error("Token refresh failed");
-  }
-
-  saveAuthTokens(data.session.access_token, data.session.refresh_token);
-  return data.session.access_token;
+  const rt = getRefreshToken();
+  if (!rt) throw new Error('Refresh token topilmadi');
+  try {
+    const data = await apiPost('/auth/refresh/', { refresh: rt });
+    const na = data.access || data.access_token;
+    const nr = data.refresh || data.refresh_token;
+    if (na) { saveAuthTokens(na, nr || rt); return na; }
+    throw new Error('Token refresh failed');
+  } catch { await clearAuthTokens(); throw new Error('Token refresh failed'); }
 };
 
-// Get user profile from backend
 export const fetchUserProfile = async (): Promise<ProfileData> => {
-  try {
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-    if (userError || !user) throw new Error("User not found");
-
-    const { data: profile, error: profileError } = await supabase
-      .from("user_profiles")
-      .select("*")
-      .eq("id", user.id)
-      .single();
-
-    if (profileError && profileError.code !== "PGRST116") {
-      console.error("Profile fetch error:", profileError);
-    }
-
-    const profileData: ProfileData = {
-      id: user.id,
-      email: user.email || "",
-      username: profile?.username || user.user_metadata?.username || "",
-      first_name: profile?.first_name || user.user_metadata?.first_name || "",
-      last_name: profile?.last_name || user.user_metadata?.last_name || "",
-      role: profile?.role || "user",
-      is_vip: profile?.is_vip || false,
-      vip_expires_at: profile?.vip_expires_at || null,
-      email_verified: !!user.email_confirmed_at,
-      date_joined: user.created_at,
-      last_login: user.last_sign_in_at || null,
-      picture: profile?.picture || user.user_metadata?.avatar_url,
-      target_score: profile?.target_score,
-      target_date: profile?.target_date,
-      email_notifications: profile?.email_notifications,
-      two_factor_enabled: profile?.two_factor_enabled,
-      skills: profile?.skills || {
-        listening: 0,
-        reading: 0,
-        writing: 0,
-        speaking: 0,
-      },
-    };
-
-    return profileData;
-  } catch (error: unknown) {
-    console.error("Fetch Profile Error:", error);
-    throw error;
-  }
+  const r = await authenticatedFetch('/accounts/profile/');
+  if (!r.ok) throw new Error("Profil ma'lumotlarini yuklashda xatolik");
+  const result = await r.json();
+  return (result.data?.user_info || result) as ProfileData;
 };
 
-// Update user profile
-export const updateUserProfile = async (
-  profileData: Partial<ProfileData>,
-): Promise<ProfileData> => {
-  try {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) throw new Error("User not found");
-
-    const { data, error } = await supabase
-      .from("user_profiles")
-      .upsert({
-        id: user.id,
-        ...profileData,
-        updated_at: new Date().toISOString(),
-      })
-      .select()
-      .single();
-
-    if (error) throw error;
-
-    return data as ProfileData;
-  } catch (error: unknown) {
-    console.error("Update Profile Error:", error);
-    const message = error instanceof Error ? error.message : "Profilni yangilashda xatolik";
-    throw new Error(message);
-  }
+export const updateUserProfile = async (d: Partial<ProfileData>): Promise<ProfileData> => {
+  const r = await authenticatedFetch('/accounts/profile/', { method: 'PATCH', body: JSON.stringify(d) });
+  if (!r.ok) throw new Error('Profilni yangilashda xatolik');
+  return r.json() as Promise<ProfileData>;
 };
 
-// Change password
-export const changePassword = async (
-  newPassword: string,
-): Promise<{ message: string }> => {
-  try {
-    const { error } = await supabase.auth.updateUser({
-      password: newPassword,
-    });
-
-    if (error) throw error;
-
-    return { message: "Parol muvaffaqiyatli o'zgartirildi" };
-  } catch (error: unknown) {
-    console.error("Change Password Error:", error);
-    const message = error instanceof Error ? error.message : "Parolni o'zgartirishda xatolik";
-    throw new Error(message);
-  }
+export const changePassword = async (newPassword: string): Promise<{ message: string }> => {
+  const r = await authenticatedFetch('/auth/change-password/', {
+    method: 'POST', body: JSON.stringify({ new_password: newPassword }),
+  });
+  if (!r.ok) throw new Error("Parolni o'zgartirishda xatolik");
+  return { message: "Parol muvaffaqiyatli o'zgartirildi" };
 };
