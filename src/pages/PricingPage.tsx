@@ -179,8 +179,13 @@ const PricingPage: React.FC = () => {
               border: "none",
               cursor: "pointer",
               backgroundColor:
-                activeTab === "subscriptions" ? "var(--bg-card)" : "transparent",
-              color: activeTab === "subscriptions" ? "var(--text-primary)" : "#64748b",
+                activeTab === "subscriptions"
+                  ? "var(--bg-card)"
+                  : "transparent",
+              color:
+                activeTab === "subscriptions"
+                  ? "var(--text-primary)"
+                  : "#64748b",
               boxShadow:
                 activeTab === "subscriptions"
                   ? "0 1px 3px rgba(0,0,0,0.08)"
@@ -198,7 +203,8 @@ const PricingPage: React.FC = () => {
               fontWeight: 600,
               border: "none",
               cursor: "pointer",
-              backgroundColor: activeTab === "coins" ? "var(--bg-card)" : "transparent",
+              backgroundColor:
+                activeTab === "coins" ? "var(--bg-card)" : "transparent",
               color: activeTab === "coins" ? "var(--text-primary)" : "#64748b",
               boxShadow:
                 activeTab === "coins" ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
@@ -225,7 +231,10 @@ const PricingPage: React.FC = () => {
               size="small"
               style={{
                 borderRadius: "8px",
-                border: i === 1 ? "2px solid #10b981" : "1px solid var(--border-color)",
+                border:
+                  i === 1
+                    ? "2px solid #10b981"
+                    : "1px solid var(--border-color)",
                 position: "relative",
               }}
               bodyStyle={{ padding: "20px" }}

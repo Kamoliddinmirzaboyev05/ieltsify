@@ -1,31 +1,38 @@
 import React, { useEffect, useState } from "react";
-import { Typography, Card, Row, Col, Progress, Spin, Grid } from "antd";
+import { Typography, Card, Row, Col, Progress, Grid } from "antd";
 import {
   Target,
   Headphones,
   BookOpen,
   Mic,
   PenLine,
-  TrendingUp,
   Calendar,
-  Clock,
   Flame,
   ArrowRight,
+  Clock,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
-  authenticatedFetch,
   fetchUserProfile,
   type ProfileData,
+  authenticatedFetch,
 } from "../services/authService";
 
 const { Title, Text } = Typography;
 const { useBreakpoint } = Grid;
 
+interface DailyUsage {
+  vocab_learned_count?: number;
+  writing_evaluation_count?: number;
+  speaking_mock_count?: number;
+  reading_attempt_count?: number;
+  listening_attempt_count?: number;
+}
+
 interface DashboardData {
   profile: ProfileData | null;
   wallet: { balance: number } | null;
-  dailyUsage: any;
+  dailyUsage: DailyUsage | null;
   loading: boolean;
 }
 
@@ -136,9 +143,9 @@ const DashboardHome: React.FC = () => {
   const progressPct =
     targetBand > 0 ? Math.min((currentBand / targetBand) * 100, 100) : 0;
 
-  const weakSkills: string[] = (profile as any)?.weak_skills || [];
-  const strongSkills: string[] = (profile as any)?.strong_skills || [];
-  const dailyHours = (profile as any)?.daily_study_hours || 0;
+  const weakSkills: string[] = profile?.weak_skills || [];
+  const strongSkills: string[] = profile?.strong_skills || [];
+  const dailyHours = profile?.daily_study_hours ?? 0;
   const examDate = profile?.target_date;
 
   const daysUntilExam = examDate

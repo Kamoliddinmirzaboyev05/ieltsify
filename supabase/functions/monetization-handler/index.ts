@@ -17,7 +17,7 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const { action, userId, amount, description, type, planType, coinAmount, referralCode } = await req.json()
+    const { action, userId, amount, description, type, referralCode } = await req.json()
 
     if (action === 'deduct_coins') {
       // 1. Check balance

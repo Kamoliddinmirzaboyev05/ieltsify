@@ -1,48 +1,72 @@
 // Central Data Manager - Supabase operations
-import { supabase } from '../lib/supabase';
-import type { VocabularyWord, Article, ListeningResource, UserNote, WritingTask, WritingDraft, ReadingPassage, ListeningTest, WritingSubmission } from '../types';
+import { supabase } from "../lib/supabase";
+import type {
+  VocabularyWord,
+  Article,
+  ListeningResource,
+  UserNote,
+  WritingTask,
+  WritingDraft,
+  ReadingPassage,
+  ListeningTest,
+  WritingSubmission,
+} from "../types";
 
 // Vocabulary Operations
 export const vocabularyManager = {
   getAll: async (): Promise<VocabularyWord[]> => {
-    const { data, error } = await supabase.from('vocabulary').select('*');
+    const { data, error } = await supabase.from("vocabulary").select("*");
     if (error) {
-      console.error('Error reading vocabulary:', error);
+      console.error("Error reading vocabulary:", error);
       return [];
     }
     return data || [];
   },
-  
-  add: async (word: Omit<VocabularyWord, 'id' | 'addedDate' | 'reviewCount'>): Promise<VocabularyWord> => {
-    const { data: { user } } = await supabase.auth.getUser();
+
+  add: async (
+    word: Omit<VocabularyWord, "id" | "addedDate" | "reviewCount">,
+  ): Promise<VocabularyWord> => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     const newWord = {
       ...word,
       user_id: user?.id,
       addedDate: new Date().toISOString(),
       reviewCount: 0,
     };
-    const { data, error } = await supabase.from('vocabulary').insert(newWord).select().single();
+    const { data, error } = await supabase
+      .from("vocabulary")
+      .insert(newWord)
+      .select()
+      .single();
     if (error) throw error;
     return data;
   },
-  
-  update: async (id: string, updates: Partial<VocabularyWord>): Promise<void> => {
-    const { error } = await supabase.from('vocabulary').update(updates).eq('id', id);
+
+  update: async (
+    id: string,
+    updates: Partial<VocabularyWord>,
+  ): Promise<void> => {
+    const { error } = await supabase
+      .from("vocabulary")
+      .update(updates)
+      .eq("id", id);
     if (error) throw error;
   },
-  
+
   delete: async (id: string): Promise<void> => {
-    const { error } = await supabase.from('vocabulary').delete().eq('id', id);
+    const { error } = await supabase.from("vocabulary").delete().eq("id", id);
     if (error) throw error;
   },
-  
+
   search: async (query: string): Promise<VocabularyWord[]> => {
     const { data, error } = await supabase
-      .from('vocabulary')
-      .select('*')
+      .from("vocabulary")
+      .select("*")
       .or(`word.ilike.%${query}%,definition.ilike.%${query}%`);
     if (error) {
-      console.error('Error searching vocabulary:', error);
+      console.error("Error searching vocabulary:", error);
       return [];
     }
     return data || [];
@@ -52,36 +76,49 @@ export const vocabularyManager = {
 // Article Operations
 export const articleManager = {
   getAll: async (): Promise<Article[]> => {
-    const { data, error } = await supabase.from('articles').select('*');
+    const { data, error } = await supabase.from("articles").select("*");
     if (error) {
-      console.error('Error reading articles:', error);
+      console.error("Error reading articles:", error);
       return [];
     }
     return data || [];
   },
-  
-  add: async (article: Omit<Article, 'id' | 'uploadDate'>): Promise<Article> => {
+
+  add: async (
+    article: Omit<Article, "id" | "uploadDate">,
+  ): Promise<Article> => {
     const newArticle = {
       ...article,
       uploadDate: new Date().toISOString(),
     };
-    const { data, error } = await supabase.from('articles').insert(newArticle).select().single();
+    const { data, error } = await supabase
+      .from("articles")
+      .insert(newArticle)
+      .select()
+      .single();
     if (error) throw error;
     return data;
   },
-  
+
   update: async (id: string, updates: Partial<Article>): Promise<void> => {
-    const { error } = await supabase.from('articles').update(updates).eq('id', id);
+    const { error } = await supabase
+      .from("articles")
+      .update(updates)
+      .eq("id", id);
     if (error) throw error;
   },
-  
+
   delete: async (id: string): Promise<void> => {
-    const { error } = await supabase.from('articles').delete().eq('id', id);
+    const { error } = await supabase.from("articles").delete().eq("id", id);
     if (error) throw error;
   },
-  
+
   getById: async (id: string): Promise<Article | undefined> => {
-    const { data, error } = await supabase.from('articles').select('*').eq('id', id).single();
+    const { data, error } = await supabase
+      .from("articles")
+      .select("*")
+      .eq("id", id)
+      .single();
     if (error) return undefined;
     return data;
   },
@@ -90,31 +127,43 @@ export const articleManager = {
 // Listening Operations
 export const listeningManager = {
   getAll: async (): Promise<ListeningResource[]> => {
-    const { data, error } = await supabase.from('listening').select('*');
+    const { data, error } = await supabase.from("listening").select("*");
     if (error) {
-      console.error('Error reading listening:', error);
+      console.error("Error reading listening:", error);
       return [];
     }
     return data || [];
   },
-  
-  add: async (resource: Omit<ListeningResource, 'id' | 'uploadDate'>): Promise<ListeningResource> => {
+
+  add: async (
+    resource: Omit<ListeningResource, "id" | "uploadDate">,
+  ): Promise<ListeningResource> => {
     const newResource = {
       ...resource,
       uploadDate: new Date().toISOString(),
     };
-    const { data, error } = await supabase.from('listening').insert(newResource).select().single();
+    const { data, error } = await supabase
+      .from("listening")
+      .insert(newResource)
+      .select()
+      .single();
     if (error) throw error;
     return data;
   },
-  
-  update: async (id: string, updates: Partial<ListeningResource>): Promise<void> => {
-    const { error } = await supabase.from('listening').update(updates).eq('id', id);
+
+  update: async (
+    id: string,
+    updates: Partial<ListeningResource>,
+  ): Promise<void> => {
+    const { error } = await supabase
+      .from("listening")
+      .update(updates)
+      .eq("id", id);
     if (error) throw error;
   },
-  
+
   delete: async (id: string): Promise<void> => {
-    const { error } = await supabase.from('listening').delete().eq('id', id);
+    const { error } = await supabase.from("listening").delete().eq("id", id);
     if (error) throw error;
   },
 };
@@ -122,34 +171,43 @@ export const listeningManager = {
 // Notes Operations
 export const notesManager = {
   getAll: async (): Promise<UserNote[]> => {
-    const { data, error } = await supabase.from('notes').select('*');
+    const { data, error } = await supabase.from("notes").select("*");
     if (error) {
-      console.error('Error reading notes:', error);
+      console.error("Error reading notes:", error);
       return [];
     }
     return data || [];
   },
-  
-  add: async (note: Omit<UserNote, 'id' | 'timestamp'>): Promise<UserNote> => {
-    const { data: { user } } = await supabase.auth.getUser();
+
+  add: async (note: Omit<UserNote, "id" | "timestamp">): Promise<UserNote> => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     const newNote = {
       ...note,
       user_id: user?.id,
       timestamp: new Date().toISOString(),
     };
-    const { data, error } = await supabase.from('notes').insert(newNote).select().single();
+    const { data, error } = await supabase
+      .from("notes")
+      .insert(newNote)
+      .select()
+      .single();
     if (error) throw error;
     return data;
   },
-  
+
   getByResource: async (resourceId: string): Promise<UserNote[]> => {
-    const { data, error } = await supabase.from('notes').select('*').eq('resourceId', resourceId);
+    const { data, error } = await supabase
+      .from("notes")
+      .select("*")
+      .eq("resourceId", resourceId);
     if (error) return [];
     return data || [];
   },
-  
+
   delete: async (id: string): Promise<void> => {
-    const { error } = await supabase.from('notes').delete().eq('id', id);
+    const { error } = await supabase.from("notes").delete().eq("id", id);
     if (error) throw error;
   },
 };
@@ -157,15 +215,17 @@ export const notesManager = {
 // Writing Task Operations
 export const writingTaskManager = {
   getAll: async (): Promise<WritingTask[]> => {
-    const { data, error } = await supabase.from('writing_tasks').select('*');
+    const { data, error } = await supabase.from("writing_tasks").select("*");
     if (error) {
-      console.error('Error reading writing tasks:', error);
+      console.error("Error reading writing tasks:", error);
       return [];
     }
     return data || [];
   },
-  
-  add: async (task: Omit<WritingTask, 'id' | 'uploadDate'>): Promise<WritingTask> => {
+
+  add: async (
+    task: Omit<WritingTask, "id" | "uploadDate">,
+  ): Promise<WritingTask> => {
     const newTask = {
       title: task.title,
       task1_question: task.task1Question,
@@ -173,23 +233,37 @@ export const writingTaskManager = {
       task2_question: task.task2Question,
       upload_date: new Date().toISOString(),
     };
-    const { data, error } = await supabase.from('writing_tasks').insert(newTask).select().single();
+    const { data, error } = await supabase
+      .from("writing_tasks")
+      .insert(newTask)
+      .select()
+      .single();
     if (error) throw error;
     return data;
   },
-  
+
   update: async (id: string, updates: Partial<WritingTask>): Promise<void> => {
-    const { error } = await supabase.from('writing_tasks').update(updates).eq('id', id);
+    const { error } = await supabase
+      .from("writing_tasks")
+      .update(updates)
+      .eq("id", id);
     if (error) throw error;
   },
-  
+
   delete: async (id: string): Promise<void> => {
-    const { error } = await supabase.from('writing_tasks').delete().eq('id', id);
+    const { error } = await supabase
+      .from("writing_tasks")
+      .delete()
+      .eq("id", id);
     if (error) throw error;
   },
-  
+
   getById: async (id: string): Promise<WritingTask | undefined> => {
-    const { data, error } = await supabase.from('writing_tasks').select('*').eq('id', id).single();
+    const { data, error } = await supabase
+      .from("writing_tasks")
+      .select("*")
+      .eq("id", id)
+      .single();
     if (error) return undefined;
     return data;
   },
@@ -198,30 +272,36 @@ export const writingTaskManager = {
 // Writing Draft Operations
 export const writingDraftManager = {
   getAll: async (): Promise<WritingDraft[]> => {
-    const { data, error } = await supabase.from('writing_drafts').select('*');
+    const { data, error } = await supabase.from("writing_drafts").select("*");
     if (error) {
-      console.error('Error reading writing drafts:', error);
+      console.error("Error reading writing drafts:", error);
       return [];
     }
     return data || [];
   },
-  
+
   getByTaskId: async (taskId: string): Promise<WritingDraft | undefined> => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     const { data, error } = await supabase
-      .from('writing_drafts')
-      .select('*')
-      .eq('task_id', taskId)
-      .eq('user_id', user?.id)
-      .eq('submitted', false)
+      .from("writing_drafts")
+      .select("*")
+      .eq("task_id", taskId)
+      .eq("user_id", user?.id)
+      .eq("submitted", false)
       .maybeSingle();
-    
+
     if (error) return undefined;
     return data || undefined;
   },
-  
-  save: async (draft: Omit<WritingDraft, 'id' | 'lastSaved'>): Promise<WritingDraft> => {
-    const { data: { user } } = await supabase.auth.getUser();
+
+  save: async (
+    draft: Omit<WritingDraft, "id" | "lastSaved">,
+  ): Promise<WritingDraft> => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     const savedDraft = {
       task_id: draft.taskId,
       content: draft.content,
@@ -231,31 +311,36 @@ export const writingDraftManager = {
       last_saved: new Date().toISOString(),
       submitted: draft.submitted,
     };
-    
+
     const { data, error } = await supabase
-      .from('writing_drafts')
+      .from("writing_drafts")
       .upsert(savedDraft)
       .select()
       .single();
-    
+
     if (error) throw error;
     return data;
   },
-  
+
   submit: async (taskId: string): Promise<void> => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     const { error } = await supabase
-      .from('writing_drafts')
+      .from("writing_drafts")
       .update({ submitted: true })
-      .eq('task_id', taskId)
-      .eq('user_id', user?.id)
-      .eq('submitted', false);
-    
+      .eq("task_id", taskId)
+      .eq("user_id", user?.id)
+      .eq("submitted", false);
+
     if (error) throw error;
   },
-  
+
   delete: async (id: string): Promise<void> => {
-    const { error } = await supabase.from('writing_drafts').delete().eq('id', id);
+    const { error } = await supabase
+      .from("writing_drafts")
+      .delete()
+      .eq("id", id);
     if (error) throw error;
   },
 };
@@ -263,13 +348,17 @@ export const writingDraftManager = {
 // Reading Passage Operations
 export const readingPassageManager = {
   getAll: async (): Promise<ReadingPassage[]> => {
-    const { data, error } = await supabase.from('reading_passages').select('*');
+    const { data, error } = await supabase.from("reading_passages").select("*");
     if (error) return [];
     return data || [];
   },
-  
+
   getById: async (id: string): Promise<ReadingPassage | undefined> => {
-    const { data, error } = await supabase.from('reading_passages').select('*').eq('id', id).single();
+    const { data, error } = await supabase
+      .from("reading_passages")
+      .select("*")
+      .eq("id", id)
+      .single();
     if (error) return undefined;
     return data;
   },
@@ -278,13 +367,17 @@ export const readingPassageManager = {
 // Listening Test Operations
 export const listeningTestManager = {
   getAll: async (): Promise<ListeningTest[]> => {
-    const { data, error } = await supabase.from('listening_tests').select('*');
+    const { data, error } = await supabase.from("listening_tests").select("*");
     if (error) return [];
     return data || [];
   },
-  
+
   getById: async (id: string): Promise<ListeningTest | undefined> => {
-    const { data, error } = await supabase.from('listening_tests').select('*').eq('id', id).single();
+    const { data, error } = await supabase
+      .from("listening_tests")
+      .select("*")
+      .eq("id", id)
+      .single();
     if (error) return undefined;
     return data;
   },
@@ -293,13 +386,19 @@ export const listeningTestManager = {
 // Writing Submission Operations
 export const writingSubmissionManager = {
   getAll: async (): Promise<WritingSubmission[]> => {
-    const { data, error } = await supabase.from('writing_submissions').select('*');
+    const { data, error } = await supabase
+      .from("writing_submissions")
+      .select("*");
     if (error) return [];
     return data || [];
   },
-  
-  add: async (submission: Omit<WritingSubmission, 'id' | 'submittedAt'>): Promise<WritingSubmission> => {
-    const { data: { user } } = await supabase.auth.getUser();
+
+  add: async (
+    submission: Omit<WritingSubmission, "id" | "submittedAt">,
+  ): Promise<WritingSubmission> => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     const newSubmission = {
       task_id: submission.taskId,
       task1_content: submission.task1Content,
@@ -311,18 +410,24 @@ export const writingSubmissionManager = {
       submitted_at: new Date().toISOString(),
       ai_feedback: submission.aiFeedback,
     };
-    const { data, error } = await supabase.from('writing_submissions').insert(newSubmission).select().single();
+    const { data, error } = await supabase
+      .from("writing_submissions")
+      .insert(newSubmission)
+      .select()
+      .single();
     if (error) throw error;
     return data;
   },
-  
+
   getByTaskId: async (taskId: string): Promise<WritingSubmission[]> => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     const { data, error } = await supabase
-      .from('writing_submissions')
-      .select('*')
-      .eq('task_id', taskId)
-      .eq('user_id', user?.id);
+      .from("writing_submissions")
+      .select("*")
+      .eq("task_id", taskId)
+      .eq("user_id", user?.id);
     if (error) return [];
     return data || [];
   },
@@ -331,16 +436,20 @@ export const writingSubmissionManager = {
 // Speaking Test Operations
 export const speakingTestManager = {
   getAll: async (): Promise<any[]> => {
-    const { data, error } = await supabase.from('speaking_tests').select('*');
+    const { data, error } = await supabase.from("speaking_tests").select("*");
     if (error) {
-      console.error('Error reading speaking tests:', error);
+      console.error("Error reading speaking tests:", error);
       return [];
     }
     return data || [];
   },
-  
+
   getById: async (id: string): Promise<any | undefined> => {
-    const { data, error } = await supabase.from('speaking_tests').select('*').eq('id', id).single();
+    const { data, error } = await supabase
+      .from("speaking_tests")
+      .select("*")
+      .eq("id", id)
+      .single();
     if (error) return undefined;
     return data;
   },
@@ -350,17 +459,17 @@ export const speakingTestManager = {
 export const globalSearch = async (query: string) => {
   const results: Array<{
     id: string;
-    type: 'vocabulary' | 'article' | 'listening';
+    type: "vocabulary" | "article" | "listening";
     title: string;
     snippet: string;
   }> = [];
 
   // Search vocabulary
   const vocabResults = await vocabularyManager.search(query);
-  vocabResults.forEach(word => {
+  vocabResults.forEach((word) => {
     results.push({
       id: word.id,
-      type: 'vocabulary',
+      type: "vocabulary",
       title: word.word,
       snippet: word.definition.substring(0, 100),
     });
@@ -368,32 +477,32 @@ export const globalSearch = async (query: string) => {
 
   // Search articles
   const { data: articles, error: articleError } = await supabase
-    .from('articles')
-    .select('*')
+    .from("articles")
+    .select("*")
     .or(`title.ilike.%${query}%,htmlContent.ilike.%${query}%`);
-  
+
   if (!articleError && articles) {
-    articles.forEach(article => {
+    articles.forEach((article: any) => {
       results.push({
         id: article.id,
-        type: 'article',
+        type: "article",
         title: article.title,
-        snippet: article.htmlContent.replace(/<[^>]*>/g, '').substring(0, 100),
+        snippet: article.htmlContent.replace(/<[^>]*>/g, "").substring(0, 100),
       });
     });
   }
 
   // Search listening
   const { data: listening, error: listeningError } = await supabase
-    .from('listening')
-    .select('*')
-    .ilike('title', `%${query}%`);
-  
+    .from("listening")
+    .select("*")
+    .ilike("title", `%${query}%`);
+
   if (!listeningError && listening) {
-    listening.forEach(resource => {
+    listening.forEach((resource: any) => {
       results.push({
         id: resource.id,
-        type: 'listening',
+        type: "listening",
         title: resource.title,
         snippet: `${resource.category} - ${resource.difficulty}`,
       });

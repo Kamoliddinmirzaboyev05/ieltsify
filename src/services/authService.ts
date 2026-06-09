@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabase';
+import { supabase } from "../lib/supabase";
 
 export interface GoogleAuthData {
   id_token: string;
@@ -56,6 +56,14 @@ export interface ProfileData {
     writing: number;
     speaking: number;
   };
+  weak_skills?: string[];
+  strong_skills?: string[];
+  daily_study_hours?: number;
+  vocab_learned_count?: number;
+  writing_evaluation_count?: number;
+  speaking_mock_count?: number;
+  reading_attempt_count?: number;
+  listening_attempt_count?: number;
 }
 
 export interface ProfileResponse {
@@ -85,7 +93,7 @@ export interface AuthResponse {
 export const googleAuth = async (idToken: string): Promise<AuthResponse> => {
   try {
     const { data, error } = await supabase.auth.signInWithIdToken({
-      provider: 'google',
+      provider: "google",
       token: idToken,
     });
 
@@ -93,7 +101,7 @@ export const googleAuth = async (idToken: string): Promise<AuthResponse> => {
 
     const userProfile: UserProfile = {
       id: data.user?.id,
-      email: data.user?.email || '',
+      email: data.user?.email || "",
       name: data.user?.user_metadata?.full_name,
       picture: data.user?.user_metadata?.avatar_url,
       email_verified: !!data.user?.email_confirmed_at,
@@ -104,14 +112,17 @@ export const googleAuth = async (idToken: string): Promise<AuthResponse> => {
       refresh: data.session?.refresh_token,
       user: userProfile,
     };
-  } catch (error: any) {
-    console.error('❌ Google Auth Error:', error);
-    throw new Error(error.message || 'Google autentifikatsiya xatosi.');
+  } catch (error: unknown) {
+    console.error("❌ Google Auth Error:", error);
+    const message = error instanceof Error ? error.message : "Google autentifikatsiya xatosi.";
+    throw new Error(message);
   }
 };
 
 // Email/Password Register
-export const registerUser = async (registerData: RegisterData): Promise<AuthResponse> => {
+export const registerUser = async (
+  registerData: RegisterData,
+): Promise<AuthResponse> => {
   try {
     const { data, error } = await supabase.auth.signUp({
       email: registerData.email,
@@ -128,11 +139,9 @@ export const registerUser = async (registerData: RegisterData): Promise<AuthResp
 
     if (error) throw error;
 
-    // After signup, we might need to create a profile in a 'profiles' table
-    // But for now, we'll return the basic user info
     const userProfile: UserProfile = {
       id: data.user?.id,
-      email: data.user?.email || '',
+      email: data.user?.email || "",
       username: registerData.username,
       first_name: registerData.first_name,
       last_name: registerData.last_name,
@@ -144,17 +153,20 @@ export const registerUser = async (registerData: RegisterData): Promise<AuthResp
       refresh: data.session?.refresh_token,
       user: userProfile,
     };
-  } catch (error: any) {
-    console.error('❌ Register Error:', error);
-    throw new Error(error.message || 'Ro\'yxatdan o\'tishda xatolik yuz berdi');
+  } catch (error: unknown) {
+    console.error("❌ Register Error:", error);
+    const message = error instanceof Error ? error.message : "Ro'yxatdan o'tishda xatolik yuz berdi";
+    throw new Error(message);
   }
 };
 
 // Email/Password Login
-export const loginUser = async (loginData: LoginData): Promise<AuthResponse> => {
+export const loginUser = async (
+  loginData: LoginData,
+): Promise<AuthResponse> => {
   try {
     const { data, error } = await supabase.auth.signInWithPassword({
-      email: loginData.username, // Assuming username is email for Supabase login
+      email: loginData.username,
       password: loginData.password,
     });
 
@@ -162,7 +174,7 @@ export const loginUser = async (loginData: LoginData): Promise<AuthResponse> => 
 
     const userProfile: UserProfile = {
       id: data.user?.id,
-      email: data.user?.email || '',
+      email: data.user?.email || "",
       username: data.user?.user_metadata?.username,
       first_name: data.user?.user_metadata?.first_name,
       last_name: data.user?.user_metadata?.last_name,
@@ -174,44 +186,45 @@ export const loginUser = async (loginData: LoginData): Promise<AuthResponse> => 
       refresh: data.session?.refresh_token,
       user: userProfile,
     };
-  } catch (error: any) {
-    console.error('❌ Login Error:', error);
-    throw new Error(error.message || 'Kirishda xatolik');
+  } catch (error: unknown) {
+    console.error("❌ Login Error:", error);
+    const message = error instanceof Error ? error.message : "Kirishda xatolik";
+    throw new Error(message);
   }
 };
 
 // Save tokens to localStorage
 export const saveAuthTokens = (accessToken: string, refreshToken: string) => {
-  localStorage.setItem('access_token', accessToken);
-  localStorage.setItem('refresh_token', refreshToken);
+  localStorage.setItem("access_token", accessToken);
+  localStorage.setItem("refresh_token", refreshToken);
 };
 
 // Get access token
 export const getAccessToken = (): string | null => {
-  return localStorage.getItem('access_token');
+  return localStorage.getItem("access_token");
 };
 
 // Get refresh token
 export const getRefreshToken = (): string | null => {
-  return localStorage.getItem('refresh_token');
+  return localStorage.getItem("refresh_token");
 };
 
 // Clear tokens (logout)
 export const clearAuthTokens = async () => {
   await supabase.auth.signOut();
-  localStorage.removeItem('access_token');
-  localStorage.removeItem('refresh_token');
-  localStorage.removeItem('user_profile');
+  localStorage.removeItem("access_token");
+  localStorage.removeItem("refresh_token");
+  localStorage.removeItem("user_profile");
 };
 
 // Save user profile
 export const saveUserProfile = (user: UserProfile) => {
-  localStorage.setItem('user_profile', JSON.stringify(user));
+  localStorage.setItem("user_profile", JSON.stringify(user));
 };
 
 // Get user profile
 export const getUserProfile = (): UserProfile | null => {
-  const profile = localStorage.getItem('user_profile');
+  const profile = localStorage.getItem("user_profile");
   return profile ? JSON.parse(profile) : null;
 };
 
@@ -220,13 +233,30 @@ export const isAuthenticated = (): boolean => {
   return !!getAccessToken();
 };
 
+// authenticatedFetch helper for API calls
+export const authenticatedFetch = async (
+  url: string,
+  options: RequestInit = {},
+): Promise<Response> => {
+  const accessToken = getAccessToken();
+  if (!accessToken) {
+    throw new Error("Foydalanuvchi tizimga kirmagan");
+  }
+
+  const headers = new Headers(options.headers);
+  headers.set("Authorization", `Bearer ${accessToken}`);
+  headers.set("Content-Type", "application/json");
+
+  return fetch(url, { ...options, headers });
+};
+
 // Refresh access token
 export const refreshAccessToken = async (): Promise<string> => {
   const { data, error } = await supabase.auth.refreshSession();
-  
+
   if (error || !data.session) {
     await clearAuthTokens();
-    throw new Error('Token refresh failed');
+    throw new Error("Token refresh failed");
   }
 
   saveAuthTokens(data.session.access_token, data.session.refresh_token);
@@ -236,27 +266,29 @@ export const refreshAccessToken = async (): Promise<string> => {
 // Get user profile from backend
 export const fetchUserProfile = async (): Promise<ProfileData> => {
   try {
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError || !user) throw new Error('User not found');
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+    if (userError || !user) throw new Error("User not found");
 
-    // Try to get profile from 'user_profiles' table
     const { data: profile, error: profileError } = await supabase
-      .from('user_profiles')
-      .select('*')
-      .eq('id', user.id)
+      .from("user_profiles")
+      .select("*")
+      .eq("id", user.id)
       .single();
 
-    if (profileError && profileError.code !== 'PGRST116') {
-       console.error('Profile fetch error:', profileError);
+    if (profileError && profileError.code !== "PGRST116") {
+      console.error("Profile fetch error:", profileError);
     }
 
     const profileData: ProfileData = {
       id: user.id,
-      email: user.email || '',
-      username: profile?.username || user.user_metadata?.username || '',
-      first_name: profile?.first_name || user.user_metadata?.first_name || '',
-      last_name: profile?.last_name || user.user_metadata?.last_name || '',
-      role: profile?.role || 'user',
+      email: user.email || "",
+      username: profile?.username || user.user_metadata?.username || "",
+      first_name: profile?.first_name || user.user_metadata?.first_name || "",
+      last_name: profile?.last_name || user.user_metadata?.last_name || "",
+      role: profile?.role || "user",
       is_vip: profile?.is_vip || false,
       vip_expires_at: profile?.vip_expires_at || null,
       email_verified: !!user.email_confirmed_at,
@@ -276,20 +308,24 @@ export const fetchUserProfile = async (): Promise<ProfileData> => {
     };
 
     return profileData;
-  } catch (error: any) {
-    console.error('Fetch Profile Error:', error);
+  } catch (error: unknown) {
+    console.error("Fetch Profile Error:", error);
     throw error;
   }
 };
 
 // Update user profile
-export const updateUserProfile = async (profileData: Partial<ProfileData>): Promise<ProfileData> => {
+export const updateUserProfile = async (
+  profileData: Partial<ProfileData>,
+): Promise<ProfileData> => {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('User not found');
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) throw new Error("User not found");
 
     const { data, error } = await supabase
-      .from('user_profiles')
+      .from("user_profiles")
       .upsert({
         id: user.id,
         ...profileData,
@@ -301,28 +337,28 @@ export const updateUserProfile = async (profileData: Partial<ProfileData>): Prom
     if (error) throw error;
 
     return data as ProfileData;
-  } catch (error: any) {
-    console.error('Update Profile Error:', error);
-    throw new Error(error.message || 'Profilni yangilashda xatolik');
+  } catch (error: unknown) {
+    console.error("Update Profile Error:", error);
+    const message = error instanceof Error ? error.message : "Profilni yangilashda xatolik";
+    throw new Error(message);
   }
 };
 
 // Change password
 export const changePassword = async (
-  _currentPassword: string,
   newPassword: string,
-  _newPasswordConfirm: string
 ): Promise<{ message: string }> => {
   try {
     const { error } = await supabase.auth.updateUser({
-      password: newPassword
+      password: newPassword,
     });
 
     if (error) throw error;
 
-    return { message: 'Parol muvaffaqiyatli o\'zgartirildi' };
-  } catch (error: any) {
-    console.error('Change Password Error:', error);
-    throw new Error(error.message || 'Parolni o\'zgartirishda xatolik');
+    return { message: "Parol muvaffaqiyatli o'zgartirildi" };
+  } catch (error: unknown) {
+    console.error("Change Password Error:", error);
+    const message = error instanceof Error ? error.message : "Parolni o'zgartirishda xatolik";
+    throw new Error(message);
   }
 };

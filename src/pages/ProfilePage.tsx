@@ -131,11 +131,7 @@ const ProfilePage: React.FC = () => {
   const handleChangePassword = async (values: any) => {
     try {
       setChangingPassword(true);
-      await changePassword(
-        values.current_password,
-        values.new_password,
-        values.new_password_confirm,
-      );
+      await changePassword(values.new_password);
       message.success("Parol muvaffaqiyatli o'zgartirildi!");
       setPasswordModalVisible(false);
       passwordForm.resetFields();

@@ -1,16 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Typography, Card, Button, Spin, message, Modal, Row, Col } from "antd";
-import {
-  Target,
-  Clock,
-  BookOpen,
-  Headphones,
-  PenLine,
-  Mic,
-  ArrowRight,
-  CheckCircle,
-  AlertCircle,
-} from "lucide-react";
+import { Typography, Card, Button, message, Modal, Row, Col } from "antd";
+import { Target, Clock, AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { authenticatedFetch } from "../services/authService";
 
@@ -107,7 +97,7 @@ const MockExamPage: React.FC = () => {
       );
 
       if (response.ok) {
-        const data = await response.json();
+        await response.json();
         message.success("Mock Exam boshlandi!");
         setConfirmModal({ open: false, mock: null, accessSource: "" });
         // TODO: Navigate to exam mode

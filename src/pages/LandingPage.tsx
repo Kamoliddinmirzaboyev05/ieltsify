@@ -12,8 +12,6 @@ import {
   CheckCircle,
   ArrowRight,
   Zap,
-  Shield,
-  Clock,
 } from "lucide-react";
 
 const LandingPage: React.FC = () => {

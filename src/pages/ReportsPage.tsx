@@ -344,7 +344,8 @@ const ReportsPage: React.FC = () => {
                     width: "100%",
                     maxWidth: "28px",
                     height: `${height}px`,
-                    backgroundColor: total > 0 ? "#10b981" : "var(--border-color)",
+                    backgroundColor:
+                      total > 0 ? "#10b981" : "var(--border-color)",
                     borderRadius: "3px",
                     transition: "height 0.3s",
                   }}
@@ -442,7 +443,9 @@ const ReportsPage: React.FC = () => {
                   padding: "10px",
                   borderRadius: "6px",
                   border: `1px solid ${unlocked ? "#bbf7d0" : "var(--border-color)"}`,
-                  backgroundColor: unlocked ? "rgba(16, 185, 129, 0.08)" : "var(--bg-secondary)",
+                  backgroundColor: unlocked
+                    ? "rgba(16, 185, 129, 0.08)"
+                    : "var(--bg-secondary)",
                   opacity: unlocked ? 1 : 0.5,
                 }}
               >
@@ -470,7 +473,10 @@ const ReportsPage: React.FC = () => {
       {report.recommendations.length > 0 && (
         <Card
           size="small"
-          style={{ borderRadius: "6px", border: "1px solid var(--border-color)" }}
+          style={{
+            borderRadius: "6px",
+            border: "1px solid var(--border-color)",
+          }}
           bodyStyle={{ padding: "14px" }}
         >
           <Text

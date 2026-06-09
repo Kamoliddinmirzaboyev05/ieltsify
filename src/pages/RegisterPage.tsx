@@ -5,7 +5,6 @@ import {
   Mail,
   User,
   ArrowLeft,
-  ArrowRight,
   Target,
   Clock,
   BookOpen,
@@ -22,12 +21,6 @@ import {
   saveUserProfile,
   authenticatedFetch,
 } from "../services/authService";
-
-declare global {
-  interface Window {
-    google?: any;
-  }
-}
 
 const SKILLS = [
   { key: "listening", label: "Listening" },

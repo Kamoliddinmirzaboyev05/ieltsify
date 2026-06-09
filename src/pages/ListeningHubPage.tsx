@@ -6,14 +6,11 @@ import {
   Empty,
   Spin,
   Button,
-  Space,
-  Tag,
   Grid,
   message,
 } from "antd";
 import { Headphones, Play, Clock, BookOpen, TrendingUp } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
 
 const { Title, Text, Paragraph } = Typography;
 const { useBreakpoint } = Grid;
@@ -154,7 +151,10 @@ const ListeningHubPage: React.FC = () => {
       >
         <Card
           size="small"
-          style={{ borderRadius: "6px", border: "1px solid var(--border-color)" }}
+          style={{
+            borderRadius: "6px",
+            border: "1px solid var(--border-color)",
+          }}
           bodyStyle={{ padding: "14px" }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -174,7 +174,10 @@ const ListeningHubPage: React.FC = () => {
         </Card>
         <Card
           size="small"
-          style={{ borderRadius: "6px", border: "1px solid var(--border-color)" }}
+          style={{
+            borderRadius: "6px",
+            border: "1px solid var(--border-color)",
+          }}
           bodyStyle={{ padding: "14px" }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -194,7 +197,10 @@ const ListeningHubPage: React.FC = () => {
         </Card>
         <Card
           size="small"
-          style={{ borderRadius: "6px", border: "1px solid var(--border-color)" }}
+          style={{
+            borderRadius: "6px",
+            border: "1px solid var(--border-color)",
+          }}
           bodyStyle={{ padding: "14px" }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>

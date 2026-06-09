@@ -9,12 +9,6 @@ import {
   saveUserProfile,
 } from "../services/authService";
 
-declare global {
-  interface Window {
-    google?: any;
-  }
-}
-
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
