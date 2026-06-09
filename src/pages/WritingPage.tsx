@@ -95,9 +95,9 @@ const WritingPage: React.FC = () => {
       {/* Info Card */}
       <Card
         style={{
-          borderRadius: '16px',
+          borderRadius: '6px',
           marginBottom: '24px',
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          background: '#10b981',
           border: 'none',
           color: 'white',
         }}
@@ -130,7 +130,7 @@ const WritingPage: React.FC = () => {
 
       {/* Task List */}
       {filteredTasks.length === 0 ? (
-        <Card style={{ borderRadius: '16px', textAlign: 'center', padding: '60px 20px' }}>
+        <Card style={{ borderRadius: '6px', textAlign: 'center', padding: '60px 20px' }}>
           <Empty
             description={
               <div>
@@ -160,7 +160,7 @@ const WritingPage: React.FC = () => {
               <Card
                 hoverable
                 style={{
-                  borderRadius: '16px',
+                  borderRadius: '6px',
                   border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid #e2e8f0',
                   height: '100%',
                 }}
@@ -238,7 +238,7 @@ const WritingPage: React.FC = () => {
       {/* Tips Card */}
       <Card
         style={{
-          borderRadius: '16px',
+          borderRadius: '6px',
           marginTop: '32px',
           backgroundColor: isDark ? 'rgba(251, 191, 36, 0.1)' : '#fffbeb',
           border: isDark ? '1px solid rgba(251, 191, 36, 0.3)' : '1px solid #fbbf24',
