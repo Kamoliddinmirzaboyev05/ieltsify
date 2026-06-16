@@ -63,7 +63,7 @@ const MockExamPage: React.FC = () => {
         setAccessStatus(d.data);
       }
     } catch {
-      message.error("Ma'lumotlarni yuklashda xatolik");
+      message.error("Failed to load data");
     } finally {
       setLoading(false);
     }
@@ -104,10 +104,10 @@ const MockExamPage: React.FC = () => {
         navigate("/dashboard");
       } else {
         const err = await response.json();
-        message.error(err.error || err.message || "Xatolik yuz berdi");
+        message.error(err.error || err.message || "An error occurred");
       }
     } catch {
-      message.error("Xatolik yuz berdi");
+      message.error("An error occurred");
     } finally {
       setStarting(false);
     }
@@ -266,7 +266,7 @@ const MockExamPage: React.FC = () => {
         >
           <Target size={40} color="#94a3b8" style={{ marginBottom: "12px" }} />
           <Title level={5} style={{ margin: "0 0 4px 0" }}>
-            Hali mock testlar mavjud emas
+            No mock tests available yet
           </Title>
           <Text type="secondary" style={{ fontSize: "13px" }}>
             Admin tomonidan mock testlar qo'shilganda bu yerda ko'rinadi

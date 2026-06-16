@@ -1,0 +1,312 @@
+
+const questionsAndAnswers = {
+"MATLAB nomi nimaning qisqartmasi hisoblanadi?" : "Matrix Laboratory",
+"MATLAB tizimining asosiy vazifasi nima?" : "Matematik hisoblash va modellashtirish",
+"MATLABda buyruqlarni bevosita kiritish uchun qaysi oyna xizmat qiladi?" : "Command Window",
+"MATLAB tizimining asosiy afzalliklaridan biri qaysi?" : "Tezkor matematik hisoblash va grafik vizualizatsiya",
+"MATLAB qaysi turdagi ma’lumotlar bilan ishlash uchun mo‘ljallangan?" : "Matritsa va massivlar",
+"MATLAB quyidagi dasturiy vositalardan qaysi biri bilan integratsiyalasha oladi?" : "C/C++, Java va Python",
+"MATLABda o‘zgaruvchilar qiymatlari qaysi oynada saqlanadi?" : "Workspace",
+"MATLAB tizimida dastur kodlarini yaratish va tahrirlash qaysi oynada amalga oshiriladi?" : "Editor Window",
+"MATLABda grafiklarni hosil qilish uchun qaysi buyruq qo‘llaniladi?" : "plot()",
+"MATLABning grafik imkoniyatlari nimaga xizmat qiladi?" : "Natijalarni vizual ko‘rinishda tasvirlashga",
+"MATLABda ikki o‘lchovli grafiklar qanday grafiklar hisoblanadi?" : "2D grafiklar",
+"MATLABda uch o‘lchovli grafiklarni yaratish imkoniyati mavjudmi?" : "Ha, mavjud",
+"MATLABda hisoblash natijalarini vizual ko‘rsatish jarayoni nima deb ataladi?" : "Grafik vizualizatsiya",
+"MATLABning boshqa dasturlar bilan integratsiyalashuvi nimani ta’minlaydi?" : "Turli dasturiy muhitlar bilan ma’lumot almashishni",
+"MATLAB tizimining grafik xususiyatlari qaysi imkoniyatni beradi?" : "2D va 3D grafiklarni yaratish",
+"MATLABda buyruqlarni bevosita bajarish uchun qaysi muhit xizmat qiladi?" : "Command Window",
+"MATLABning hisoblash muhiti nimaga mo‘ljallangan?" : "Matematik hisoblashlarni tezkor bajarishga",
+"MATLABda hisoblash natijalarini grafik ko‘rinishda tasvirlash nima deyiladi?" : "Grafik vizualizatsiya",
+"Ikki o‘lchovli grafiklarni chizish uchun qaysi buyruq ishlatiladi?" : "plot()",
+"MATLABning grafik imkoniyatlari nimani ta'minlaydi?" : "Natijalarni vizual tarzda ifodalashni",
+"Uch o‘lchovli grafiklarni qurish uchun qaysi buyruqdan foydalaniladi?" : "mesh()",
+"Grafik oynasi MATLABda qanday nomlanadi?" : "Figure Window",
+"Grafik sarlavhasini berish uchun qaysi buyruq ishlatiladi?" : "title()",
+"Gorizontal o‘qqa nom berish uchun qaysi buyruq ishlatiladi?" : "xlabel()",
+"Vertikal o‘qqa nom berish uchun qaysi buyruq ishlatiladi?" : "ylabel()",
+"Grafikda koordinata to‘rini chiqarish uchun qaysi buyruq ishlatiladi?" : "grid on",
+"Bir nechta grafiklarni bitta oynada tasvirlash imkonini beruvchi buyruq qaysi?" : "hold on",
+"MATLABning grafik xususiyatlari qaysi turdagi grafiklarni yaratishga imkon beradi?" : "2D va 3D grafiklarni",
+"MATLABda ustunli diagramma hosil qilish uchun qaysi buyruq ishlatiladi?" : "bar()",
+"MATLABda doiraviy diagramma qurish uchun qaysi buyruq ishlatiladi?" : "pie()",
+"MATLABda matritsa qanday qavslar yordamida beriladi?" : "[ ]",
+"Ikki matritsani qo‘shish uchun qaysi operator ishlatiladi?" : "+",
+"Ikki matritsani ayirish uchun qaysi operator ishlatiladi?" : "-",
+"Matritsalarni ko‘paytirish uchun qaysi operator ishlatiladi?" : "*",
+"Matritsa elementlari bo‘yicha ko‘paytirish qaysi operator yordamida bajariladi?" : ".*",
+"Barcha elementlari nolga teng bo‘lgan matritsani hosil qilish funksiyasi qaysi?" : "zeros()",
+"Barcha elementlari birga teng bo‘lgan matritsani hosil qilish funksiyasi qaysi?" : "ones()",
+"Birlik matritsani yaratish uchun qaysi funksiya ishlatiladi?" : "eye()",
+"Tasodifiy elementli matritsa yaratish uchun qaysi funksiya qo‘llaniladi?" : "rand()",
+"Sehrli kvadrat matritsa yaratish uchun qaysi funksiya ishlatiladi?" : "magic()",
+"Diagonal elementlari berilgan matritsani yaratish uchun qaysi funksiya ishlatiladi?" : "diag()",
+"Matritsalarni gorizontal yo‘nalishda birlashtirish qanday amalga oshiriladi?" : "[A B]",
+"Matritsalarni vertikal yo‘nalishda birlashtirish qanday amalga oshiriladi?" : "[A;B]",
+"Matritsaning transpozitsiyasini olish uchun qaysi belgi ishlatiladi?" : "'",
+"Matritsa o‘lchamlarini aniqlash uchun qaysi funksiya ishlatiladi?" : "size()",
+"Matritsani Schur shakliga keltirish uchun qaysi funksiya ishlatiladi?" : "schur()",
+"Schur almashtirish natijasida matritsa qanday ko‘rinishga keladi?" : "Yuqori uchburchak matritsa",
+"Siyrak matritsa nima?" : "Ko‘pchilik elementlari nolga teng bo‘lgan matritsa",
+"MATLABda siyrak matritsa yaratish uchun qaysi funksiya ishlatiladi?" : "sparse()",
+"Siyrak matritsaning nolga teng bo‘lmagan elementlari sonini aniqlovchi funksiya qaysi?" : "nnz()",
+"Siyrak matritsaning nolga teng bo‘lmagan elementlari va ularning indekslarini olish uchun qaysi funksiya ishlatiladi?" : "find()",
+"Siyrak matritsaning vizual tasvirini hosil qilish uchun qaysi funksiya ishlatiladi?" : "spy()",
+"spy() funksiyasi nimani ko‘rsatadi?" : "Nolga teng bo‘lmagan elementlarning joylashuvini",
+"MATLABda matritsa elementlarini tartiblash uchun qaysi funksiya ishlatiladi?" : "sort()",
+"Buyurtma algoritmlarining asosiy maqsadi nima?" : "Hisoblash samaradorligini oshirish",
+"Matritsaning xos qiymatlarini topish uchun qaysi funksiya ishlatiladi?" : "eig()",
+"Siyrak matritsalar bilan ishlashning asosiy afzalligi nimada?" : "Xotira sarfini kamaytirish va hisoblash tezligini oshirish",
+"Schur almashtirishida qaysi turdagi matritsalar ishlatiladi?" : "Kvadrat matritsalar",
+"MATLABda siyrak matritsani to‘liq matritsaga aylantirish uchun qaysi funksiya ishlatiladi?" : "full()",
+"Buyurtma algoritmlarining asosiy vazifasi qaysi?" : "Matritsa elementlarini optimal tartibda joylashtirish",
+"MATLABda chiziqli algebraik tenglamalar sistemasini yechish uchun qaysi operator ishlatiladi?" : "\\",
+"Ax=b ko‘rinishidagi sistemada x ni topish uchun qaysi ifoda qo‘llaniladi?" : "x=A\\b",
+"Matritsaning determinantini hisoblash funksiyasi qaysi?" : "det()",
+"Matritsaning teskari matritsasini topish uchun qaysi funksiya ishlatiladi?" : "inv()",
+"Matritsaning rangini aniqlovchi funksiya qaysi?" : "rank()",
+"Matritsaning xos qiymatlarini topish uchun qaysi funksiya ishlatiladi?" : "eig()",
+"Matritsaning izini (diagonal elementlar yig‘indisini) topuvchi funksiya qaysi?" : "trace()",
+"Vektor yoki matritsa normasini hisoblash uchun qaysi funksiya ishlatiladi?" : "norm()",
+"Evklid normasi MATLABda qaysi funksiya yordamida hisoblanadi?" : "norm()",
+"Matritsalarni ko‘paytirish uchun qaysi operator ishlatiladi?" : "*",
+"Matritsa elementlari bo‘yicha ko‘paytirish qaysi operator yordamida bajariladi?" : ".*",
+"Matritsa transpozitsiyasini olish uchun qaysi belgi ishlatiladi?" : "'",
+"Chiziqli algebraik tenglamalar sistemasining yechimi mavjud bo‘lishi uchun matritsaning determinanti qanday bo‘lishi kerak?" : "Nolga teng bo‘lmasligi kerak",
+"MATLABda matritsaning o‘lchamini aniqlash uchun qaysi funksiya ishlatiladi?" : "size()",
+"Chiziqli algebraik tenglamalar sistemasini yechishda MATLABning asosiy afzalligi nimada?" : "Hisoblashlarni tez va aniq bajarishi",
+"MATLABda ikki o‘lchovli grafik chizish uchun qaysi funksiya ishlatiladi?" : "plot()",
+"Uch o‘lchovli sirt grafigini yaratish uchun qaysi funksiya qo‘llaniladi?" : "surf()",
+"Uch o‘lchovli to‘rli grafikni hosil qilish uchun qaysi funksiya ishlatiladi?" : "mesh()",
+"Grafik sarlavhasini berish uchun qaysi buyruq ishlatiladi?" : "title()",
+"Gorizontal o‘qqa nom berish uchun qaysi funksiya ishlatiladi?" : "xlabel()",
+"Vertikal o‘qqa nom berish uchun qaysi funksiya ishlatiladi?" : "ylabel()",
+"Uch o‘lchovli grafikda Z o‘qiga nom berish uchun qaysi funksiya ishlatiladi?" : "zlabel()",
+"Grafikda koordinata to‘rini chiqarish uchun qaysi buyruq qo‘llaniladi?" : "grid on",
+"Grafik oynasida bir nechta chiziqlarni saqlab qolish uchun qaysi buyruq ishlatiladi?" : "hold on",
+"3D grafiklarda kuzatish burchagini o‘zgartirish uchun qaysi buyruq ishlatiladi?" : "view()",
+"MATLABda kamera parametrlarini boshqarish uchun qaysi buyruqdan foydalaniladi?" : "campos()",
+"Vektorlarni tekislikka proyeksiyalashda asosan qanday tasvirlash vositasidan foydalaniladi?" : "quiver()",
+"3D fazoda vektorlarni tasvirlash uchun qaysi funksiya ishlatiladi?" : "quiver3()",
+"Grafik o‘qlarining chegaralarini o‘rnatish uchun qaysi buyruq ishlatiladi?" : "axis()",
+"MATLABning grafik tizimi qanday turdagi grafiklarni yaratishga imkon beradi?" : "2D va 3D grafiklarni",
+"MATLABda bir o‘lchovli interpolyatsiyani bajarish uchun qaysi funksiya ishlatiladi?" : "interp1()",
+"Berilgan nuqtalarga polinomni yaqinlashtirish (approksimatsiya) uchun qaysi funksiya qo‘llaniladi?" : "polyfit()",
+"Approksimatsiya natijasida hosil bo‘lgan polinom qiymatlarini hisoblash uchun qaysi funksiya ishlatiladi?" : "polyval()",
+"Statistik ma’lumotlarning o‘rtacha qiymatini hisoblash uchun qaysi funksiya ishlatiladi?" : "mean()",
+"Statistik ma’lumotlarning medianasini topuvchi funksiya qaysi?" : "median()",
+"Standart og‘ishni hisoblash uchun qaysi funksiya ishlatiladi?" : "std()",
+"Dispersiyani hisoblash uchun qaysi funksiya ishlatiladi?" : "var()",
+"MATLABda triangulyatsiyani hosil qilish uchun qaysi funksiya qo‘llaniladi?" : "delaunay()",
+"Delaunay triangulyatsiyasi nimaga xizmat qiladi?" : "Nuqtalarni uchburchaklarga ajratishga",
+"Diskret Furye o‘zgarishini hisoblash uchun qaysi funksiya ishlatiladi?" : "fft()",
+"Teskari Furye o‘zgarishini bajarish uchun qaysi funksiya ishlatiladi?" : "ifft()",
+"Konvolyutsiya amalini bajarish uchun qaysi funksiya ishlatiladi?" : "conv()",
+"Diskret signallarni filtrlash uchun qaysi funksiya qo‘llaniladi?" : "filter()",
+"Furye o‘zgarishining asosiy vazifasi nima?" : "Signalni chastota sohasida tahlil qilish",
+"Interpolyatsiyaning asosiy maqsadi nima?" : "Oraliq nuqtalardagi qiymatlarni aniqlash",
+"Simulink paketi qaysi dastur tarkibiga kiradi?" : "MATLAB",
+"Simulink asosan nima uchun ishlatiladi?" : "Tizimlarni modellashtirish va simulyatsiya qilish",
+"Simulinkda model qanday ko‘rinishda yaratiladi?" : "Blok-diagramma ko‘rinishida",
+"Simulink modelini ishga tushirish uchun qaysi tugma ishlatiladi?" : "Run",
+"Simulink bloklari nimani ifodalaydi?" : "Matematik va mantiqiy operatsiyalarni",
+"Tebranish jarayonini modellashtirishda qaysi model ko‘p ishlatiladi?" : "Garmonik tebranish modeli",
+"Garmonik tebranishning asosiy formulasi qaysi?" : "x(t)=A sin(ωt + φ)",
+"To‘lqin harakatining asosiy xususiyati nima?" : "Energiya uzatish",
+"Simulinkda differensial tenglamalar nima orqali ifodalanadi?" : "Integrator va Gain bloklari orqali",
+"Markaziy maydondagi harakat odatda nimaga misol bo‘ladi?" : "Kuch maydonidagi harakatga",
+"Simulinkda signalni kuzatish uchun qaysi blok ishlatiladi?" : "Scope",
+"To‘lqinlar qaysi muhitda tarqalishi mumkin?" : "Qattiq, suyuq va gazsimon muhitda",
+"Simulinkda yig‘ish amalini bajaruvchi blok qaysi?" : "Sum",
+"Tebranishning asosiy parametri qaysi?" : "Amplituda, chastota va faza",
+"Simulinkning asosiy afzalligi nimada?" : "Murakkab dinamik tizimlarni vizual modellashtirish imkoniyati",
+"Ko‘p o‘lchovli ma’lumotlarni tahlil qilishda asosiy maqsad nima?" : "Ma’lumotlar orasidagi bog‘lanishni aniqlash",
+"Statistica dasturi nima uchun ishlatiladi?" : "Statistik tahlil va ma’lumotlarni qayta ishlash",
+"Ko‘p o‘lchovli vizualizatsiya nimani anglatadi?" : "Bir nechta o‘zgaruvchilarni grafikda tasvirlash",
+"Statistica dasturida grafiklar nima uchun ishlatiladi?" : "Ma’lumotlarni vizual tahlil qilish uchun",
+"Ko‘p o‘lchovli ma’lumotlarda asosiy muammo nima bo‘lishi mumkin?" : "Ma’lumotlar murakkabligi va hajmi katta bo‘lishi",
+"Statistica paketining asosiy funksiyasi qaysi?" : "Statistik hisob-kitob va grafik tahlil",
+"Ko‘p o‘lchovli ma’lumotlarni vizualizatsiya qilishda qaysi grafiklar ishlatiladi?" : "3D va ko‘p o‘lchovli diagrammalar",
+"Scatter plot nimani ifodalaydi?" : "Nuqtalar orqali o‘zgaruvchilar orasidagi bog‘lanishni",
+"Statistica dasturida klaster tahlili nima uchun ishlatiladi?" : "O‘xshash obyektlarni guruhlarga ajratish",
+"PCA (asosiy komponentlar tahlili) maqsadi nima?" : "O‘lchamlarni kamaytirish va ma’lumotni soddalashtirish",
+"Ko‘p o‘lchovli ma’lumotlarda korelyatsiya nimani bildiradi?" : "O‘zgaruvchilar orasidagi bog‘lanish darajasi",
+"Statistica dasturida histogramma nimani ko‘rsatadi?" : "Ma’lumotlar taqsimotini",
+"Vizualizatsiyaning asosiy afzalligi nima?" : "Murakkab ma’lumotni tushunarli ko‘rinishga keltirish",
+"3D grafiklar nimani tasvirlash uchun ishlatiladi?" : "Uchta o‘zgaruvchi orasidagi bog‘lanishni",
+"Statistica paketining foydasi nimada?" : "Katta hajmdagi ma’lumotlarni tez va aniq tahlil qilish",
+"Sinflashtirish (classification) nimani anglatadi?" : "Ma’lumotlarni oldindan belgilangan sinflarga ajratish",
+"Statistica dasturida sinflashtirishning asosiy maqsadi nima?" : "Obyektlarni guruhlarga ajratish",
+"Bashoratli model (predictive model) nima uchun ishlatiladi?" : "Kelajakdagi qiymatlarni oldindan taxmin qilish uchun",
+"Modelni o‘rgatish (training) nima degani?" : "Modelni ma’lumotlar asosida o‘qitish",
+"Modelni sinovdan o‘tkazish (testing) nimani bildiradi?" : "Model aniqligini tekshirish",
+"Statistica paketida sinflashtirish qaysi usullar orqali amalga oshiriladi?" : "Statistik va mashinaviy o‘qitish usullari",
+"Overfitting (ortiqcha moslashish) nima?" : "Model faqat o‘rgatilgan ma’lumotga juda moslashib qolishi",
+"Underfitting nima?" : "Model ma’lumotni yetarlicha o‘rganmasligi",
+"Model aniqligini baholash uchun qaysi ko‘rsatkich ishlatiladi?" : "Accuracy (aniqlik)",
+"Statistica dasturida klasterlash nimaga xizmat qiladi?" : "O‘xshash obyektlarni guruhlarga ajratish",
+"Sinflashtirishda kiruvchi ma’lumotlar nima deb ataladi?" : "Features (belgilar)",
+"Chiquvchi natija nima deb ataladi?" : "Class (sinf)",
+"Modelni sozlash (tuning) nima?" : "Model parametrlarini optimallashtirish",
+"Cross-validation nima uchun ishlatiladi?" : "Modelni yanada ishonchli baholash uchun",
+"Statistica paketining sinflashtirishdagi asosiy afzalligi nima?" : "Murakkab ma’lumotlarni tez va aniq tahlil qilish",
+"Klasterlashtirish nima?" : "O‘xshash obyektlarni guruhlarga ajratish",
+"Klaster tahlilining asosiy maqsadi nima?" : "Ma’lumotlarni o‘xshashlik asosida guruhlash",
+"Klasterlashtirish qaysi turdagi o‘qitishga kiradi?" : "Nazoratsiz o‘qitish (unsupervised learning)",
+"K-means algoritmining asosiy vazifasi nima?" : "Ma’lumotlarni k ta klasterga ajratish",
+"Klaster markazi nima deb ataladi?" : "Centroid",
+"Klasterlashda “distance” (masofa) nima uchun ishlatiladi?" : "O‘xshashlikni aniqlash uchun",
+"Eng ko‘p ishlatiladigan masofa o‘lchovi qaysi?" : "Evklid masofasi",
+"Klasterlar sonini oldindan belgilash qaysi algoritmga xos?" : "K-means",
+"Hierarchical clustering nimaga asoslanadi?" : "Ierarxik (daraxtsimon) tuzilishga",
+"Dendrogram nima?" : "Klasterlar ierarxiyasini ko‘rsatuvchi grafik",
+"DBSCAN algoritmi nimaga asoslanadi?" : "Zichlik (density) asosida klasterlash",
+"Outlier nima?" : "Klasterga tegishli bo‘lmagan nuqta",
+"Klasterlashtirish natijasi nimani beradi?" : "Guruhlangan obyektlar to‘plamini",
+"Klaster tahlilida “similarity” nimani bildiradi?" : "O‘xshashlik darajasini",
+"Klasterlashtirishning asosiy qo‘llanilish sohasi qaysi?" : "Ma’lumotlarni tahlil qilish va segmentatsiya",
+"Mathcad dasturi asosan nima uchun ishlatiladi?" : "Matematik hisoblash va muhandislik masalalarini yechish",
+"Mathcad muhitida grafiklar qanday hosil qilinadi?" : "Funksiyalar va ifodalarni grafik oynada tasvirlash orqali",
+"Mathcadda tenglamalarni yechish uchun qaysi turdagi usullar ishlatiladi?" : "Raqamli va ramziy usullar",
+"Ramziy hisob (symbolic computation) nima?" : "Matematik ifodalarni aniq shaklda soddalashtirish",
+"Raqamli usullar nima uchun ishlatiladi?" : "Yaqin qiymatli yechimlarni topish uchun",
+"Mathcadda tenglamalar tizimini yechish uchun nima ishlatiladi?" : "Solve bloklari va raqamli algoritmlar",
+"Mathcadda grafik chizish uchun asosiy element nima?" : "Funksiya ifodasi",
+"Mathcadda “solve” operatori nima uchun ishlatiladi?" : "Tenglamalarni yechish uchun",
+"Ramziy hisoblarda asosiy afzallik nima?" : "Aniq matematik ifodalar bilan ishlash",
+"Mathcadda funksiya grafigi qanday tasvirlanadi?" : "x va y o‘qlar orqali grafik ko‘rinishda",
+"Tenglamalar tizimini yechishda asosiy maqsad nima?" : "Noma’lum qiymatlarni topish",
+"Mathcadda integral va hosila qanday hisoblanadi?" : "Ramziy operatorlar yordamida",
+"Raqamli yechimlar qachon ishlatiladi?" : "Analitik yechim topish qiyin bo‘lganda",
+"Mathcadning asosiy afzalligi nimada?" : "Matematik ifodalar bilan tabiiy ko‘rinishda ishlash imkoniyati",
+"Mathcadda grafiklar qanday maqsadda ishlatiladi?" : "Matematik funksiyalarni vizual tahlil qilish uchun"
+}
+// So'zlar orasidagi o'xshashlikni hisoblash (Jaccard index)
+function jaccardSimilarity(query, question) {
+    const queryWords = query.toLowerCase().split(" ");
+    const questionWords = question.toLowerCase().split(" ");
+    const intersection = queryWords.filter((word) => questionWords.includes(word));
+    const union = new Set([...queryWords, ...questionWords]);
+    return intersection.length / union.size;
+}
+
+// Eng yaqin savolni qidirish
+function findBestMatch(query) {
+    let maxSimilarity = 0;
+    let bestMatch = "";
+    for (let question in questionsAndAnswers) {
+        const similarity = jaccardSimilarity(query, question);
+        if (similarity > maxSimilarity) {
+            maxSimilarity = similarity;
+            bestMatch = question;
+        }
+    }
+    return bestMatch;
+}
+
+// Input oynasini yaratish
+const inputContainer = document.createElement("div");
+inputContainer.style.position = "fixed";
+inputContainer.style.bottom = "20px";
+inputContainer.style.left = "50%";
+inputContainer.style.transform = "translateX(-50%)"; // Markazlashtirish
+inputContainer.style.width = "calc(100% - 40px)";
+inputContainer.style.maxWidth = "500px"; // Maksimal kenglik
+inputContainer.style.display = "flex";
+inputContainer.style.flexDirection = "column";
+inputContainer.style.alignItems = "center";
+inputContainer.style.zIndex = "1000";
+
+// Input maydoni
+const input = document.createElement("input");
+input.type = "text";
+input.placeholder = "..";
+input.style.padding = "12px 20px";
+input.style.width = "100%";
+input.style.border = "2px solid #fafafa1d";
+input.style.borderRadius = "30px";
+input.style.backgroundColor = "transparent"; // Oq fon
+input.style.opacity = "0.1"; // Alfa qiymati
+input.style.fontSize = "16px";
+input.style.outline = "none";
+
+// Fokus bo'lganida uslub o'zgarishi
+input.addEventListener("focus", () => {
+    input.style.borderColor = "transparent"; // Fokusda chiroyli koerinish
+});
+
+// Fokusdan chiqqanda uslubni tiklash
+input.addEventListener("blur", () => {
+    input.style.borderColor = "#fff";
+});
+
+// Natija uchun element
+const result = document.createElement("div");
+result.style.marginTop = "15px";
+result.style.padding = "10px";
+result.style.fontSize = "18px";
+result.style.color = "#d4d4d4";
+result.style.borderRadius = "8px";
+result.style.width = "100%";
+result.style.maxWidth = "500px";
+result.style.wordWrap = "break-word"; // Uzun javoblarni kesish
+
+// Inputdagi o'zgarishlarni tinglash
+input.addEventListener("input", (e) => {
+    const query = e.target.value.trim();
+    console.clear(); // Har safar inputni yangilashda konsolni tozalash
+    console.log("Kiritilgan savol:", query); // Kiritilgan savolni konsolga chiqarish
+
+    if (query) {
+        const bestMatch = findBestMatch(query);
+        console.log("Eng yaqin savol:", bestMatch); // Eng yaqin savolni konsolga chiqarish
+        result.textContent = `Javob: ${questionsAndAnswers[bestMatch] || "Mos savol topilmadi"}`;
+    } else {
+        result.textContent = "";
+    }
+});
+
+// Tugma: inputni tozalash
+const clearButton = document.createElement("button");
+clearButton.textContent = "Clean";
+clearButton.style.padding = "8px 16px";
+clearButton.style.marginTop = "10px";
+clearButton.style.fontSize = "16px";
+clearButton.style.borderRadius = "30px";
+clearButton.style.border = "none";
+clearButton.style.backgroundColor = "transparent";
+clearButton.style.color = "rgba(0, 0, 0, 0.01)";
+clearButton.style.cursor = "pointer";
+
+// Tugmani bosish natijasida inputni tozalash
+clearButton.addEventListener("click", () => {
+    input.value = ""; // Inputni tozalash
+    result.textContent = ""; // Natijani tozalash
+    console.clear(); // Konsolni tozalash
+});
+
+// Tanlangan matnni olish
+document.addEventListener("mouseup", () => {
+    const selectedText = window.getSelection().toString().trim();
+    if (selectedText) {
+        input.value = selectedText; // Input maydoniga tanlangan matnni joylashtirish
+        const bestMatch = findBestMatch(selectedText);
+        result.textContent = `Javob: ${questionsAndAnswers[bestMatch] || "Mos savol topilmadi"}`;
+    }
+});
+if (!document.styleSheets.length) {
+    const style = document.createElement("style");
+    document.head.appendChild(style);
+}
+document.styleSheets[0].insertRule("::selection { background-color: transparent; color: inherit; }", 0);
+// Scroll hodisasi: input va natijani tozalash
+window.addEventListener("scroll", () => {
+    input.value = ""; // Inputni tozalash
+    result.textContent = ""; // Natijani tozalash
+});
+
+// Natijani input tagiga joylash
+inputContainer.appendChild(input);
+inputContainer.appendChild(result);
+inputContainer.appendChild(clearButton);
+document.body.appendChild(inputContainer);

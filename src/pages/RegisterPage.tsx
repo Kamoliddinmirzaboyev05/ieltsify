@@ -79,31 +79,29 @@ const RegisterPage: React.FC = () => {
         authResponse.refresh ||
         authResponse.refresh_token;
 
-      if (!accessToken || !refreshToken) throw new Error("Tokenlar topilmadi");
+      if (!accessToken || !refreshToken) throw new Error("Tokens not found");
 
       saveAuthTokens(accessToken, refreshToken);
       if (authResponse.user) saveUserProfile(authResponse.user);
 
-      message.success("Google orqali muvaffaqiyatli ro'yxatdan o'tdingiz!");
-      setStep(1); // Onboarding'ga o'tish
+      message.success("Successfully registered with Google!");
+      setStep(1);
     } catch (error: unknown) {
       const msg =
         error instanceof Error
           ? error.message
-          : "Google orqali ro'yxatdan o'tishda xatolik";
+          : "Google registration error";
       message.error(msg);
     } finally {
       setGoogleLoading(false);
     }
   };
 
-  // Registration fields
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
   const [password, setPassword] = useState("");
 
-  // Onboarding fields
   const [currentBand, setCurrentBand] = useState<number>(5.0);
   const [targetBand, setTargetBand] = useState<number>(7.0);
   const [examType, setExamType] = useState<string>("academic");
@@ -122,11 +120,11 @@ const RegisterPage: React.FC = () => {
       !fullName.trim() ||
       !password.trim()
     ) {
-      message.error("Barcha maydonlarni to'ldiring");
+      message.error("Please fill in all fields");
       return;
     }
     if (password.length < 8) {
-      message.error("Parol kamida 8 ta belgidan iborat bo'lishi kerak");
+      message.error("Password must be at least 8 characters");
       return;
     }
 
@@ -145,14 +143,14 @@ const RegisterPage: React.FC = () => {
         response.tokens?.access || response.access || response.access_token;
       const refreshToken =
         response.tokens?.refresh || response.refresh || response.refresh_token;
-      if (!accessToken || !refreshToken) throw new Error("Tokenlar topilmadi");
+      if (!accessToken || !refreshToken) throw new Error("Tokens not found");
 
       saveAuthTokens(accessToken, refreshToken);
       if (response.user) saveUserProfile(response.user);
       setStep(1);
     } catch (error: unknown) {
       message.error(
-        error instanceof Error ? error.message : "Ro'yxatdan o'tishda xatolik",
+        error instanceof Error ? error.message : "Registration error",
       );
     } finally {
       setLoading(false);
@@ -175,11 +173,11 @@ const RegisterPage: React.FC = () => {
           onboarding_completed: true,
         }),
       });
-      if (!response.ok) throw new Error("Saqlashda xatolik");
-      message.success("Tabriklaymiz! Profilingiz tayyor.");
+      if (!response.ok) throw new Error("Failed to save");
+      message.success("Congratulations! Your profile is ready.");
       navigate("/dashboard");
     } catch {
-      message.error("Saqlashda xatolik");
+      message.error("Failed to save");
     } finally {
       setLoading(false);
     }
@@ -228,9 +226,9 @@ const RegisterPage: React.FC = () => {
         return (
           <>
             <div className="auth-header">
-              <h1 className="auth-title">Ro'yxatdan o'tish</h1>
+              <h1 className="auth-title">Create Account</h1>
               <p className="auth-subtitle">
-                IELTS tayyorgarligingizni boshlang
+                Start your IELTS preparation journey
               </p>
             </div>
             <form onSubmit={handleRegister} className="auth-form">
@@ -261,27 +259,27 @@ const RegisterPage: React.FC = () => {
                 </div>
               </div>
               <div className="auth-field">
-                <label className="auth-label">To'liq ism</label>
+                <label className="auth-label">Full Name</label>
                 <div className="auth-input-wrapper">
                   <User size={16} className="auth-input-icon" />
                   <input
                     type="text"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    placeholder="Ism Familiya"
+                    placeholder="First Last"
                     className="auth-input"
                   />
                 </div>
               </div>
               <div className="auth-field">
-                <label className="auth-label">Parol</label>
+                <label className="auth-label">Password</label>
                 <div className="auth-input-wrapper">
                   <Lock size={16} className="auth-input-icon" />
                   <input
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Kamida 8 belgi"
+                    placeholder="At least 8 characters"
                     className="auth-input"
                   />
                   <button
@@ -294,13 +292,13 @@ const RegisterPage: React.FC = () => {
                 </div>
               </div>
               <button type="submit" className="auth-btn" disabled={loading}>
-                {loading ? "Yuklanmoqda..." : "Davom etish"}
+                {loading ? "Loading..." : "Continue"}
               </button>
             </form>
             {googleEnabled && (
               <>
                 <div className="auth-divider">
-                  <span>yoki</span>
+                  <span>or</span>
                 </div>
                 <div
                   id="google-btn-register"
@@ -319,15 +317,15 @@ const RegisterPage: React.FC = () => {
                       marginTop: "8px",
                     }}
                   >
-                    Google orqali kirmoqda...
+                    Signing in with Google...
                   </p>
                 )}
               </>
             )}
             <p className="auth-footer">
-              Akkauntingiz bormi?{" "}
+              Already have an account?{" "}
               <Link to="/login" className="auth-link">
-                Kirish
+                Sign In
               </Link>
             </p>
           </>
@@ -339,22 +337,14 @@ const RegisterPage: React.FC = () => {
             <div className="onboard-icon">
               <BookOpen size={24} />
             </div>
-            <h2 className="onboard-title">Imtihon turi</h2>
+            <h2 className="onboard-title">Exam Type</h2>
             <p className="onboard-desc">
-              Qaysi IELTS imtihoniga tayyorlanmoqdasiz?
+              Which IELTS exam are you preparing for?
             </p>
             <div className="onboard-options-row">
               {[
-                {
-                  key: "academic",
-                  label: "Academic",
-                  desc: "Universitetga kirish",
-                },
-                {
-                  key: "general",
-                  label: "General Training",
-                  desc: "Ish yoki migratsiya",
-                },
+                { key: "academic", label: "Academic", desc: "University admission" },
+                { key: "general", label: "General Training", desc: "Work or migration" },
               ].map((item) => (
                 <div
                   key={item.key}
@@ -367,7 +357,7 @@ const RegisterPage: React.FC = () => {
               ))}
             </div>
             <button className="auth-btn" onClick={nextStep}>
-              Davom etish
+              Continue
             </button>
           </div>
         );
@@ -378,13 +368,13 @@ const RegisterPage: React.FC = () => {
             <div className="onboard-icon">
               <Target size={24} />
             </div>
-            <h2 className="onboard-title">Daraja va maqsad</h2>
+            <h2 className="onboard-title">Level & Goal</h2>
             <p className="onboard-desc">
-              Hozirgi va maqsad balingizni belgilang
+              Set your current and target band score
             </p>
             <div className="onboard-slider-group">
               <label className="auth-label">
-                Hozirgi daraja: <strong>{currentBand}</strong>
+                Current Level: <strong>{currentBand}</strong>
               </label>
               <Slider
                 min={3}
@@ -396,7 +386,7 @@ const RegisterPage: React.FC = () => {
             </div>
             <div className="onboard-slider-group">
               <label className="auth-label">
-                Maqsad ball: <strong>{targetBand}</strong>
+                Target Score: <strong>{targetBand}</strong>
               </label>
               <Slider
                 min={5}
@@ -407,7 +397,7 @@ const RegisterPage: React.FC = () => {
               />
             </div>
             <div className="auth-field">
-              <label className="auth-label">Imtihon sanasi (taxminiy)</label>
+              <label className="auth-label">Target Exam Date (approx)</label>
               <input
                 type="date"
                 value={targetDate}
@@ -417,10 +407,10 @@ const RegisterPage: React.FC = () => {
             </div>
             <div className="onboard-btns">
               <button className="auth-btn-secondary" onClick={prevStep}>
-                Orqaga
+                Back
               </button>
               <button className="auth-btn" onClick={nextStep}>
-                Davom etish
+                Continue
               </button>
             </div>
           </div>
@@ -432,14 +422,14 @@ const RegisterPage: React.FC = () => {
             <div className="onboard-icon">
               <Clock size={24} />
             </div>
-            <h2 className="onboard-title">Kunlik vaqt</h2>
-            <p className="onboard-desc">Kuniga qancha vaqt ajrata olasiz?</p>
+            <h2 className="onboard-title">Daily Study Time</h2>
+            <p className="onboard-desc">How much time can you dedicate per day?</p>
             <div className="onboard-grid">
               {[
-                { v: 0.5, l: "30 daqiqa" },
-                { v: 1, l: "1 soat" },
-                { v: 2, l: "2 soat" },
-                { v: 3, l: "3+ soat" },
+                { v: 0.5, l: "30 minutes" },
+                { v: 1, l: "1 hour" },
+                { v: 2, l: "2 hours" },
+                { v: 3, l: "3+ hours" },
               ].map((item) => (
                 <div
                   key={item.v}
@@ -452,10 +442,10 @@ const RegisterPage: React.FC = () => {
             </div>
             <div className="onboard-btns">
               <button className="auth-btn-secondary" onClick={prevStep}>
-                Orqaga
+                Back
               </button>
               <button className="auth-btn" onClick={nextStep}>
-                Davom etish
+                Continue
               </button>
             </div>
           </div>
@@ -467,12 +457,12 @@ const RegisterPage: React.FC = () => {
             <div className="onboard-icon">
               <CheckCircle size={24} />
             </div>
-            <h2 className="onboard-title">Kuchli va zaif tomonlar</h2>
+            <h2 className="onboard-title">Strengths & Weaknesses</h2>
             <p className="onboard-desc">
-              Qaysi ko'nikmalaringiz kuchli, qaysilari zaif?
+              Which skills are your strengths and weaknesses?
             </p>
             <div className="onboard-skills-section">
-              <label className="auth-label">Zaif tomonlar:</label>
+              <label className="auth-label">Weak Areas:</label>
               <div className="onboard-chips">
                 {SKILLS.map((s) => (
                   <div
@@ -486,7 +476,7 @@ const RegisterPage: React.FC = () => {
               </div>
             </div>
             <div className="onboard-skills-section">
-              <label className="auth-label">Kuchli tomonlar:</label>
+              <label className="auth-label">Strong Areas:</label>
               <div className="onboard-chips">
                 {SKILLS.map((s) => (
                   <div
@@ -501,14 +491,10 @@ const RegisterPage: React.FC = () => {
             </div>
             <div className="onboard-btns">
               <button className="auth-btn-secondary" onClick={prevStep}>
-                Orqaga
+                Back
               </button>
-              <button
-                className="auth-btn"
-                onClick={nextStep}
-                disabled={loading}
-              >
-                {loading ? "Saqlanmoqda..." : "Tugatish"}
+              <button className="auth-btn" onClick={nextStep} disabled={loading}>
+                {loading ? "Saving..." : "Finish"}
               </button>
             </div>
           </div>
@@ -525,7 +511,7 @@ const RegisterPage: React.FC = () => {
         {step === 0 && (
           <Link to="/" className="auth-back">
             <ArrowLeft size={16} />
-            <span>Orqaga</span>
+            <span>Back</span>
           </Link>
         )}
         <div className="auth-card">

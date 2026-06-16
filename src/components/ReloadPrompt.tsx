@@ -30,7 +30,7 @@ const ReloadPrompt: React.FC = () => {
   React.useEffect(() => {
     if (needRefresh) {
       notification.info({
-        message: 'Yangi yangilanish mavjud!',
+        message: 'New update available!',
         description: 'Ilovani eng so\'nggi versiyasiga yangilashni xohlaysizmi?',
         btn: (
           <div className="flex gap-2">
@@ -38,7 +38,7 @@ const ReloadPrompt: React.FC = () => {
               Keyinroq
             </Button>
             <Button type="primary" size="small" onClick={() => updateServiceWorker(true)}>
-              Yangilash
+              Update
             </Button>
           </div>
         ),

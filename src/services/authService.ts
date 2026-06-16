@@ -78,7 +78,7 @@ const apiPost = async (path: string, body: unknown) => {
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || err.message || 'Xatolik yuz berdi');
+    throw new Error(err.detail || err.message || 'An error occurred');
   }
   return res.json();
 };
@@ -132,7 +132,7 @@ export const authenticatedFetch = async (url: string, opts: RequestInit = {}): P
 
 export const refreshAccessToken = async (): Promise<string> => {
   const rt = getRefreshToken();
-  if (!rt) throw new Error('Refresh token topilmadi');
+  if (!rt) throw new Error('Refresh token not found');
   try {
     const data = await apiPost('/auth/refresh/', { refresh: rt });
     const na = data.access || data.access_token;
@@ -151,7 +151,7 @@ export const fetchUserProfile = async (): Promise<ProfileData> => {
 
 export const updateUserProfile = async (d: Partial<ProfileData>): Promise<ProfileData> => {
   const r = await authenticatedFetch('/accounts/profile/', { method: 'PATCH', body: JSON.stringify(d) });
-  if (!r.ok) throw new Error('Profilni yangilashda xatolik');
+  if (!r.ok) throw new Error('Failed to update profile');
   return r.json() as Promise<ProfileData>;
 };
 
@@ -159,6 +159,6 @@ export const changePassword = async (newPassword: string): Promise<{ message: st
   const r = await authenticatedFetch('/auth/change-password/', {
     method: 'POST', body: JSON.stringify({ new_password: newPassword }),
   });
-  if (!r.ok) throw new Error("Parolni o'zgartirishda xatolik");
-  return { message: "Parol muvaffaqiyatli o'zgartirildi" };
+  if (!r.ok) throw new Error("Failed to change password");
+  return { message: "Password changed successfully" };
 };

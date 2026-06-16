@@ -155,7 +155,7 @@ IMPORTANT:
     
     // Check if response is an error message
     if (responseText.startsWith('Sorry')) {
-      throw new Error('API key invalid yoki muammo bor. Iltimos .env faylida API key ni tekshiring va serverni qayta ishga tushiring.');
+      throw new Error('API key is invalid or there is an issue. Please check the API key in your .env file and restart the server.');
     }
     
     const cleanJson = responseText.replace(/```json|```/gi, '').trim();

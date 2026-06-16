@@ -64,7 +64,7 @@ const ListeningHubPage: React.FC = () => {
 
       if (!response.ok) {
         if (response.status === 401) {
-          message.error("Iltimos, tizimga kiring");
+          message.error("Please sign in first");
           navigate("/login");
           return;
         }
@@ -232,8 +232,8 @@ const ListeningHubPage: React.FC = () => {
         <Empty
           description={
             difficulty === "all"
-              ? "Hozircha testlar mavjud emas"
-              : `${difficulty} darajasida testlar topilmadi`
+              ? "No tests available yet"
+              : `${difficulty} tests not found for difficulty`
           }
           style={{ marginTop: "60px" }}
         />

@@ -67,18 +67,18 @@ const LoginPage: React.FC = () => {
         authResponse.refresh ||
         authResponse.refresh_token;
 
-      if (!accessToken || !refreshToken) throw new Error("Tokenlar topilmadi");
+      if (!accessToken || !refreshToken) throw new Error("Tokens not found");
 
       saveAuthTokens(accessToken, refreshToken);
       if (authResponse.user) saveUserProfile(authResponse.user);
 
-      message.success("Google orqali muvaffaqiyatli kirdingiz!");
+      message.success("Successfully signed in with Google!");
       navigate("/dashboard");
     } catch (error: unknown) {
       const msg =
         error instanceof Error
           ? error.message
-          : "Google orqali kirishda xatolik";
+          : "Google sign-in error";
       message.error(msg);
     } finally {
       setGoogleLoading(false);
@@ -88,7 +88,7 @@ const LoginPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !password.trim()) {
-      message.error("Email va parolni kiriting");
+      message.error("Please enter your email and password");
       return;
     }
 
@@ -98,17 +98,17 @@ const LoginPage: React.FC = () => {
       const accessToken = response.access || response.access_token;
       const refreshToken = response.refresh || response.refresh_token;
 
-      if (!accessToken || !refreshToken) throw new Error("Tokenlar topilmadi");
+      if (!accessToken || !refreshToken) throw new Error("Tokens not found");
 
       saveAuthTokens(accessToken, refreshToken);
       if (response.user) saveUserProfile(response.user);
 
-      message.success("Xush kelibsiz!");
+      message.success("Welcome back!");
       navigate("/dashboard");
     } catch (error: unknown) {
-      const msg = error instanceof Error ? error.message : "Kirishda xatolik";
+      const msg = error instanceof Error ? error.message : "Login error";
       message.error(
-        msg.includes("credentials") ? "Email yoki parol noto'g'ri" : msg,
+        msg.includes("credentials") ? "Invalid email or password" : msg,
       );
     } finally {
       setLoading(false);
@@ -120,7 +120,7 @@ const LoginPage: React.FC = () => {
       <div className="auth-container">
         <Link to="/" className="auth-back">
           <ArrowLeft size={16} />
-          <span>Orqaga</span>
+          <span>Back</span>
         </Link>
 
         <div className="auth-card">
@@ -133,13 +133,13 @@ const LoginPage: React.FC = () => {
                 (e.target as HTMLImageElement).style.display = "none";
               }}
             />
-            <h1 className="auth-title">Xush kelibsiz</h1>
-            <p className="auth-subtitle">Akkauntingizga kiring</p>
+            <h1 className="auth-title">Welcome Back</h1>
+            <p className="auth-subtitle">Sign in to your account</p>
           </div>
 
           <form onSubmit={handleSubmit} className="auth-form">
             <div className="auth-field">
-              <label className="auth-label">Email yoki username</label>
+              <label className="auth-label">Email or Username</label>
               <div className="auth-input-wrapper">
                 <Mail size={16} className="auth-input-icon" />
                 <input
@@ -154,7 +154,7 @@ const LoginPage: React.FC = () => {
             </div>
 
             <div className="auth-field">
-              <label className="auth-label">Parol</label>
+              <label className="auth-label">Password</label>
               <div className="auth-input-wrapper">
                 <Lock size={16} className="auth-input-icon" />
                 <input
@@ -178,10 +178,10 @@ const LoginPage: React.FC = () => {
             <div className="auth-options">
               <label className="auth-checkbox-label">
                 <input type="checkbox" className="auth-checkbox" />
-                <span>Eslab qolish</span>
+                <span>Remember me</span>
               </label>
               <Link to="/forgot-password" className="auth-link-small">
-                Parolni unutdingizmi?
+                Forgot password?
               </Link>
             </div>
 
@@ -190,7 +190,7 @@ const LoginPage: React.FC = () => {
               className="auth-btn"
               disabled={loading || googleLoading}
             >
-              {loading ? "Kirmoqda..." : "Kirish"}
+              {loading ? "Signing in..." : "Sign In"}
             </button>
           </form>
 
@@ -198,7 +198,7 @@ const LoginPage: React.FC = () => {
           {googleEnabled && (
             <>
               <div className="auth-divider">
-                <span>yoki</span>
+                <span>or</span>
               </div>
               <div
                 id="google-btn"
@@ -217,16 +217,16 @@ const LoginPage: React.FC = () => {
                     marginTop: "8px",
                   }}
                 >
-                  Google orqali kirmoqda...
+                  Signing in with Google...
                 </p>
               )}
             </>
           )}
 
           <p className="auth-footer">
-            Akkauntingiz yo'qmi?{" "}
+            Don't have an account?{" "}
             <Link to="/register" className="auth-link">
-              Ro'yxatdan o'tish
+              Sign Up
             </Link>
           </p>
         </div>

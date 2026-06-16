@@ -74,7 +74,7 @@ const ReadingPage: React.FC = () => {
       
       if (!response.ok) {
         if (response.status === 401) {
-          message.error('Iltimos, tizimga kiring');
+          message.error('Please sign in first');
           navigate('/login');
           return;
         }
@@ -158,9 +158,9 @@ const ReadingPage: React.FC = () => {
       
       if (!response.ok) {
         if (response.status === 404) {
-          console.error('❌ HTML fayl topilmadi:', currentPassage.html_content_url);
+          console.error('❌ HTML file not found:', currentPassage.html_content_url);
           message.error({
-            content: 'HTML fayl serverda topilmadi. Backend administratorga xabar bering.',
+            content: 'HTML file not found on the server. Please contact the administrator.',
             duration: 5,
           });
           return;
@@ -289,7 +289,7 @@ const ReadingPage: React.FC = () => {
         gap: '16px'
       }}>
         <AlertCircle size={48} color="#f5222d" />
-        <Title level={3} style={{ margin: 0 }}>Passage topilmadi</Title>
+        <Title level={3} style={{ margin: 0 }}>Passage not found</Title>
         <Button type="primary" onClick={handleBackToList}>
           Reading Hub'ga qaytish
         </Button>

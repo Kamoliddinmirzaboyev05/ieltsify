@@ -32,10 +32,10 @@ const LandingPage: React.FC = () => {
           </Link>
           <div className="landing-nav-links">
             <Link to="/login" className="landing-nav-link">
-              Kirish
+              Sign In
             </Link>
             <Link to="/register" className="landing-nav-btn">
-              Boshlash
+              Get Started
             </Link>
           </div>
         </div>
@@ -46,33 +46,33 @@ const LandingPage: React.FC = () => {
         <div className="landing-hero-content">
           <div className="landing-badge">
             <Zap size={14} />
-            <span>AI bilan IELTS tayyorgarlik</span>
+            <span>AI-powered IELTS Preparation</span>
           </div>
           <h1 className="landing-title">
-            IELTS maqsadingizga <br />
-            <span className="landing-title-accent">aniq reja</span> bilan yeting
+            Achieve your IELTS goal <br />
+            with a <span className="landing-title-accent">clear plan</span>
           </h1>
           <p className="landing-desc">
-            IELTSify sizga shunchaki testlar emas — individual o'quv rejasi, AI
-            tahlil va real vaqtda progress kuzatish imkonini beradi.
+            IELTSify gives you more than just tests — an individual study plan,
+            AI analysis, and real-time progress tracking.
           </p>
           <div className="landing-hero-btns">
             <Link to="/register" className="landing-btn-primary">
-              Bepul boshlash <ArrowRight size={16} />
+              Start Free <ArrowRight size={16} />
             </Link>
           </div>
           <div className="landing-hero-stats">
             <div className="landing-stat">
-              <strong>4 skill</strong>
+              <strong>4 Skills</strong>
               <span>Reading, Listening, Writing, Speaking</span>
             </div>
             <div className="landing-stat">
-              <strong>AI tahlil</strong>
+              <strong>AI Analysis</strong>
               <span>Band score + feedback</span>
             </div>
             <div className="landing-stat">
-              <strong>Individual reja</strong>
-              <span>Har hafta yangilanadi</span>
+              <strong>Individual Plan</strong>
+              <span>Updated weekly</span>
             </div>
           </div>
         </div>
@@ -80,52 +80,51 @@ const LandingPage: React.FC = () => {
 
       {/* What you get */}
       <section className="landing-section">
-        <h2 className="landing-section-title">Platformada nimaga erishasiz?</h2>
+        <h2 className="landing-section-title">What will you achieve on the platform?</h2>
         <p className="landing-section-desc">
-          Ro'yxatdan o'tganingizdan boshlab imtihon kunigacha — har bir qadam
-          rejalashtirilgan
+          From registration to exam day — every step is planned
         </p>
         <div className="landing-features-grid">
           {[
             {
               icon: <Target size={22} />,
-              title: "Maqsad belgilash",
-              desc: "Hozirgi darajangiz va maqsad balingizni kiriting — platforma sizga mos reja tuzadi",
+              title: "Goal Setting",
+              desc: "Enter your current level and target score — the platform creates a plan tailored to you",
             },
             {
               icon: <Calendar size={22} />,
-              title: "Kunlik reja",
-              desc: "Har kuni nima qilish kerakligini aniq bilasiz — vaqtingizga mos mashqlar",
+              title: "Daily Plan",
+              desc: "Know exactly what to do each day — exercises tailored to your schedule",
             },
             {
               icon: <BookOpen size={22} />,
-              title: "Reading mashqlari",
-              desc: "IELTS formatidagi passagelar, savol turlari va vaqt boshqaruvi",
+              title: "Reading Exercises",
+              desc: "IELTS-format passages, question types, and time management",
             },
             {
               icon: <Headphones size={22} />,
-              title: "Listening testlar",
-              desc: "Audio bilan real imtihon muhiti — bir marta tinglash rejimi",
+              title: "Listening Tests",
+              desc: "Real exam environment with audio — single listening mode",
             },
             {
               icon: <PenLine size={22} />,
-              title: "Writing AI tahlil",
-              desc: "Essay yozing — AI band score, xatolar va yaxshilash yo'llarini ko'rsatadi",
+              title: "Writing AI Analysis",
+              desc: "Write an essay — AI shows your band score, errors, and improvement tips",
             },
             {
               icon: <Mic size={22} />,
               title: "Speaking AI",
-              desc: "Gapiring — AI talaffuz, grammatika va fluency bo'yicha baho beradi",
+              desc: "Speak — AI evaluates pronunciation, grammar, and fluency",
             },
             {
               icon: <Brain size={22} />,
-              title: "Zaif tomonlar",
-              desc: "Platforma zaif joylaringizni aniqlaydi va ularga ko'proq e'tibor qaratadi",
+              title: "Weak Areas",
+              desc: "The platform identifies your weak points and focuses more on them",
             },
             {
               icon: <TrendingUp size={22} />,
-              title: "Progress kuzatish",
-              desc: "Haftalik va oylik natijalaringizni diagrammalar orqali ko'ring",
+              title: "Progress Tracking",
+              desc: "View your weekly and monthly results through interactive charts",
             },
           ].map((f, i) => (
             <div key={i} className="landing-feature-card">
@@ -139,28 +138,28 @@ const LandingPage: React.FC = () => {
 
       {/* How it works */}
       <section className="landing-section landing-section-alt">
-        <h2 className="landing-section-title">Qanday ishlaydi?</h2>
+        <h2 className="landing-section-title">How does it work?</h2>
         <div className="landing-steps">
           {[
             {
               num: "1",
-              title: "Ro'yxatdan o'ting",
-              desc: "Hozirgi darajangiz, maqsadingiz va imtihon sanangizni kiriting",
+              title: "Sign up",
+              desc: "Enter your current level, target score, and exam date",
             },
             {
               num: "2",
-              title: "Individual reja oling",
-              desc: "Platforma sizga mos haftalik o'quv reja tuzadi",
+              title: "Get an individual plan",
+              desc: "The platform creates a weekly study plan tailored to you",
             },
             {
               num: "3",
-              title: "Har kuni mashq qiling",
-              desc: "Reading, Listening, Writing, Speaking — har kuni aniq topshiriqlar",
+              title: "Practice every day",
+              desc: "Reading, Listening, Writing, Speaking — daily specific tasks",
             },
             {
               num: "4",
-              title: "Natijangizni ko'ring",
-              desc: "AI tahlil, progress va yangilangan tavsiyalar",
+              title: "See your results",
+              desc: "AI analysis, progress tracking, and updated recommendations",
             },
           ].map((s, i) => (
             <div key={i} className="landing-step">
@@ -176,9 +175,9 @@ const LandingPage: React.FC = () => {
 
       {/* Pricing preview */}
       <section className="landing-section">
-        <h2 className="landing-section-title">Oddiy va tushunarli tariflar</h2>
+        <h2 className="landing-section-title">Simple & transparent pricing</h2>
         <p className="landing-section-desc">
-          Bepul boshlang, kerak bo'lganda premium'ga o'ting
+          Start free, upgrade to premium when you need more
         </p>
         <div className="landing-pricing-grid">
           <div className="landing-price-card">
@@ -188,50 +187,50 @@ const LandingPage: React.FC = () => {
             </div>
             <ul>
               <li>
-                <CheckCircle size={14} /> Kuniga 1 Reading
+                <CheckCircle size={14} /> 1 Reading per day
               </li>
               <li>
-                <CheckCircle size={14} /> Kuniga 1 Listening
+                <CheckCircle size={14} /> 1 Listening per day
               </li>
               <li>
-                <CheckCircle size={14} /> Haftasiga 1 Writing AI
+                <CheckCircle size={14} /> 1 Writing AI per week
               </li>
               <li>
-                <CheckCircle size={14} /> Vocabulary mashqlari
+                <CheckCircle size={14} /> Vocabulary exercises
               </li>
             </ul>
             <Link to="/register" className="landing-price-btn">
-              Bepul boshlash
+              Start Free
             </Link>
           </div>
           <div className="landing-price-card featured">
-            <div className="landing-price-badge">Tavsiya</div>
+            <div className="landing-price-badge">Recommended</div>
             <h3>IELTSify Monthly</h3>
             <div className="landing-price">
-              29 900 <span>UZS / oy</span>
+              29,900 <span>UZS / month</span>
             </div>
             <ul>
               <li>
-                <CheckCircle size={14} /> Cheksiz Reading va Listening
+                <CheckCircle size={14} /> Unlimited Reading & Listening
               </li>
               <li>
-                <CheckCircle size={14} /> 20 ta Writing AI tahlil
+                <CheckCircle size={14} /> 20 Writing AI analyses
               </li>
               <li>
-                <CheckCircle size={14} /> 20 ta Speaking AI tahlil
+                <CheckCircle size={14} /> 20 Speaking AI analyses
               </li>
               <li>
-                <CheckCircle size={14} /> Individual haftalik reja
+                <CheckCircle size={14} /> Individual weekly plan
               </li>
               <li>
                 <CheckCircle size={14} /> Full Mock Exam
               </li>
               <li>
-                <CheckCircle size={14} /> 70 bonus coin
+                <CheckCircle size={14} /> 70 bonus coins
               </li>
             </ul>
             <Link to="/register" className="landing-price-btn primary">
-              Sotib olish
+              Buy Now
             </Link>
           </div>
         </div>
@@ -239,10 +238,10 @@ const LandingPage: React.FC = () => {
 
       {/* CTA */}
       <section className="landing-cta">
-        <h2>IELTS maqsadingizga bugundan boshlang</h2>
-        <p>Minglab talabalar allaqachon IELTSify bilan tayyorlanmoqda</p>
+        <h2>Start your IELTS journey today</h2>
+        <p>Thousands of students are already preparing with IELTSify</p>
         <Link to="/register" className="landing-btn-primary">
-          Bepul ro'yxatdan o'tish <ArrowRight size={16} />
+          Register Free <ArrowRight size={16} />
         </Link>
       </section>
 
@@ -251,15 +250,15 @@ const LandingPage: React.FC = () => {
         <div className="landing-footer-inner">
           <div className="landing-footer-brand">
             <strong>IELTSify</strong>
-            <p>AI bilan IELTS tayyorgarlik platformasi</p>
+            <p>AI-powered IELTS preparation platform</p>
           </div>
           <div className="landing-footer-links">
-            <Link to="/login">Kirish</Link>
-            <Link to="/register">Ro'yxatdan o'tish</Link>
+            <Link to="/login">Sign In</Link>
+            <Link to="/register">Register</Link>
           </div>
         </div>
         <div className="landing-footer-bottom">
-          © {new Date().getFullYear()} IELTSify. Barcha huquqlar himoyalangan.
+          &copy; {new Date().getFullYear()} IELTSify. All rights reserved.
         </div>
       </footer>
     </div>

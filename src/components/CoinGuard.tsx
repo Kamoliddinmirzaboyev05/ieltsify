@@ -18,7 +18,7 @@ const CoinGuard: React.FC<CoinGuardProps> = ({
   const handleStart = () => {
     const token = getAccessToken();
     if (!token) {
-      message.error('Iltimos, tizimga kiring');
+      message.error('Please sign in first');
       return;
     }
     onConfirm();

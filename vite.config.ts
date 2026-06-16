@@ -33,7 +33,7 @@ export default defineConfig({
     port: 3000,
     proxy: {
       "/media": {
-        target: "http://localhost:8000",
+        target: "https://ieltsify-backend.onrender.com",
         changeOrigin: true,
       },
     },

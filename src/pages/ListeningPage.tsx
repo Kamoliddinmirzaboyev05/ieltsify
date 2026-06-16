@@ -71,7 +71,7 @@ const ListeningPage: React.FC = () => {
       
       if (!response.ok) {
         if (response.status === 401) {
-          message.error('Iltimos, tizimga kiring');
+          message.error('Please sign in first');
           navigate('/login');
           return;
         }
@@ -143,9 +143,9 @@ const ListeningPage: React.FC = () => {
 
       if (!response.ok) {
         if (response.status === 404) {
-          console.error('❌ HTML fayl topilmadi:', urlToFetch);
+          console.error('❌ HTML file not found:', urlToFetch);
           message.error({
-            content: 'HTML fayl serverda topilmadi. Backend administratorga xabar bering.',
+            content: 'HTML file not found on the server. Please contact the administrator.',
             duration: 5,
           });
           return;
@@ -258,7 +258,7 @@ const ListeningPage: React.FC = () => {
         gap: '16px'
       }}>
         <AlertCircle size={48} color="#f5222d" />
-        <Title level={3} style={{ margin: 0 }}>Test topilmadi</Title>
+        <Title level={3} style={{ margin: 0 }}>Test not found</Title>
         <Button type="primary" onClick={handleBackToList}>
           Listening Hub'ga qaytish
         </Button>

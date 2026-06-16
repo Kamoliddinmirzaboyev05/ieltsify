@@ -22,7 +22,7 @@ const HtmlViewerPage: React.FC = () => {
     let url = params.get('url') || '';
 
     if (!url) {
-      message.error('URL topilmadi');
+      message.error('URL not found');
       setLoading(false);
       return;
     }
@@ -56,7 +56,7 @@ const HtmlViewerPage: React.FC = () => {
         const res = await fetch(url, { mode: 'cors', credentials: 'omit' });
         if (!res.ok) {
           if (res.status === 404) {
-            message.error('HTML fayl topilmadi');
+            message.error('HTML file not found');
             return;
           }
           if (res.status === 403) {

@@ -84,7 +84,7 @@ const PricingPage: React.FC = () => {
 
   const submitPayment = async () => {
     if (!receiptFile || !selectedItem) {
-      message.error("Iltimos, to'lov chekini yuklang");
+      message.error("Please upload a payment receipt");
       return;
     }
 
@@ -119,7 +119,7 @@ const PricingPage: React.FC = () => {
         setReceiptFile(null);
       } else {
         const errorData = await response.json();
-        message.error(errorData.error || "Xatolik yuz berdi");
+        message.error(errorData.error || "An error occurred");
       }
     } catch {
       message.error("To'lov yuborishda xatolik");

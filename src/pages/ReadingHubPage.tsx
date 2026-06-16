@@ -74,7 +74,7 @@ const ReadingHubPage: React.FC = () => {
 
       if (!response.ok) {
         if (response.status === 401) {
-          message.error("Iltimos, tizimga kiring");
+          message.error("Please sign in first");
           navigate("/login");
           return;
         }
@@ -267,8 +267,8 @@ const ReadingHubPage: React.FC = () => {
           description={
             <span>
               {difficulty === "all"
-                ? "Hozircha reading passagelar mavjud emas"
-                : `${difficulty} darajasida passagelar topilmadi`}
+                ? "No reading passages available yet"
+                : `${difficulty} passages not found for difficulty`}
             </span>
           }
           style={{ marginTop: "60px" }}
