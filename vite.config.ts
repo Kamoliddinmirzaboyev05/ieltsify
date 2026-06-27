@@ -29,6 +29,19 @@ export default defineConfig({
       },
     }),
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        // Kam o'zgaradigan vendor kutubxonalarni alohida chunklarga
+        // ajratamiz — brauzer keshi yaxshiroq ishlaydi.
+        manualChunks: {
+          "vendor-react": ["react", "react-dom", "react-router-dom"],
+          "vendor-antd": ["antd", "@ant-design/icons"],
+          "vendor-motion": ["framer-motion"],
+        },
+      },
+    },
+  },
   server: {
     port: 3000,
     proxy: {

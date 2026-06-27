@@ -146,15 +146,12 @@ const ReadingPage: React.FC = () => {
         urlToFetch = parsedPath;
       }
 
-      console.log('📥 Loading HTML from:', urlToFetch);
       
       const response = await fetch(urlToFetch, {
         mode: 'cors',
         credentials: 'omit',
       });
       
-      console.log('📊 Response status:', response.status);
-      console.log('📊 Response headers:', Object.fromEntries(response.headers.entries()));
       
       if (!response.ok) {
         if (response.status === 404) {
@@ -176,12 +173,7 @@ const ReadingPage: React.FC = () => {
         throw new Error(`Failed to load HTML content: ${response.status} ${response.statusText}`);
       }
 
-      const contentType = response.headers.get('content-type');
-      console.log('📊 Content-Type:', contentType);
-
       const html = await response.text();
-      console.log('✅ HTML content loaded, length:', html.length);
-      console.log('📄 First 200 chars:', html.substring(0, 200));
       
       if (html.length === 0) {
         message.error('HTML fayl bo\'sh. Backend\'da fayl to\'g\'ri yuklanganini tekshiring.');

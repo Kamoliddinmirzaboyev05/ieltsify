@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import DOMPurify from 'dompurify';
 import { Card, Typography, Button, Space, Modal, message, Empty, Grid } from 'antd';
 import { BookOpen, Plus, Volume2, Sparkles } from 'lucide-react';
 import { articleManager, vocabularyManager } from '../services/dataManager';
@@ -291,7 +292,7 @@ Provide analysis in this format:
                 lineHeight: '1.8',
                 userSelect: 'text',
               }}
-              dangerouslySetInnerHTML={{ __html: selectedArticle.htmlContent }}
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(selectedArticle.htmlContent) }}
             />
           </Card>
 

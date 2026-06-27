@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense, lazy } from "react";
 import {
   BrowserRouter,
   Routes,
@@ -7,27 +7,36 @@ import {
   Outlet,
   useLocation,
 } from "react-router-dom";
-import { ConfigProvider, theme as antdTheme } from "antd";
+import { ConfigProvider, theme as antdTheme, Spin } from "antd";
 import { ThemeProvider, useTheme } from "./contexts/ThemeContext";
 import AppLayout from "./components/AppLayout";
-import DashboardHome from "./pages/DashboardHome";
-import WritingPage from "./pages/WritingPage";
-import SpeakingPage from "./pages/SpeakingPage";
-import ReportsPage from "./pages/ReportsPage";
-import ReadingPage from "./pages/ReadingPage";
-import ReadingHubPage from "./pages/ReadingHubPage";
-import ListeningPage from "./pages/ListeningPage";
-import ListeningHubPage from "./pages/ListeningHubPage";
-import PricingPage from "./pages/PricingPage";
-import ProfilePage from "./pages/ProfilePage";
-import LandingPage from "./pages/LandingPage";
-import LoginPage from "./pages/LoginPage";
-import RegisterPage from "./pages/RegisterPage";
-import VocabularyPage from "./pages/VocabularyPage";
-import SmartArticlePage from "./pages/SmartArticlePage";
 import PageTransition from "./components/PageTransition";
-import HtmlViewerPage from "./pages/HtmlViewerPage";
-import MockExamPage from "./pages/MockExamPage";
+
+// Sahifalar lazy-load qilinadi — har biri alohida chunk, boshlang'ich
+// bundle kichrayadi (kod bo'linishi / code-splitting).
+const DashboardHome = lazy(() => import("./pages/DashboardHome"));
+const WritingPage = lazy(() => import("./pages/WritingPage"));
+const SpeakingPage = lazy(() => import("./pages/SpeakingPage"));
+const ReportsPage = lazy(() => import("./pages/ReportsPage"));
+const ReadingPage = lazy(() => import("./pages/ReadingPage"));
+const ReadingHubPage = lazy(() => import("./pages/ReadingHubPage"));
+const ListeningPage = lazy(() => import("./pages/ListeningPage"));
+const ListeningHubPage = lazy(() => import("./pages/ListeningHubPage"));
+const PricingPage = lazy(() => import("./pages/PricingPage"));
+const ProfilePage = lazy(() => import("./pages/ProfilePage"));
+const LandingPage = lazy(() => import("./pages/LandingPage"));
+const LoginPage = lazy(() => import("./pages/LoginPage"));
+const RegisterPage = lazy(() => import("./pages/RegisterPage"));
+const VocabularyPage = lazy(() => import("./pages/VocabularyPage"));
+const SmartArticlePage = lazy(() => import("./pages/SmartArticlePage"));
+const HtmlViewerPage = lazy(() => import("./pages/HtmlViewerPage"));
+const MockExamPage = lazy(() => import("./pages/MockExamPage"));
+
+const PageFallback: React.FC = () => (
+  <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "60vh" }}>
+    <Spin size="large" />
+  </div>
+);
 
 const DashboardLayout: React.FC = () => {
   const location = useLocation();
@@ -43,6 +52,7 @@ const DashboardLayout: React.FC = () => {
 const AnimateRoutes: React.FC = () => {
   const location = useLocation();
   return (
+    <Suspense fallback={<PageFallback />}>
     <Routes location={location} key={location.pathname}>
       {/* Public Routes */}
       <Route path="/" element={<LandingPage />} />
@@ -71,6 +81,7 @@ const AnimateRoutes: React.FC = () => {
       {/* Catch-all */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    </Suspense>
   );
 };
 

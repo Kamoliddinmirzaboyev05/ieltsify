@@ -1,13 +1,6 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-
-if (!API_KEY) {
-  console.warn("VITE_GEMINI_API_KEY is not defined in the environment variables.");
-}
-
-const genAI = new GoogleGenerativeAI(API_KEY || "");
-const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+// AI service — endi Gemini'ni TO'G'RIDAN-TO'G'RI emas, balki backend gateway
+// orqali chaqiradi. API kalit faqat serverda; brauzer bundle'ida kalit yo'q.
+import { authenticatedFetch } from "./authService";
 
 export interface ChatMessage {
   role: 'user' | 'model' | 'error';
@@ -36,75 +29,6 @@ export interface SpeakingEvaluation {
   better_vocabulary: string[];
 }
 
-export const sendMessageToGemini = async (prompt: string): Promise<string> => {
-  try {
-    if (!API_KEY) {
-      throw new Error("API Key is missing. Please add VITE_GEMINI_API_KEY to your .env file.");
-    }
-
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
-    return text;
-  } catch (error: any) {
-    console.error("Gemini API Error:", error);
-    return `Sorry, I encountered an error: ${error.message || "Unknown error"}`;
-  }
-};
-
-export const evaluateWriting = async (topic: string, essay: string): Promise<WritingEvaluation> => {
-  const prompt = `Act as a strict IELTS Examiner. Evaluate the following essay for a given topic.
-  Topic: "${topic}"
-  Essay: "${essay}"
-  
-  Evaluate based on: Task Response (TR), Coherence & Cohesion (CC), Lexical Resource (LR), Grammatical Range & Accuracy (GRA).
-  
-  Return a JSON object STRICTLY with this structure:
-  {
-    "band_score": 6.5,
-    "breakdown": { "TR": 6, "CC": 7, "LR": 6, "GRA": 7 },
-    "feedback": "...",
-    "corrections": [
-      { "original": "...", "correction": "...", "reason": "..." }
-    ]
-  }
-  Do not include any other text before or after the JSON.`;
-
-  try {
-    const responseText = await sendMessageToGemini(prompt);
-    // Clean potential markdown prefix/suffix
-    const cleanJson = responseText.replace(/```json|```/gi, '').trim();
-    return JSON.parse(cleanJson);
-  } catch (error) {
-    console.error("Writing Evaluation Error:", error);
-    throw error;
-  }
-};
-
-export const evaluateSpeaking = async (question: string, transcript: string): Promise<SpeakingEvaluation> => {
-  const prompt = `Act as an IELTS Speaking Examiner. Evaluate the following response.
-  Question: "${question}"
-  Transcript: "${transcript}"
-  
-  Return a JSON object STRICTLY with this structure:
-  {
-    "band_score": 7.0,
-    "feedback": "...",
-    "better_vocabulary": ["...", "..."]
-  }
-  Do not include any other text before or after the JSON.`;
-
-  try {
-    const responseText = await sendMessageToGemini(prompt);
-    const cleanJson = responseText.replace(/```json|```/gi, '').trim();
-    return JSON.parse(cleanJson);
-  } catch (error) {
-    console.error("Speaking Evaluation Error:", error);
-    throw error;
-  }
-};
-
-
 export interface WritingFullTestEvaluation {
   task1Score: number;
   task1Feedback: string;
@@ -114,54 +38,47 @@ export interface WritingFullTestEvaluation {
   overallFeedback: string;
 }
 
+// Backendga POST yuborib JSON javob oluvchi yordamchi
+const postAI = async <T>(path: string, body: unknown): Promise<T> => {
+  const res = await authenticatedFetch(path, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || err.detail || "AI xizmatida xatolik");
+  }
+  return res.json();
+};
+
+export const sendMessageToGemini = async (prompt: string): Promise<string> => {
+  try {
+    const data = await postAI<{ text: string }>('/chat/', { prompt });
+    return data.text;
+  } catch (error: any) {
+    console.error("AI Chat Error:", error);
+    return `Sorry, I encountered an error: ${error.message || "Unknown error"}`;
+  }
+};
+
+export const evaluateWriting = async (topic: string, essay: string): Promise<WritingEvaluation> => {
+  return postAI<WritingEvaluation>('/evaluate-writing/', { topic, essay });
+};
+
+export const evaluateSpeaking = async (question: string, transcript: string): Promise<SpeakingEvaluation> => {
+  return postAI<SpeakingEvaluation>('/evaluate-speaking/', { question, transcript });
+};
+
 export const evaluateFullWritingTest = async (
   task1Question: string,
   task1Essay: string,
   task2Question: string,
   task2Essay: string
 ): Promise<WritingFullTestEvaluation> => {
-  const prompt = `Act as a professional IELTS Writing Examiner. Evaluate both Task 1 and Task 2 essays.
-
-**TASK 1:**
-Question: "${task1Question}"
-Essay: "${task1Essay}"
-
-**TASK 2:**
-Question: "${task2Question}"
-Essay: "${task2Essay}"
-
-Evaluate each task based on IELTS criteria:
-- Task 1: Task Achievement, Coherence & Cohesion, Lexical Resource, Grammatical Range & Accuracy
-- Task 2: Task Response, Coherence & Cohesion, Lexical Resource, Grammatical Range & Accuracy
-
-Return a JSON object STRICTLY with this structure:
-{
-  "task1Score": 7.0,
-  "task1Feedback": "Detailed professional feedback for Task 1 (minimum 150 words). Include specific strengths, weaknesses, and suggestions for improvement.",
-  "task2Score": 7.5,
-  "task2Feedback": "Detailed professional feedback for Task 2 (minimum 200 words). Include specific strengths, weaknesses, and suggestions for improvement.",
-  "overallScore": 7.0,
-  "overallFeedback": "Overall assessment combining both tasks (minimum 100 words). Highlight key areas for improvement."
-}
-
-IMPORTANT:
-- Scores must be realistic IELTS band scores (0.5 increments: 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0)
-- Overall score is the average of Task 1 and Task 2
-- Feedback must be professional, constructive, and specific
-- Do not include any text before or after the JSON`;
-
-  try {
-    const responseText = await sendMessageToGemini(prompt);
-    
-    // Check if response is an error message
-    if (responseText.startsWith('Sorry')) {
-      throw new Error('API key is invalid or there is an issue. Please check the API key in your .env file and restart the server.');
-    }
-    
-    const cleanJson = responseText.replace(/```json|```/gi, '').trim();
-    return JSON.parse(cleanJson);
-  } catch (error) {
-    console.error("Full Writing Test Evaluation Error:", error);
-    throw error;
-  }
+  return postAI<WritingFullTestEvaluation>('/evaluate-full-writing/', {
+    task1Question,
+    task1Essay,
+    task2Question,
+    task2Essay,
+  });
 };

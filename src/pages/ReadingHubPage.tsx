@@ -84,7 +84,6 @@ const ReadingHubPage: React.FC = () => {
       const data: ReadingPassagesResponse = await response.json();
       // Show all passages (including inactive ones for development)
       setPassages(data.results);
-      console.log("📊 Loaded passages:", data.results.length, "passages");
     } catch (error) {
       console.error("Error loading reading passages:", error);
       message.error("Reading passagelarni yuklashda xatolik yuz berdi");
