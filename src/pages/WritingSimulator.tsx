@@ -218,7 +218,7 @@ const WritingSimulator: React.FC<WritingSimulatorProps> = ({ taskId, onBack }) =
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: isDark ? '#0f172a' : '#f8fafc',
+          backgroundColor: isDark ? '#0b1d3a' : '#f8fafc',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -247,7 +247,7 @@ const WritingSimulator: React.FC<WritingSimulatorProps> = ({ taskId, onBack }) =
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: isDark ? '#0f172a' : '#f8fafc',
+        backgroundColor: isDark ? '#0b1d3a' : '#f8fafc',
         zIndex: 1000,
         overflowY: 'auto',
         padding: '40px 20px',
@@ -283,7 +283,7 @@ const WritingSimulator: React.FC<WritingSimulatorProps> = ({ taskId, onBack }) =
           {/* Task Scores */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
             <Card style={{ borderRadius: '16px', textAlign: 'center' }}>
-              <Title level={3} style={{ margin: 0, fontSize: '36px', color: '#3b82f6' }}>
+              <Title level={3} style={{ margin: 0, fontSize: '36px', color: '#f6c34a' }}>
                 {aiFeedback.task1Score}
               </Title>
               <Text type="secondary">Task 1 Ball</Text>
@@ -403,7 +403,7 @@ const WritingSimulator: React.FC<WritingSimulatorProps> = ({ taskId, onBack }) =
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={{
               padding: '6px 12px',
-              backgroundColor: isTask1 ? '#3b82f6' : 'rgba(255,255,255,0.2)',
+              backgroundColor: isTask1 ? '#f6c34a' : 'rgba(255,255,255,0.2)',
               borderRadius: '6px',
               fontSize: '14px',
               fontWeight: '600',
@@ -427,7 +427,7 @@ const WritingSimulator: React.FC<WritingSimulatorProps> = ({ taskId, onBack }) =
             alignItems: 'center',
             gap: '8px',
             padding: '8px 16px',
-            backgroundColor: isLowTime ? '#dc2626' : '#059669',
+            backgroundColor: isLowTime ? '#dc2626' : '#d99e1e',
             borderRadius: '8px',
             fontWeight: '600',
             fontSize: '18px',
@@ -447,7 +447,7 @@ const WritingSimulator: React.FC<WritingSimulatorProps> = ({ taskId, onBack }) =
         {/* Left Panel - Task Description */}
         <div style={{
           width: '40%',
-          backgroundColor: isDark ? '#1e293b' : 'white',
+          backgroundColor: isDark ? '#102a4f' : 'white',
           padding: '32px',
           overflowY: 'auto',
           borderRight: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid #e5e7eb',
@@ -461,16 +461,16 @@ const WritingSimulator: React.FC<WritingSimulatorProps> = ({ taskId, onBack }) =
         onContextMenu={(e) => e.preventDefault()}
         >
           <div style={{
-            backgroundColor: isTask1 ? '#eff6ff' : '#f0fdf4',
+            backgroundColor: isTask1 ? '#fdf7ea' : '#fdf8ec',
             padding: '12px 16px',
             borderRadius: '8px',
             marginBottom: '24px',
-            border: isTask1 ? '1px solid #3b82f6' : '1px solid #22c55e',
+            border: isTask1 ? '1px solid #f6c34a' : '1px solid #22c55e',
           }}>
-            <div style={{ fontSize: '14px', fontWeight: '600', color: isTask1 ? '#1e40af' : '#15803d' }}>
+            <div style={{ fontSize: '14px', fontWeight: '600', color: isTask1 ? '#b8841a' : '#15803d' }}>
               {isTask1 ? 'IELTS Writing Task 1' : 'IELTS Writing Task 2'}
             </div>
-            <div style={{ fontSize: '12px', color: isTask1 ? '#3b82f6' : '#22c55e', marginTop: '4px' }}>
+            <div style={{ fontSize: '12px', color: isTask1 ? '#f6c34a' : '#22c55e', marginTop: '4px' }}>
               Minimal {minWords} so'z • {isTask1 ? '20' : '40'} daqiqa
             </div>
           </div>
@@ -490,7 +490,7 @@ const WritingSimulator: React.FC<WritingSimulatorProps> = ({ taskId, onBack }) =
                 border: isDark ? '2px solid rgba(255,255,255,0.1)' : '2px solid #e5e7eb',
                 borderRadius: '8px',
                 padding: '16px',
-                backgroundColor: isDark ? '#0f172a' : '#fafafa',
+                backgroundColor: isDark ? '#0b1d3a' : '#fafafa',
               }}>
                 <img
                   src={currentImageUrl}
@@ -536,7 +536,7 @@ const WritingSimulator: React.FC<WritingSimulatorProps> = ({ taskId, onBack }) =
           width: '60%',
           display: 'flex',
           flexDirection: 'column',
-          backgroundColor: isDark ? '#1e293b' : 'white',
+          backgroundColor: isDark ? '#102a4f' : 'white',
         }}>
           <TextArea
             value={currentContent}
@@ -571,7 +571,7 @@ const WritingSimulator: React.FC<WritingSimulatorProps> = ({ taskId, onBack }) =
               fontFamily: 'Arial, sans-serif',
               resize: 'none',
               outline: 'none',
-              backgroundColor: isDark ? '#1e293b' : 'white',
+              backgroundColor: isDark ? '#102a4f' : 'white',
               color: isDark ? '#e2e8f0' : '#1f2937',
             }}
           />
@@ -583,12 +583,12 @@ const WritingSimulator: React.FC<WritingSimulatorProps> = ({ taskId, onBack }) =
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            backgroundColor: isDark ? '#0f172a' : '#fafafa',
+            backgroundColor: isDark ? '#0b1d3a' : '#fafafa',
           }}>
             <div style={{
               fontSize: '16px',
               fontWeight: '600',
-              color: currentWordCount < minWords ? '#dc2626' : '#059669',
+              color: currentWordCount < minWords ? '#dc2626' : '#d99e1e',
             }}>
               So'zlar soni: {currentWordCount} / {minWords}
             </div>
@@ -600,7 +600,7 @@ const WritingSimulator: React.FC<WritingSimulatorProps> = ({ taskId, onBack }) =
               onClick={isTask1 ? handleTask1Complete : handleTask2Complete}
               disabled={currentWordCount === 0}
               style={{
-                backgroundColor: isTask1 ? '#3b82f6' : '#22c55e',
+                backgroundColor: isTask1 ? '#f6c34a' : '#22c55e',
                 borderRadius: '8px',
                 height: '48px',
                 padding: '0 32px',

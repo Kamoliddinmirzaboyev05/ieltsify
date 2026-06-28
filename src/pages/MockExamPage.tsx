@@ -179,7 +179,7 @@ const MockExamPage: React.FC = () => {
             style={{
               marginRight: "8px",
               verticalAlign: "middle",
-              color: "#10b981",
+              color: "#f0b429",
             }}
           />
           Full Mock Exam
@@ -294,14 +294,14 @@ const MockExamPage: React.FC = () => {
                       width: "44px",
                       height: "44px",
                       borderRadius: "6px",
-                      backgroundColor: "rgba(16, 185, 129, 0.1)",
+                      backgroundColor: "rgba(240, 180, 41, 0.1)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                       flexShrink: 0,
                     }}
                   >
-                    <Target size={22} color="#10b981" />
+                    <Target size={22} color="#f0b429" />
                   </div>
                   <div style={{ flex: 1 }}>
                     <Text strong style={{ fontSize: "14px", display: "block" }}>
@@ -343,7 +343,7 @@ const MockExamPage: React.FC = () => {
                         style={{
                           fontSize: "11px",
                           color:
-                            quotaInfo.type === "locked" ? "#ef4444" : "#10b981",
+                            quotaInfo.type === "locked" ? "#ef4444" : "#f0b429",
                           display: "block",
                           marginBottom: "6px",
                         }}
@@ -360,7 +360,7 @@ const MockExamPage: React.FC = () => {
                         borderRadius: "4px",
                         fontSize: "12px",
                         fontWeight: 600,
-                        backgroundColor: "#10b981",
+                        backgroundColor: "#f0b429",
                         border: "none",
                       }}
                     >
@@ -458,7 +458,7 @@ const MockExamPage: React.FC = () => {
                 loading={starting}
                 onClick={confirmStart}
                 style={{
-                  backgroundColor: "#10b981",
+                  backgroundColor: "#f0b429",
                   border: "none",
                   fontWeight: 600,
                 }}

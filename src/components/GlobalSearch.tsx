@@ -46,9 +46,9 @@ const GlobalSearch: React.FC<GlobalSearchProps> = ({ visible, onClose }) => {
   const getIcon = (type: string) => {
     switch (type) {
       case 'vocabulary':
-        return <Book size={20} color="#3b82f6" />;
+        return <Book size={20} color="#f6c34a" />;
       case 'article':
-        return <BookOpen size={20} color="#10b981" />;
+        return <BookOpen size={20} color="#f0b429" />;
       case 'listening':
         return <Headphones size={20} color="#f59e0b" />;
       default:

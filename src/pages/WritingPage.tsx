@@ -109,17 +109,17 @@ const WritingPage: React.FC = () => {
           gap: "8px",
           marginBottom: "24px",
           padding: "12px 16px",
-          backgroundColor: isDark ? "rgba(59, 130, 246, 0.1)" : "#eff6ff",
+          backgroundColor: isDark ? "rgba(246, 195, 74, 0.1)" : "#fdf7ea",
           borderRadius: "12px",
           border: isDark
-            ? "1px solid rgba(59, 130, 246, 0.2)"
-            : "1px solid #3b82f6",
+            ? "1px solid rgba(246, 195, 74, 0.2)"
+            : "1px solid #f6c34a",
         }}
       >
         <Text
           style={{
             fontSize: "14px",
-            color: isDark ? "#60a5fa" : "#1e40af",
+            color: isDark ? "#f8d37a" : "#b8841a",
             fontWeight: "600",
           }}
         >
@@ -133,7 +133,7 @@ const WritingPage: React.FC = () => {
         style={{
           borderRadius: "6px",
           marginBottom: "24px",
-          background: "#10b981",
+          background: "#f0b429",
           border: "none",
           color: "white",
         }}

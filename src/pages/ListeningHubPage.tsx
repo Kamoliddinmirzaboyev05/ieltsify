@@ -96,7 +96,7 @@ const ListeningHubPage: React.FC = () => {
       medium: "#d97706",
       hard: "#dc2626",
     };
-    return colors[diff] || "#3b82f6";
+    return colors[diff] || "#f6c34a";
   };
 
   return (
@@ -119,7 +119,7 @@ const ListeningHubPage: React.FC = () => {
               style={{
                 marginRight: "8px",
                 verticalAlign: "middle",
-                color: "#10b981",
+                color: "#f0b429",
               }}
             />
             Listening Tests
@@ -158,7 +158,7 @@ const ListeningHubPage: React.FC = () => {
           bodyStyle={{ padding: "14px" }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <BookOpen size={18} color="#3b82f6" />
+            <BookOpen size={18} color="#f6c34a" />
             <div>
               <Text
                 type="secondary"
@@ -204,7 +204,7 @@ const ListeningHubPage: React.FC = () => {
           bodyStyle={{ padding: "14px" }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <TrendingUp size={18} color="#10b981" />
+            <TrendingUp size={18} color="#f0b429" />
             <div>
               <Text
                 type="secondary"
@@ -332,7 +332,7 @@ const ListeningHubPage: React.FC = () => {
                   height: "36px",
                   fontSize: "13px",
                   fontWeight: 600,
-                  backgroundColor: "#10b981",
+                  backgroundColor: "#f0b429",
                   border: "none",
                 }}
               >

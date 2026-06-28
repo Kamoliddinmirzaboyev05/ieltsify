@@ -9,7 +9,7 @@ module.exports = {
     extend: {
       colors: {
         emerald: {
-          500: '#10b981',
+          500: '#f0b429',
         },
       },
       borderRadius: {

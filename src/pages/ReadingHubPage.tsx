@@ -154,7 +154,7 @@ const ReadingHubPage: React.FC = () => {
               style={{
                 marginRight: "12px",
                 verticalAlign: "middle",
-                color: "#3b82f6",
+                color: "#f6c34a",
               }}
             />
             Reading Passages
@@ -201,7 +201,7 @@ const ReadingHubPage: React.FC = () => {
           <div>
             <FileText
               size={20}
-              style={{ marginBottom: "6px", color: "#3b82f6" }}
+              style={{ marginBottom: "6px", color: "#f6c34a" }}
             />
             <Title level={3} style={{ margin: "4px 0" }}>
               {passages.length}
@@ -241,7 +241,7 @@ const ReadingHubPage: React.FC = () => {
           <div>
             <TrendingUp
               size={20}
-              style={{ marginBottom: "6px", color: "#10b981" }}
+              style={{ marginBottom: "6px", color: "#f0b429" }}
             />
             <Title level={3} style={{ margin: "4px 0" }}>
               Band 9.0
@@ -400,7 +400,7 @@ const ReadingHubPage: React.FC = () => {
                       height: "42px",
                       fontWeight: "600",
                       fontSize: "14px",
-                      background: "#3b82f6",
+                      background: "#f6c34a",
                       border: "none",
                     }}
                   >

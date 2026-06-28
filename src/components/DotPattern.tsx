@@ -41,8 +41,8 @@ export function DotPattern({
   className,
   dotSize = 2,
   gap = 24,
-  baseColor = "#475569",
-  glowColor = "#3b82f6",
+  baseColor = "#20416c",
+  glowColor = "#f6c34a",
   proximity = 120,
   glowIntensity = 1,
   waveSpeed = 0.5,
@@ -211,7 +211,7 @@ export function DotPattern({
       style={{ 
         zIndex: 0, 
         pointerEvents: 'none',
-        background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)'
+        background: 'linear-gradient(135deg, #0b1d3a 0%, #102a4f 100%)'
       }}
     >
       <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
@@ -220,7 +220,7 @@ export function DotPattern({
         className="absolute inset-0"
         style={{
           background:
-            "radial-gradient(ellipse at center, transparent 0%, transparent 40%, rgba(15, 23, 42, 0.6) 100%)",
+            "radial-gradient(ellipse at center, transparent 0%, transparent 40%, rgba(11, 29, 58, 0.6) 100%)",
           pointerEvents: 'none'
         }}
       />

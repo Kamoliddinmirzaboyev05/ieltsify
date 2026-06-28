@@ -369,14 +369,14 @@ Provide a comprehensive analysis in JSON format:
           {
             label: "Average Score",
             value: SPEAKING_STATS.averageScore.toFixed(1),
-            icon: <Award size={20} color="#3b82f6" />,
-            bg: "#eff6ff",
+            icon: <Award size={20} color="#f6c34a" />,
+            bg: "#fdf7ea",
           },
           {
             label: "Highest Score",
             value: SPEAKING_STATS.highestScore.toFixed(1),
             icon: <CheckCircle size={20} color="#22c55e" />,
-            bg: "#f0fdf4",
+            bg: "#fdf8ec",
           },
           {
             label: "Practice Minutes",
@@ -684,7 +684,7 @@ Provide a comprehensive analysis in JSON format:
                     margin: "20px auto",
                   }}
                 >
-                  <Text italic style={{ fontSize: "14px", color: "#475569" }}>
+                  <Text italic style={{ fontSize: "14px", color: "#20416c" }}>
                     {transcript}
                   </Text>
                 </div>
@@ -978,7 +978,7 @@ Provide a comprehensive analysis in JSON format:
                     margin: "20px auto",
                   }}
                 >
-                  <Text italic style={{ fontSize: "14px", color: "#475569" }}>
+                  <Text italic style={{ fontSize: "14px", color: "#20416c" }}>
                     {transcript}
                   </Text>
                 </div>
@@ -1126,12 +1126,12 @@ Provide a comprehensive analysis in JSON format:
                     {
                       label: "Fluency & Coherence",
                       score: finalAnalysis.fluency_coherence,
-                      color: "#3b82f6",
+                      color: "#f6c34a",
                     },
                     {
                       label: "Lexical Resource",
                       score: finalAnalysis.lexical_resource,
-                      color: "#10b981",
+                      color: "#f0b429",
                     },
                     {
                       label: "Grammatical Range",
@@ -1174,7 +1174,7 @@ Provide a comprehensive analysis in JSON format:
                 style={{
                   borderRadius: "24px",
                   height: "100%",
-                  backgroundColor: "#f0fdf4",
+                  backgroundColor: "#fdf8ec",
                 }}
               >
                 <Space
@@ -1238,7 +1238,7 @@ Provide a comprehensive analysis in JSON format:
                 style={{
                   borderRadius: "24px",
                   height: "100%",
-                  backgroundColor: "#eff6ff",
+                  backgroundColor: "#fdf7ea",
                 }}
               >
                 <Space wrap size={[8, 12]}>
@@ -1267,7 +1267,7 @@ Provide a comprehensive analysis in JSON format:
                   style={{
                     fontSize: "16px",
                     lineHeight: "1.8",
-                    color: "#475569",
+                    color: "#20416c",
                   }}
                 >
                   {finalAnalysis.detailed_feedback}

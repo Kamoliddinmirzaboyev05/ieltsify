@@ -171,7 +171,7 @@ const DashboardHome: React.FC = () => {
       label: "Reading",
       icon: <BookOpen size={18} />,
       path: "/dashboard/reading-hub",
-      color: "#3b82f6",
+      color: "#f6c34a",
     },
     {
       label: "Listening",
@@ -222,7 +222,7 @@ const DashboardHome: React.FC = () => {
                   width: "36px",
                   height: "36px",
                   borderRadius: "6px",
-                  backgroundColor: "rgba(16, 185, 129, 0.08)",
+                  backgroundColor: "rgba(240, 180, 41, 0.08)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -384,7 +384,7 @@ const DashboardHome: React.FC = () => {
         </div>
         <Progress
           percent={Math.round(progressPct)}
-          strokeColor="#10b981"
+          strokeColor="#f0b429"
           trailColor="var(--border-color)"
           size="small"
         />
@@ -451,7 +451,7 @@ const DashboardHome: React.FC = () => {
           transition: "border-color 0.2s",
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.borderColor = "#10b981";
+          e.currentTarget.style.borderColor = "#f0b429";
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.borderColor = "var(--border-color)";
@@ -462,13 +462,13 @@ const DashboardHome: React.FC = () => {
             width: "40px",
             height: "40px",
             borderRadius: "6px",
-            backgroundColor: "rgba(16, 185, 129, 0.1)",
+            backgroundColor: "rgba(240, 180, 41, 0.1)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
           }}
         >
-          <Target size={20} color="#10b981" />
+          <Target size={20} color="#f0b429" />
         </div>
         <div style={{ flex: 1 }}>
           <Text strong style={{ fontSize: "14px", display: "block" }}>
@@ -551,9 +551,9 @@ const DashboardHome: React.FC = () => {
                       padding: "4px 10px",
                       borderRadius: "4px",
                       fontSize: "12px",
-                      backgroundColor: "rgba(16, 185, 129, 0.08)",
+                      backgroundColor: "rgba(240, 180, 41, 0.08)",
                       color: "#16a34a",
-                      border: "1px solid rgba(16, 185, 129, 0.2)",
+                      border: "1px solid rgba(240, 180, 41, 0.2)",
                     }}
                   >
                     {skill}
@@ -594,7 +594,7 @@ const DashboardHome: React.FC = () => {
               />
               <Text style={{ fontSize: "13px" }}>Coin balansingiz</Text>
             </div>
-            <Text strong style={{ fontSize: "15px", color: "#10b981" }}>
+            <Text strong style={{ fontSize: "15px", color: "#f0b429" }}>
               {data.wallet.balance}
             </Text>
           </div>

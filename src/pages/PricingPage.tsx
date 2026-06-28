@@ -233,7 +233,7 @@ const PricingPage: React.FC = () => {
                 borderRadius: "8px",
                 border:
                   i === 1
-                    ? "2px solid #10b981"
+                    ? "2px solid #f0b429"
                     : "1px solid var(--border-color)",
                 position: "relative",
               }}
@@ -246,7 +246,7 @@ const PricingPage: React.FC = () => {
                     top: "-10px",
                     left: "50%",
                     transform: "translateX(-50%)",
-                    backgroundColor: "#10b981",
+                    backgroundColor: "#f0b429",
                     color: "#fff",
                     fontSize: "10px",
                     fontWeight: 700,
@@ -293,7 +293,7 @@ const PricingPage: React.FC = () => {
                     color: "var(--text-primary)",
                   }}
                 >
-                  <Check size={14} color="#10b981" /> Cheksiz Reading/Listening
+                  <Check size={14} color="#f0b429" /> Cheksiz Reading/Listening
                 </div>
                 <div
                   style={{
@@ -304,7 +304,7 @@ const PricingPage: React.FC = () => {
                     color: "var(--text-primary)",
                   }}
                 >
-                  <Check size={14} color="#10b981" /> {plan.included_coins} Coin
+                  <Check size={14} color="#f0b429" /> {plan.included_coins} Coin
                   bonus
                 </div>
                 <div
@@ -316,7 +316,7 @@ const PricingPage: React.FC = () => {
                     color: "var(--text-primary)",
                   }}
                 >
-                  <Check size={14} color="#10b981" /> AI baholash
+                  <Check size={14} color="#f0b429" /> AI baholash
                 </div>
               </div>
               <Button
@@ -330,7 +330,7 @@ const PricingPage: React.FC = () => {
                   height: "36px",
                   fontSize: "13px",
                   fontWeight: 600,
-                  backgroundColor: "#10b981",
+                  backgroundColor: "#f0b429",
                   border: "none",
                 }}
               >
@@ -401,7 +401,7 @@ const PricingPage: React.FC = () => {
                   borderRadius: "6px",
                   fontSize: "12px",
                   fontWeight: 600,
-                  backgroundColor: "#10b981",
+                  backgroundColor: "#f0b429",
                   border: "none",
                 }}
               >
@@ -447,7 +447,7 @@ const PricingPage: React.FC = () => {
                 marginBottom: "12px",
               }}
             >
-              <CreditCard size={18} color="#10b981" />
+              <CreditCard size={18} color="#f0b429" />
               <Text strong style={{ fontSize: "13px" }}>
                 To'lov ma'lumotlari
               </Text>
@@ -508,7 +508,7 @@ const PricingPage: React.FC = () => {
                 padding: "20px",
                 textAlign: "center",
                 cursor: "pointer",
-                backgroundColor: receiptFile ? "#f0fdf4" : "#fafafa",
+                backgroundColor: receiptFile ? "#fdf8ec" : "#fafafa",
               }}
             >
               <input
@@ -523,7 +523,7 @@ const PricingPage: React.FC = () => {
                   <div>
                     <Check
                       size={24}
-                      color="#10b981"
+                      color="#f0b429"
                       style={{ margin: "0 auto 6px" }}
                     />
                     <Text style={{ fontSize: "12px", color: "#16a34a" }}>
@@ -558,7 +558,7 @@ const PricingPage: React.FC = () => {
               borderRadius: "6px",
               height: "40px",
               fontWeight: 600,
-              backgroundColor: "#10b981",
+              backgroundColor: "#f0b429",
               border: "none",
             }}
           >

@@ -344,7 +344,7 @@ export const DASHBOARD_STATS: DashboardStats = {
 export const SKILL_PROGRESS: SkillProgress[] = [
   { name: 'Listening', score: 6.0, maxScore: 9.0, color: '#A855F7' },
   { name: 'Reading', score: 8.5, maxScore: 9.0, color: '#22C55E' },
-  { name: 'Writing', score: 7.2, maxScore: 9.0, color: '#3B82F6' },
+  { name: 'Writing', score: 7.2, maxScore: 9.0, color: '#f6c34a' },
   { name: 'Speaking', score: 6.8, maxScore: 9.0, color: '#EF4444' },
 ];
 

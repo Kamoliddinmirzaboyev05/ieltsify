@@ -129,7 +129,7 @@ const ReportsPage: React.FC = () => {
       label: "Reading",
       value: stats.total_reading_attempts,
       icon: <BookOpen size={16} />,
-      color: "#3b82f6",
+      color: "#f6c34a",
     },
     {
       label: "Listening",
@@ -153,7 +153,7 @@ const ReportsPage: React.FC = () => {
       label: "Vocabulary",
       value: stats.total_vocab_learned,
       icon: <TrendingUp size={16} />,
-      color: "#10b981",
+      color: "#f0b429",
     },
   ];
 
@@ -222,7 +222,7 @@ const ReportsPage: React.FC = () => {
           >
             <Calendar
               size={18}
-              color="#3b82f6"
+              color="#f6c34a"
               style={{ marginBottom: "4px" }}
             />
             <div style={{ fontSize: "18px", fontWeight: 700 }}>
@@ -243,7 +243,7 @@ const ReportsPage: React.FC = () => {
             }}
             bodyStyle={{ padding: "12px" }}
           >
-            <Award size={18} color="#10b981" style={{ marginBottom: "4px" }} />
+            <Award size={18} color="#f0b429" style={{ marginBottom: "4px" }} />
             <div style={{ fontSize: "18px", fontWeight: 700 }}>
               {stats.longest_streak}
             </div>
@@ -345,7 +345,7 @@ const ReportsPage: React.FC = () => {
                     maxWidth: "28px",
                     height: `${height}px`,
                     backgroundColor:
-                      total > 0 ? "#10b981" : "var(--border-color)",
+                      total > 0 ? "#f0b429" : "var(--border-color)",
                     borderRadius: "3px",
                     transition: "height 0.3s",
                   }}
@@ -444,7 +444,7 @@ const ReportsPage: React.FC = () => {
                   borderRadius: "6px",
                   border: `1px solid ${unlocked ? "#bbf7d0" : "var(--border-color)"}`,
                   backgroundColor: unlocked
-                    ? "rgba(16, 185, 129, 0.08)"
+                    ? "rgba(240, 180, 41, 0.08)"
                     : "var(--bg-secondary)",
                   opacity: unlocked ? 1 : 0.5,
                 }}
@@ -500,7 +500,7 @@ const ReportsPage: React.FC = () => {
                     width: "4px",
                     height: "4px",
                     borderRadius: "50%",
-                    backgroundColor: "#10b981",
+                    backgroundColor: "#f0b429",
                     marginTop: "6px",
                     flexShrink: 0,
                   }}

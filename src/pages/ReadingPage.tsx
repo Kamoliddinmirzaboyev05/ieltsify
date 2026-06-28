@@ -307,7 +307,7 @@ const ReadingPage: React.FC = () => {
         {/* Minimal Header */}
         <div style={{
           padding: '12px 24px',
-          background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+          background: 'linear-gradient(135deg, #f6c34a 0%, #f0b429 100%)',
           borderBottom: '1px solid rgba(255,255,255,0.1)',
           display: 'flex',
           justifyContent: 'space-between',
@@ -406,7 +406,7 @@ const ReadingPage: React.FC = () => {
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   target.style.display = 'none';
-                  target.parentElement!.style.background = 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)';
+                  target.parentElement!.style.background = 'linear-gradient(135deg, #f6c34a 0%, #f0b429 100%)';
                   target.parentElement!.style.display = 'flex';
                   target.parentElement!.style.alignItems = 'center';
                   target.parentElement!.style.justifyContent = 'center';
@@ -453,13 +453,13 @@ const ReadingPage: React.FC = () => {
               }}>
                 <div style={{
                   padding: '16px',
-                  background: 'rgba(59, 130, 246, 0.1)',
+                  background: 'rgba(246, 195, 74, 0.1)',
                   borderRadius: '12px',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '12px'
                 }}>
-                  <Clock size={24} color="#3b82f6" />
+                  <Clock size={24} color="#f6c34a" />
                   <div>
                     <Text style={{ display: 'block', fontSize: '12px', color: '#64748b' }}>
                       O'qish vaqti
@@ -472,13 +472,13 @@ const ReadingPage: React.FC = () => {
 
                 <div style={{
                   padding: '16px',
-                  background: 'rgba(16, 185, 129, 0.1)',
+                  background: 'rgba(240, 180, 41, 0.1)',
                   borderRadius: '12px',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '12px'
                 }}>
-                  <FileText size={24} color="#10b981" />
+                  <FileText size={24} color="#f0b429" />
                   <div>
                     <Text style={{ display: 'block', fontSize: '12px', color: '#64748b' }}>
                       So'zlar soni
@@ -520,7 +520,7 @@ const ReadingPage: React.FC = () => {
                   borderRadius: '12px',
                   fontSize: '16px',
                   fontWeight: '600',
-                  background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                  background: 'linear-gradient(135deg, #f6c34a 0%, #f0b429 100%)',
                   border: 'none',
                 }}
               >
@@ -549,7 +549,7 @@ const ReadingPage: React.FC = () => {
                   width: '32px',
                   height: '32px',
                   borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                  background: 'linear-gradient(135deg, #f6c34a 0%, #f0b429 100%)',
                   color: 'white',
                   display: 'flex',
                   alignItems: 'center',
@@ -574,7 +574,7 @@ const ReadingPage: React.FC = () => {
                   width: '32px',
                   height: '32px',
                   borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                  background: 'linear-gradient(135deg, #f6c34a 0%, #f0b429 100%)',
                   color: 'white',
                   display: 'flex',
                   alignItems: 'center',
@@ -599,7 +599,7 @@ const ReadingPage: React.FC = () => {
                   width: '32px',
                   height: '32px',
                   borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                  background: 'linear-gradient(135deg, #f6c34a 0%, #f0b429 100%)',
                   color: 'white',
                   display: 'flex',
                   alignItems: 'center',
@@ -623,9 +623,9 @@ const ReadingPage: React.FC = () => {
             <div style={{
               marginTop: '24px',
               padding: '16px',
-              background: 'rgba(59, 130, 246, 0.1)',
+              background: 'rgba(246, 195, 74, 0.1)',
               borderRadius: '12px',
-              border: '1px solid rgba(59, 130, 246, 0.2)'
+              border: '1px solid rgba(246, 195, 74, 0.2)'
             }}>
               <Text style={{ fontSize: '14px', color: '#64748b' }}>
                 💡 <strong>Maslahat:</strong> IELTS Reading testida 60 daqiqa vaqt beriladi. Vaqtni to'g'ri boshqaring!

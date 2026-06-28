@@ -159,8 +159,8 @@ const ProfilePage: React.FC = () => {
   }
 
   const skillProgress = [
-    { name: "Listening", score: profile.skills?.listening || 0, maxScore: 9, color: "#3b82f6" },
-    { name: "Reading", score: profile.skills?.reading || 0, maxScore: 9, color: "#10b981" },
+    { name: "Listening", score: profile.skills?.listening || 0, maxScore: 9, color: "#f6c34a" },
+    { name: "Reading", score: profile.skills?.reading || 0, maxScore: 9, color: "#f0b429" },
     { name: "Writing", score: profile.skills?.writing || 0, maxScore: 9, color: "#f59e0b" },
     { name: "Speaking", score: profile.skills?.speaking || 0, maxScore: 9, color: "#ef4444" },
   ];
@@ -205,7 +205,7 @@ const ProfilePage: React.FC = () => {
                 <Statistic title="Joined" value={joinedDate} valueStyle={{ fontSize: "14px", fontWeight: "bold" }} />
               </Col>
               <Col span={12}>
-                <Statistic title="Status" value="Active" valueStyle={{ fontSize: "14px", fontWeight: "bold", color: "#10b981" }} />
+                <Statistic title="Status" value="Active" valueStyle={{ fontSize: "14px", fontWeight: "bold", color: "#f0b429" }} />
               </Col>
             </Row>
             <Button block danger icon={<LogOut size={16} />} onClick={handleLogout}
@@ -302,7 +302,7 @@ const ProfilePage: React.FC = () => {
               <Card style={{ borderRadius: "8px", backgroundColor: "var(--bg-secondary)", border: "1px solid var(--border-color)" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <Space size={16}>
-                    <div style={{ backgroundColor: "#10b981", padding: "10px", borderRadius: "8px" }}><CreditCard size={20} color="white" /></div>
+                    <div style={{ backgroundColor: "#f0b429", padding: "10px", borderRadius: "8px" }}><CreditCard size={20} color="white" /></div>
                     <div>
                       <Text strong style={{ display: "block" }}>{membership} Plan</Text>
                       <Text type="secondary" style={{ fontSize: "12px" }}>
@@ -312,7 +312,7 @@ const ProfilePage: React.FC = () => {
                       </Text>
                     </div>
                   </Space>
-                  <Button type="link" style={{ color: "#10b981", fontWeight: "bold" }}
+                  <Button type="link" style={{ color: "#f0b429", fontWeight: "bold" }}
                     onClick={() => (window.location.href = "/dashboard/pricing")}>Upgrade</Button>
                 </div>
               </Card>

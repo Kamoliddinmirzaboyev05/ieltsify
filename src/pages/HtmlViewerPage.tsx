@@ -96,7 +96,7 @@ const HtmlViewerPage: React.FC = () => {
 
   return (
     <div style={{ position: 'fixed', inset: 0 as unknown as undefined, background: '#ffffff', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      <div style={{ padding: '12px 24px', background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', flexShrink: 0 }}>
+      <div style={{ padding: '12px 24px', background: 'linear-gradient(135deg, #f0b429 0%, #d99e1e 100%)', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', flexShrink: 0 }}>
         <Button
           icon={<ArrowLeft size={18} />}
           onClick={() => navigate(-1)}

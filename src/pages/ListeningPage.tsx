@@ -569,9 +569,9 @@ const ListeningPage: React.FC = () => {
             <div style={{
               marginTop: '24px',
               padding: '16px',
-              background: 'rgba(16, 185, 129, 0.1)',
+              background: 'rgba(240, 180, 41, 0.1)',
               borderRadius: '12px',
-              border: '1px solid rgba(16, 185, 129, 0.2)'
+              border: '1px solid rgba(240, 180, 41, 0.2)'
             }}>
               <Text style={{ fontSize: '14px', color: '#64748b' }}>
                 💡 <strong>Maslahat:</strong> Haqiqiy IELTS testidagi kabi vaqtni boshqaring va diqqatingizni jamlang.

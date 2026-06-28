@@ -152,7 +152,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                       left: -24,
                       width: "4px",
                       height: "24px",
-                      background: "#10b981",
+                      background: "#f0b429",
                       borderRadius: "0 4px 4px 0",
                     }}
                     transition={{ type: "spring", stiffness: 300, damping: 30 }}
@@ -165,7 +165,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                     letterSpacing: 0.2,
                     color:
                       currentPath === item.key
-                        ? "#10b981"
+                        ? "#f0b429"
                         : isDark
                           ? "#94a3b8"
                           : "#64748b",
@@ -178,7 +178,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             style: {
               color:
                 currentPath === item.key
-                  ? "#10b981"
+                  ? "#f0b429"
                   : isDark
                     ? "#94a3b8"
                     : "#64748b",
@@ -265,7 +265,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           marginLeft: isMobile ? 0 : collapsed ? 72 : 260,
           transition: "margin-left 0.2s",
           minHeight: "100vh",
-          background: isDark ? "#0f172a" : "#f8fafc",
+          background: isDark ? "#0b1d3a" : "#f8fafc",
         }}
       >
         <Header
@@ -383,8 +383,8 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               icon={<User size={18} />}
               size={36}
               style={{
-                backgroundColor: "rgba(16, 185, 129, 0.15)",
-                color: "#10b981",
+                backgroundColor: "rgba(240, 180, 41, 0.15)",
+                color: "#f0b429",
                 cursor: "pointer",
               }}
               onClick={() => navigate("/dashboard/profile")}

@@ -364,7 +364,7 @@ Provide analysis in this format:
             top: contextMenu.y,
             transform: 'translate(-50%, -100%)',
             zIndex: 1000,
-            background: isDark ? '#1e293b' : 'white',
+            background: isDark ? '#102a4f' : 'white',
             borderRadius: '12px',
             boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
             padding: '8px',
@@ -402,7 +402,7 @@ Provide analysis in this format:
       >
         {translationData && (
           <div style={{ padding: '20px 0' }}>
-            <Title level={3} style={{ marginBottom: '24px', color: '#3b82f6' }}>
+            <Title level={3} style={{ marginBottom: '24px', color: '#f6c34a' }}>
               {translationData.word}
             </Title>
 
@@ -413,8 +413,8 @@ Provide analysis in this format:
                 <div style={{ marginTop: '8px' }}>
                   <span style={{
                     padding: '4px 12px',
-                    backgroundColor: '#eff6ff',
-                    color: '#1e40af',
+                    backgroundColor: '#fdf7ea',
+                    color: '#b8841a',
                     borderRadius: '6px',
                     fontSize: '14px',
                     fontWeight: '600',
@@ -446,7 +446,7 @@ Provide analysis in this format:
                   marginTop: '8px', 
                   fontSize: '15px', 
                   lineHeight: '1.6',
-                  backgroundColor: isDark ? 'rgba(34, 197, 94, 0.1)' : '#f0fdf4',
+                  backgroundColor: isDark ? 'rgba(34, 197, 94, 0.1)' : '#fdf8ec',
                   padding: '12px',
                   borderRadius: '8px',
                   color: '#15803d',
@@ -466,7 +466,7 @@ Provide analysis in this format:
                       style={{
                         padding: '10px 12px',
                         backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : '#fafafa',
-                        borderLeft: '3px solid #3b82f6',
+                        borderLeft: '3px solid #f6c34a',
                         marginBottom: '8px',
                         borderRadius: '4px',
                         fontSize: '14px',
