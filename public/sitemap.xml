@@ -4,17 +4,17 @@
 
   <!-- Homepage -->
   <url>
-    <loc>https://ieltsify.uz/</loc>
+    <loc>https://ieltsfy.uz/</loc>
     <lastmod>2026-06-28</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
-    <xhtml:link rel="alternate" hreflang="en" href="https://ieltsify.uz/" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://ieltsify.uz/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://ieltsfy.uz/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://ieltsfy.uz/" />
   </url>
 
   <!-- Register -->
   <url>
-    <loc>https://ieltsify.uz/register</loc>
+    <loc>https://ieltsfy.uz/register</loc>
     <lastmod>2026-06-28</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
@@ -22,7 +22,7 @@
 
   <!-- Login -->
   <url>
-    <loc>https://ieltsify.uz/login</loc>
+    <loc>https://ieltsfy.uz/login</loc>
     <lastmod>2026-06-28</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>

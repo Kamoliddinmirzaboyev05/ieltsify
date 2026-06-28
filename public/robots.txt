@@ -18,4 +18,4 @@ User-agent: Yandex
 Allow: /
 
 # Sitemap
-Sitemap: https://ieltsify.uz/sitemap.xml
+Sitemap: https://ieltsfy.uz/sitemap.xml
