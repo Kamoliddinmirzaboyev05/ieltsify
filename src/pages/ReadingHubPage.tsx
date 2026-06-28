@@ -57,7 +57,7 @@ const ReadingHubPage: React.FC = () => {
     try {
       const API_BASE_URL =
         import.meta.env.VITE_API_BASE_URL ||
-        "https://ieltsify.pythonanywhere.com";
+        "https://api.ieltsfy.uz";
       const accessToken = localStorage.getItem("access_token");
 
       const headers: HeadersInit = {

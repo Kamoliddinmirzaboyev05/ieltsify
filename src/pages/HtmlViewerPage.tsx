@@ -43,9 +43,9 @@ const HtmlViewerPage: React.FC = () => {
       parsedPath = '';
       void e;
     }
-    const isPythonAnywhereHost = parsedHost === 'ieltsify.pythonanywhere.com';
+    const isApiHost = parsedHost === 'api.ieltsfy.uz';
     const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    if (isPythonAnywhereHost && isLocalhost && parsedPath.startsWith('/media')) {
+    if (isApiHost && isLocalhost && parsedPath.startsWith('/media')) {
       url = parsedPath;
     }
     setSourceUrl(url);

@@ -15,15 +15,29 @@ export default defineConfig({
         navigateFallback: "index.html",
       },
       manifest: {
-        name: "IELTSify",
+        name: "IELTSify — AI IELTS Preparation",
         short_name: "IELTSify",
-        description: "IELTS tayyorlanish platformasi",
-        theme_color: "#10b981",
+        description:
+          "AI-powered IELTS preparation: practice Reading, Listening, Writing and Speaking with instant band scoring and a personalized study plan.",
+        lang: "en",
+        start_url: "/",
+        scope: "/",
+        display: "standalone",
+        background_color: "#0b1d3a",
+        theme_color: "#0b1d3a",
+        categories: ["education", "productivity"],
         icons: [
           {
-            src: "logo.png",
-            sizes: "192x192",
+            src: "logohead.png",
+            sizes: "501x498",
             type: "image/png",
+            purpose: "any",
+          },
+          {
+            src: "logohead.png",
+            sizes: "501x498",
+            type: "image/png",
+            purpose: "maskable",
           },
         ],
       },
@@ -46,7 +60,7 @@ export default defineConfig({
     port: 3000,
     proxy: {
       "/media": {
-        target: "https://ieltsify-backend.onrender.com",
+        target: "https://api.ieltsfy.uz",
         changeOrigin: true,
       },
     },

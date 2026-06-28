@@ -54,7 +54,7 @@ const ListeningPage: React.FC = () => {
   const loadTest = async () => {
     setLoading(true);
     try {
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://ieltsify.pythonanywhere.com';
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api.ieltsfy.uz';
       const accessToken = localStorage.getItem('access_token');
       
       const headers: HeadersInit = {
@@ -125,9 +125,9 @@ const ListeningPage: React.FC = () => {
         parsedHost = '';
         parsedPath = '';
       }
-      const isPythonAnywhereHost = parsedHost === 'ieltsify.pythonanywhere.com';
+      const isApiHost = parsedHost === 'api.ieltsfy.uz';
       const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-      if (isPythonAnywhereHost && isLocalhost && parsedPath.startsWith('/media')) {
+      if (isApiHost && isLocalhost && parsedPath.startsWith('/media')) {
         urlToFetch = parsedPath;
       }
 

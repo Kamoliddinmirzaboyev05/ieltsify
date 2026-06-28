@@ -1,33 +1,28 @@
 {
-  "name": "IELTSIFY - IELTS Tayyorgarlik Platformasi",
-  "short_name": "IELTSIFY",
-  "description": "O'zbekistondagi eng yaxshi IELTS tayyorgarlik platformasi. Reading, Listening, Writing, Speaking va Vocabulary mashqlari.",
+  "name": "IELTSify — AI IELTS Preparation",
+  "short_name": "IELTSify",
+  "description": "AI-powered IELTS preparation: practice Reading, Listening, Writing and Speaking with instant band scoring and a personalized study plan.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f8fafc",
-  "theme_color": "#2563eb",
+  "background_color": "#0b1d3a",
+  "theme_color": "#0b1d3a",
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "/logo.png",
-      "sizes": "192x192",
+      "src": "/logohead.png",
+      "sizes": "501x498",
       "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/logo.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "/logohead.png",
-      "sizes": "96x96",
-      "type": "image/png"
+      "sizes": "501x498",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "categories": ["education", "productivity"],
-  "lang": "uz",
+  "lang": "en",
   "dir": "ltr",
   "scope": "/",
   "prefer_related_applications": false

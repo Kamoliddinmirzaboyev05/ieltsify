@@ -52,7 +52,7 @@ const ListeningHubPage: React.FC = () => {
     setLoading(true);
     try {
       const API_BASE_URL =
-        import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+        import.meta.env.VITE_API_BASE_URL || "https://api.ieltsfy.uz";
       const accessToken = localStorage.getItem("access_token");
 
       const headers: HeadersInit = { "Content-Type": "application/json" };
