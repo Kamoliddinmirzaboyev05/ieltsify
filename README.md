@@ -47,7 +47,7 @@ cp .env.example .env
 
 # Add your API keys to .env file
 # VITE_GEMINI_API_KEY=your_gemini_api_key
-# VITE_API_BASE_URL=https://ieltsify.pythonanywhere.com
+# VITE_API_BASE_URL=https://api.ieltsfy.uz
 # VITE_GOOGLE_CLIENT_ID=your_google_client_id (optional, for Google OAuth)
 # VITE_ENABLE_GOOGLE_AUTH=true (set to true to enable Google OAuth)
 

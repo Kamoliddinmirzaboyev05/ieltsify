@@ -68,7 +68,7 @@ export interface AuthResponse {
   tokens?: { access: string; refresh: string; };
 }
 
-const API = () => import.meta.env.VITE_API_BASE_URL || '';
+const API = () => import.meta.env.VITE_API_BASE_URL || 'https://api.ieltsfy.uz';
 
 const apiPost = async (path: string, body: unknown) => {
   const res = await fetch(`${API()}${path}`, {
@@ -84,17 +84,17 @@ const apiPost = async (path: string, body: unknown) => {
 };
 
 export const googleAuth = async (idToken: string): Promise<AuthResponse> => {
-  try { return await apiPost('/auth/google/', { id_token: idToken }); }
+  try { return await apiPost('/accounts/google/', { id_token: idToken }); }
   catch (e: unknown) { throw new Error(e instanceof Error ? e.message : 'Google autentifikatsiya xatosi.'); }
 };
 
 export const registerUser = async (d: RegisterData): Promise<AuthResponse> => {
-  try { return await apiPost('/auth/register/', d); }
+  try { return await apiPost('/accounts/register/', d); }
   catch (e: unknown) { throw new Error(e instanceof Error ? e.message : "Ro'yxatdan o'tishda xatolik"); }
 };
 
 export const loginUser = async (d: LoginData): Promise<AuthResponse> => {
-  try { return await apiPost('/auth/login/', d); }
+  try { return await apiPost('/token/', d); }
   catch (e: unknown) { throw new Error(e instanceof Error ? e.message : 'Kirishda xatolik'); }
 };
 
@@ -134,7 +134,7 @@ export const refreshAccessToken = async (): Promise<string> => {
   const rt = getRefreshToken();
   if (!rt) throw new Error('Refresh token not found');
   try {
-    const data = await apiPost('/auth/refresh/', { refresh: rt });
+    const data = await apiPost('/token/refresh/', { refresh: rt });
     const na = data.access || data.access_token;
     const nr = data.refresh || data.refresh_token;
     if (na) { saveAuthTokens(na, nr || rt); return na; }
@@ -156,7 +156,7 @@ export const updateUserProfile = async (d: Partial<ProfileData>): Promise<Profil
 };
 
 export const changePassword = async (newPassword: string): Promise<{ message: string }> => {
-  const r = await authenticatedFetch('/auth/change-password/', {
+  const r = await authenticatedFetch('/accounts/change-password/', {
     method: 'POST', body: JSON.stringify({ new_password: newPassword }),
   });
   if (!r.ok) throw new Error("Failed to change password");
