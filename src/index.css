@@ -341,9 +341,11 @@ body {
   border: 1px solid #16365f !important;
 }
 
-/* Menu (sidebar) */
-[data-theme="dark"] .ant-menu {
-  background: #0b1d3a !important;
+/* Menu (sidebar) — transparent so the Sider background fills the whole
+   column uniformly top-to-bottom (no two-tone banding below the list) */
+[data-theme="dark"] .ant-menu,
+.ant-layout-sider .ant-menu {
+  background: transparent !important;
 }
 
 /* Sidebar full height fix */
@@ -356,8 +358,13 @@ body {
   display: flex;
   flex-direction: column;
   height: 100%;
-  overflow-y: auto;
+  min-height: 100%;
   overflow-x: hidden;
+}
+
+/* Menu region grows to fill remaining height so the sidebar reaches the bottom */
+.sidebar-menu-container {
+  flex: 1 1 auto;
 }
 
 /* Breadcrumb */

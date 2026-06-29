@@ -313,6 +313,56 @@
   color: #f0b429;
 }
 
+.onboard-band-group {
+  margin-bottom: 22px;
+  text-align: left;
+}
+
+.band-label {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  color: #cbd5e1;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+.band-label strong {
+  color: #f0b429;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.band-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.band-pill {
+  min-width: 46px;
+  padding: 9px 0;
+  flex: 1 0 auto;
+  border-radius: 8px;
+  border: 1px solid #1e3a63;
+  background: #0b1d3a;
+  color: #94a3b8;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.band-pill:hover {
+  border-color: #2f5587;
+  color: #e2e8f0;
+}
+.band-pill.selected {
+  border-color: #f0b429;
+  background: #f0b429;
+  color: #0b1d3a;
+  box-shadow: 0 2px 8px rgba(240, 180, 41, 0.35);
+}
+
 .onboard-btns {
   display: flex;
   gap: 8px;
