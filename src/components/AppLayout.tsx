@@ -265,7 +265,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           marginLeft: isMobile ? 0 : collapsed ? 72 : 260,
           transition: "margin-left 0.2s",
           minHeight: "100vh",
-          background: isDark ? "#0b1d3a" : "#f8fafc",
+          background: isDark ? "#0e1626" : "#f8fafc",
         }}
       >
         <Header

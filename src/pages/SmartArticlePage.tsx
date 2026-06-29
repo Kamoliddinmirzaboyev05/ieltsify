@@ -364,7 +364,7 @@ Provide analysis in this format:
             top: contextMenu.y,
             transform: 'translate(-50%, -100%)',
             zIndex: 1000,
-            background: isDark ? '#102a4f' : 'white',
+            background: isDark ? '#151f30' : 'white',
             borderRadius: '12px',
             boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
             padding: '8px',

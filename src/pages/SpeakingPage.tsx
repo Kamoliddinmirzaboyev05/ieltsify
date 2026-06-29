@@ -684,7 +684,7 @@ Provide a comprehensive analysis in JSON format:
                     margin: "20px auto",
                   }}
                 >
-                  <Text italic style={{ fontSize: "14px", color: "#20416c" }}>
+                  <Text italic style={{ fontSize: "14px", color: "#324563" }}>
                     {transcript}
                   </Text>
                 </div>
@@ -978,7 +978,7 @@ Provide a comprehensive analysis in JSON format:
                     margin: "20px auto",
                   }}
                 >
-                  <Text italic style={{ fontSize: "14px", color: "#20416c" }}>
+                  <Text italic style={{ fontSize: "14px", color: "#324563" }}>
                     {transcript}
                   </Text>
                 </div>
@@ -1267,7 +1267,7 @@ Provide a comprehensive analysis in JSON format:
                   style={{
                     fontSize: "16px",
                     lineHeight: "1.8",
-                    color: "#20416c",
+                    color: "#324563",
                   }}
                 >
                   {finalAnalysis.detailed_feedback}

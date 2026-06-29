@@ -218,7 +218,7 @@ const WritingSimulator: React.FC<WritingSimulatorProps> = ({ taskId, onBack }) =
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: isDark ? '#0b1d3a' : '#f8fafc',
+          backgroundColor: isDark ? '#0e1626' : '#f8fafc',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -247,7 +247,7 @@ const WritingSimulator: React.FC<WritingSimulatorProps> = ({ taskId, onBack }) =
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: isDark ? '#0b1d3a' : '#f8fafc',
+        backgroundColor: isDark ? '#0e1626' : '#f8fafc',
         zIndex: 1000,
         overflowY: 'auto',
         padding: '40px 20px',
@@ -447,7 +447,7 @@ const WritingSimulator: React.FC<WritingSimulatorProps> = ({ taskId, onBack }) =
         {/* Left Panel - Task Description */}
         <div style={{
           width: '40%',
-          backgroundColor: isDark ? '#102a4f' : 'white',
+          backgroundColor: isDark ? '#151f30' : 'white',
           padding: '32px',
           overflowY: 'auto',
           borderRight: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid #e5e7eb',
@@ -490,7 +490,7 @@ const WritingSimulator: React.FC<WritingSimulatorProps> = ({ taskId, onBack }) =
                 border: isDark ? '2px solid rgba(255,255,255,0.1)' : '2px solid #e5e7eb',
                 borderRadius: '8px',
                 padding: '16px',
-                backgroundColor: isDark ? '#0b1d3a' : '#fafafa',
+                backgroundColor: isDark ? '#0e1626' : '#fafafa',
               }}>
                 <img
                   src={currentImageUrl}
@@ -536,7 +536,7 @@ const WritingSimulator: React.FC<WritingSimulatorProps> = ({ taskId, onBack }) =
           width: '60%',
           display: 'flex',
           flexDirection: 'column',
-          backgroundColor: isDark ? '#102a4f' : 'white',
+          backgroundColor: isDark ? '#151f30' : 'white',
         }}>
           <TextArea
             value={currentContent}
@@ -571,7 +571,7 @@ const WritingSimulator: React.FC<WritingSimulatorProps> = ({ taskId, onBack }) =
               fontFamily: 'Arial, sans-serif',
               resize: 'none',
               outline: 'none',
-              backgroundColor: isDark ? '#102a4f' : 'white',
+              backgroundColor: isDark ? '#151f30' : 'white',
               color: isDark ? '#e2e8f0' : '#1f2937',
             }}
           />
@@ -583,7 +583,7 @@ const WritingSimulator: React.FC<WritingSimulatorProps> = ({ taskId, onBack }) =
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            backgroundColor: isDark ? '#0b1d3a' : '#fafafa',
+            backgroundColor: isDark ? '#0e1626' : '#fafafa',
           }}>
             <div style={{
               fontSize: '16px',

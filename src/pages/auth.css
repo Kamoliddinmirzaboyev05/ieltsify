@@ -4,7 +4,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #0b1d3a;
+  background: #0e1626;
   padding: 16px;
 }
 
@@ -28,8 +28,8 @@
 }
 
 .auth-card {
-  background: #102a4f;
-  border: 1px solid #16365f;
+  background: #151f30;
+  border: 1px solid #273750;
   border-radius: 8px;
   padding: 28px 24px;
 }
@@ -98,8 +98,8 @@
   width: 100%;
   height: 42px;
   padding: 0 12px 0 38px;
-  background: #0b1d3a;
-  border: 1px solid #16365f;
+  background: #0e1626;
+  border: 1px solid #273750;
   border-radius: 6px;
   color: #f1f5f9;
   font-size: 14px;
@@ -112,7 +112,7 @@
 }
 
 .auth-input::placeholder {
-  color: #20416c;
+  color: #324563;
 }
 
 .auth-eye-btn {
@@ -188,7 +188,7 @@
   height: 42px;
   background: transparent;
   color: #94a3b8;
-  border: 1px solid #16365f;
+  border: 1px solid #273750;
   border-radius: 6px;
   font-size: 13px;
   font-weight: 500;
@@ -226,7 +226,7 @@
   flex: 1;
   height: 3px;
   border-radius: 2px;
-  background: #16365f;
+  background: #273750;
   transition: background 0.3s;
 }
 .auth-progress-bar.active {
@@ -273,8 +273,8 @@
   flex: 1;
   padding: 14px 12px;
   border-radius: 6px;
-  border: 1px solid #16365f;
-  background: #0b1d3a;
+  border: 1px solid #273750;
+  background: #0e1626;
   cursor: pointer;
   text-align: left;
   transition: all 0.2s;
@@ -345,7 +345,7 @@
   flex: 1 0 auto;
   border-radius: 8px;
   border: 1px solid #1e3a63;
-  background: #0b1d3a;
+  background: #0e1626;
   color: #94a3b8;
   font-size: 14px;
   font-weight: 600;
@@ -359,7 +359,7 @@
 .band-pill.selected {
   border-color: #f0b429;
   background: #f0b429;
-  color: #0b1d3a;
+  color: #0e1626;
   box-shadow: 0 2px 8px rgba(240, 180, 41, 0.35);
 }
 
@@ -389,9 +389,9 @@
   border-radius: 4px;
   font-size: 12px;
   cursor: pointer;
-  border: 1px solid #16365f;
+  border: 1px solid #273750;
   color: #94a3b8;
-  background: #0b1d3a;
+  background: #0e1626;
   transition: all 0.2s;
 }
 .onboard-chip.weak.selected {
@@ -433,7 +433,7 @@
   content: "";
   flex: 1;
   height: 1px;
-  background: #16365f;
+  background: #273750;
 }
 .auth-divider span {
   color: #64748b;

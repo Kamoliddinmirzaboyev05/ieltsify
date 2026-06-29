@@ -19,13 +19,13 @@
 
 /* Dark Theme Variables */
 [data-theme="dark"] {
-  --bg-primary: #0b1d3a;
-  --bg-secondary: #102a4f;
-  --bg-card: #102a4f;
-  --bg-elevated: #263548;
+  --bg-primary: #0e1626;
+  --bg-secondary: #151f30;
+  --bg-card: #151f30;
+  --bg-elevated: #1f2c44;
   --text-primary: #f1f5f9;
   --text-secondary: #94a3b8;
-  --border-color: #16365f;
+  --border-color: #273750;
 }
 
 /* Light Theme Variables */
@@ -115,11 +115,11 @@ body {
 }
 
 [data-theme="dark"] ::-webkit-scrollbar-track {
-  background: #102a4f;
+  background: #151f30;
 }
 
 [data-theme="dark"] ::-webkit-scrollbar-thumb {
-  background: #20416c;
+  background: #324563;
   border-radius: 10px;
 }
 
@@ -157,12 +157,12 @@ body {
 
 /* Card backgrounds in dark mode */
 [data-theme="dark"] .ant-card {
-  background: #102a4f !important;
-  border-color: #16365f !important;
+  background: #151f30 !important;
+  border-color: #273750 !important;
 }
 
 [data-theme="dark"] .ant-card .ant-card-head {
-  border-color: #16365f !important;
+  border-color: #273750 !important;
   color: #f1f5f9 !important;
 }
 
@@ -189,25 +189,25 @@ body {
 [data-theme="dark"] [style*="background-color: #f8fafc"],
 [data-theme="dark"] [style*="background-color: rgb(248, 250, 252)"],
 [data-theme="dark"] [style*="backgroundColor: '#f8fafc'"] {
-  background-color: #102a4f !important;
+  background-color: #151f30 !important;
 }
 
 [data-theme="dark"] [style*="border: 1px solid #f1f5f9"],
 [data-theme="dark"] [style*="border: 1px solid #e2e8f0"],
 [data-theme="dark"] [style*="border-color: #f1f5f9"] {
-  border-color: #16365f !important;
+  border-color: #273750 !important;
 }
 
 /* Select component */
 [data-theme="dark"] .ant-select-selector {
-  background: #102a4f !important;
-  border-color: #16365f !important;
+  background: #151f30 !important;
+  border-color: #273750 !important;
   color: #f1f5f9 !important;
 }
 
 [data-theme="dark"] .ant-select-dropdown {
-  background: #102a4f !important;
-  border: 1px solid #16365f !important;
+  background: #151f30 !important;
+  border: 1px solid #273750 !important;
 }
 
 [data-theme="dark"] .ant-select-item {
@@ -221,13 +221,13 @@ body {
 
 /* Modal */
 [data-theme="dark"] .ant-modal-content {
-  background: #102a4f !important;
-  border: 1px solid #16365f !important;
+  background: #151f30 !important;
+  border: 1px solid #273750 !important;
 }
 
 [data-theme="dark"] .ant-modal-header {
-  background: #102a4f !important;
-  border-color: #16365f !important;
+  background: #151f30 !important;
+  border-color: #273750 !important;
 }
 
 [data-theme="dark"] .ant-modal-title {
@@ -240,17 +240,17 @@ body {
 
 /* Table */
 [data-theme="dark"] .ant-table {
-  background: #102a4f !important;
+  background: #151f30 !important;
 }
 
 [data-theme="dark"] .ant-table-thead > tr > th {
-  background: #0b1d3a !important;
+  background: #0e1626 !important;
   color: #94a3b8 !important;
-  border-color: #16365f !important;
+  border-color: #273750 !important;
 }
 
 [data-theme="dark"] .ant-table-tbody > tr > td {
-  border-color: #16365f !important;
+  border-color: #273750 !important;
   color: #e2e8f0 !important;
 }
 
@@ -264,23 +264,23 @@ body {
 }
 
 [data-theme="dark"] .ant-progress-inner {
-  background: #16365f !important;
+  background: #273750 !important;
 }
 
 /* Divider */
 [data-theme="dark"] .ant-divider {
-  border-color: #16365f !important;
+  border-color: #273750 !important;
 }
 
 /* Tag */
 [data-theme="dark"] .ant-tag {
-  border-color: #16365f !important;
+  border-color: #273750 !important;
 }
 
 /* Button */
 [data-theme="dark"] .ant-btn-default {
-  background: #102a4f !important;
-  border-color: #16365f !important;
+  background: #151f30 !important;
+  border-color: #273750 !important;
   color: #e2e8f0 !important;
 }
 
@@ -301,7 +301,7 @@ body {
 
 /* Slider */
 [data-theme="dark"] .ant-slider-rail {
-  background: #16365f !important;
+  background: #273750 !important;
 }
 
 [data-theme="dark"] .ant-slider-track {
@@ -314,7 +314,7 @@ body {
 
 /* Switch */
 [data-theme="dark"] .ant-switch {
-  background: #20416c !important;
+  background: #324563 !important;
 }
 
 [data-theme="dark"] .ant-switch-checked {
@@ -332,13 +332,13 @@ body {
 
 /* Avatar */
 [data-theme="dark"] .ant-avatar {
-  background: #16365f !important;
+  background: #273750 !important;
 }
 
 /* Tooltip */
 [data-theme="dark"] .ant-tooltip-inner {
-  background: #102a4f !important;
-  border: 1px solid #16365f !important;
+  background: #151f30 !important;
+  border: 1px solid #273750 !important;
 }
 
 /* Menu (sidebar) — transparent so the Sider background fills the whole
@@ -380,8 +380,8 @@ body {
 
 /* Notification / Message */
 [data-theme="dark"] .ant-message-notice-content {
-  background: #102a4f !important;
-  border: 1px solid #16365f !important;
+  background: #151f30 !important;
+  border: 1px solid #273750 !important;
   color: #f1f5f9 !important;
 }
 
@@ -402,19 +402,19 @@ body {
    Dashboard inline style dark mode fixes
    ============================================ */
 [data-theme="dark"] [style*="border: 1px solid"] {
-  border-color: #16365f !important;
+  border-color: #273750 !important;
 }
 
 [data-theme="dark"] [style*="background-color: #fff"],
 [data-theme="dark"] [style*="background-color: white"],
 [data-theme="dark"] [style*="backgroundColor: '#fff'"] {
-  background-color: #102a4f !important;
+  background-color: #151f30 !important;
 }
 
 /* Fix inline Card backgrounds in dark mode */
 [data-theme="dark"] .ant-card[style] {
-  background: #102a4f !important;
-  border-color: #16365f !important;
+  background: #151f30 !important;
+  border-color: #273750 !important;
 }
 
 /* Semantic icon backgrounds — make them subtle in dark mode */
@@ -463,8 +463,8 @@ body {
 }
 
 [data-theme="dark"] .ant-input-affix-wrapper {
-  background-color: #0b1d3a !important;
-  border: 1px solid #16365f !important;
+  background-color: #0e1626 !important;
+  border: 1px solid #273750 !important;
 }
 
 [data-theme="dark"] .ant-input-affix-wrapper input {
@@ -474,8 +474,8 @@ body {
 
 [data-theme="dark"] .ant-input {
   color: #e2e8f0 !important;
-  background-color: #0b1d3a !important;
-  border-color: #16365f !important;
+  background-color: #0e1626 !important;
+  border-color: #273750 !important;
 }
 
 /* Input Styles - Light Theme */
@@ -511,8 +511,8 @@ body {
 }
 
 [data-theme="dark"] .ant-checkbox-inner {
-  background-color: #0b1d3a !important;
-  border-color: #16365f !important;
+  background-color: #0e1626 !important;
+  border-color: #273750 !important;
 }
 
 [data-theme="light"] .ant-checkbox-inner {
