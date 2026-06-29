@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { message, Slider } from "antd";
+import { message } from "antd";
 import {
   Lock,
   Mail,
@@ -372,29 +372,39 @@ const RegisterPage: React.FC = () => {
             <p className="onboard-desc">
               Set your current and target band score
             </p>
-            <div className="onboard-slider-group">
-              <label className="auth-label">
-                Current Level: <strong>{currentBand}</strong>
+            <div className="onboard-band-group">
+              <label className="band-label">
+                Current Level <strong>{currentBand}</strong>
               </label>
-              <Slider
-                min={3}
-                max={9}
-                step={0.5}
-                value={currentBand}
-                onChange={setCurrentBand}
-              />
+              <div className="band-picker">
+                {Array.from({ length: 13 }, (_, i) => 3 + i * 0.5).map((v) => (
+                  <button
+                    key={v}
+                    type="button"
+                    className={`band-pill ${currentBand === v ? "selected" : ""}`}
+                    onClick={() => setCurrentBand(v)}
+                  >
+                    {v}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="onboard-slider-group">
-              <label className="auth-label">
-                Target Score: <strong>{targetBand}</strong>
+            <div className="onboard-band-group">
+              <label className="band-label">
+                Target Score <strong>{targetBand}</strong>
               </label>
-              <Slider
-                min={5}
-                max={9}
-                step={0.5}
-                value={targetBand}
-                onChange={setTargetBand}
-              />
+              <div className="band-picker">
+                {Array.from({ length: 9 }, (_, i) => 5 + i * 0.5).map((v) => (
+                  <button
+                    key={v}
+                    type="button"
+                    className={`band-pill ${targetBand === v ? "selected" : ""}`}
+                    onClick={() => setTargetBand(v)}
+                  >
+                    {v}
+                  </button>
+                ))}
+              </div>
             </div>
             <div className="auth-field">
               <label className="auth-label">Target Exam Date (approx)</label>
