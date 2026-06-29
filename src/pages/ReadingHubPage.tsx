@@ -14,6 +14,7 @@ import {
 import { BookOpen, Play, Clock, FileText, TrendingUp } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { authenticatedFetch } from "../services/authService";
 
 const { Title, Text, Paragraph } = Typography;
 const { useBreakpoint } = Grid;
@@ -55,35 +56,13 @@ const ReadingHubPage: React.FC = () => {
   const loadPassages = async () => {
     setLoading(true);
     try {
-      const API_BASE_URL =
-        import.meta.env.VITE_API_BASE_URL ||
-        "https://api.ieltsfy.uz";
-      const accessToken = localStorage.getItem("access_token");
-
-      const headers: HeadersInit = {
-        "Content-Type": "application/json",
-      };
-
-      if (accessToken) {
-        headers["Authorization"] = `Bearer ${accessToken}`;
-      }
-
-      const response = await fetch(`${API_BASE_URL}/reading-passages/`, {
-        headers,
-      });
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          message.error("Please sign in first");
-          navigate("/login");
-          return;
-        }
-        throw new Error("Failed to load reading passages");
-      }
+      const response = await authenticatedFetch("/reading-passages/");
+      if (!response.ok) throw new Error("Failed to load reading passages");
 
       const data: ReadingPassagesResponse = await response.json();
-      // Show all passages (including inactive ones for development)
-      setPassages(data.results);
+      // Unwrap DRF pagination; tolerate a bare array too.
+      const list = Array.isArray(data) ? data : data?.results;
+      setPassages(Array.isArray(list) ? list : []);
     } catch (error) {
       console.error("Error loading reading passages:", error);
       message.error("Reading passagelarni yuklashda xatolik yuz berdi");

@@ -123,11 +123,35 @@ export const isAuthenticated = (): boolean => !!getAccessToken();
 export const authenticatedFetch = async (url: string, opts: RequestInit = {}): Promise<Response> => {
   const token = getAccessToken();
   if (!token) throw new Error('Foydalanuvchi tizimga kirmagan');
-  const headers = new Headers(opts.headers);
-  headers.set('Authorization', `Bearer ${token}`);
-  headers.set('Content-Type', 'application/json');
+
   const full = url.startsWith('http') ? url : `${API()}${url}`;
-  return fetch(full, { ...opts, headers });
+  const doFetch = (t: string) => {
+    const headers = new Headers(opts.headers);
+    headers.set('Authorization', `Bearer ${t}`);
+    // Don't force JSON content-type on FormData (breaks multipart boundary)
+    if (!(opts.body instanceof FormData) && !headers.has('Content-Type')) {
+      headers.set('Content-Type', 'application/json');
+    }
+    return fetch(full, { ...opts, headers });
+  };
+
+  let res = await doFetch(token);
+
+  // Access token expired -> try one silent refresh, then retry once.
+  if (res.status === 401) {
+    try {
+      const fresh = await refreshAccessToken();
+      res = await doFetch(fresh);
+    } catch {
+      await clearAuthTokens();
+      if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
+        window.location.href = '/login';
+      }
+      throw new Error('Sessiya tugadi. Iltimos qayta kiring.');
+    }
+  }
+
+  return res;
 };
 
 export const refreshAccessToken = async (): Promise<string> => {

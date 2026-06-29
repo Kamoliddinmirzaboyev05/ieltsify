@@ -18,7 +18,20 @@ const api = async <T>(url: string, opts?: RequestInit): Promise<T> => {
     const err = await r.json().catch(() => ({}));
     throw new Error(err.detail || err.message || "API xatolik");
   }
-  return r.json();
+  // No body (e.g. 204 from DELETE/PUT)
+  if (r.status === 204) return undefined as T;
+  const data = await r.json().catch(() => null);
+  // Unwrap DRF pagination envelope { count, next, previous, results: [...] }
+  // so list callers receive a plain array instead of the page object.
+  if (
+    data &&
+    typeof data === "object" &&
+    "count" in data &&
+    Array.isArray((data as { results?: unknown }).results)
+  ) {
+    return (data as { results: unknown }).results as T;
+  }
+  return data as T;
 };
 
 export const vocabularyManager = {
