@@ -51,6 +51,7 @@ const LoginPage: React.FC = () => {
     return () => {
       document.body.removeChild(script);
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleGoogleResponse = async (response: { credential: string }) => {

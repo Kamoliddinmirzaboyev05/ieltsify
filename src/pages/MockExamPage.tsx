@@ -100,8 +100,8 @@ const MockExamPage: React.FC = () => {
         await response.json();
         message.success("Mock Exam boshlandi!");
         setConfirmModal({ open: false, mock: null, accessSource: "" });
-        // TODO: Navigate to exam mode
-        navigate("/dashboard");
+        // Navigate to listening as the first section of the exam
+        navigate("/dashboard/listening-hub");
       } else {
         const err = await response.json();
         message.error(err.error || err.message || "An error occurred");
@@ -287,7 +287,12 @@ const MockExamPage: React.FC = () => {
                 bodyStyle={{ padding: "16px" }}
               >
                 <div
-                  style={{ display: "flex", alignItems: "center", gap: "14px" }}
+                  style={{ 
+                    display: "flex", 
+                    alignItems: "center", 
+                    gap: "14px",
+                    flexWrap: "wrap" 
+                  }}
                 >
                   <div
                     style={{
@@ -303,7 +308,7 @@ const MockExamPage: React.FC = () => {
                   >
                     <Target size={22} color="#f0b429" />
                   </div>
-                  <div style={{ flex: 1 }}>
+                  <div style={{ flex: "1 1 min-content", minWidth: "150px" }}>
                     <Text strong style={{ fontSize: "14px", display: "block" }}>
                       {mock.title}
                     </Text>
@@ -337,15 +342,22 @@ const MockExamPage: React.FC = () => {
                       </span>
                     </div>
                   </div>
-                  <div style={{ textAlign: "right", flexShrink: 0 }}>
+                  <div style={{ 
+                    textAlign: "right", 
+                    flexShrink: 0,
+                    width: "100%",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginTop: "8px",
+                  }}>
                     {quotaInfo && (
                       <Text
                         style={{
                           fontSize: "11px",
                           color:
                             quotaInfo.type === "locked" ? "#ef4444" : "#f0b429",
-                          display: "block",
-                          marginBottom: "6px",
+                          marginRight: "10px",
                         }}
                       >
                         {quotaInfo.text}
@@ -362,6 +374,7 @@ const MockExamPage: React.FC = () => {
                         fontWeight: 600,
                         backgroundColor: "#f0b429",
                         border: "none",
+                        marginLeft: "auto"
                       }}
                     >
                       Boshlash

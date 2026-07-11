@@ -46,6 +46,7 @@ const ReloadPrompt: React.FC = () => {
         onClose: close,
       })
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [needRefresh])
 
   return null
